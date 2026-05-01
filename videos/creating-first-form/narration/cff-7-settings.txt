@@ -1,0 +1,1 @@
+Under Settings, you can rename the form, configure email notifications, and customize the thank-you message people see after submitting.

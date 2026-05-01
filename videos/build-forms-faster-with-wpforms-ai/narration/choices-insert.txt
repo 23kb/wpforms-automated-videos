@@ -1,0 +1,1 @@
+WPForms AI returns ready-to-use choices, and Insert Choices drops them into the field.

@@ -1,0 +1,45 @@
+{
+  "slug": "form-entries-guide",
+  "primarySnapshot": "admin-forms-overview",
+  "coverColor": "#F4F7FB",
+  "hud": false,
+  "narrationSpeed": 1,
+  "narrationVolume": 0.3,
+  "defaults": {
+    "breakStyle": "glide",
+    "swapStyle": "morph"
+  },
+  "intro": {
+    "variant": "sullie-system",
+    "eyebrow": "WPForms Tutorial",
+    "title": "A Complete Guide to Form Entries",
+    "subtitleVariants": [
+      "Every submission lands in one organized place.",
+      "Find, review, and act on entries without the spreadsheet detour.",
+      "Manage every form response from one mission control."
+    ],
+    "hold": 3
+  },
+  "postIntro": null,
+  "bgm": { "volume": 0.05 },
+  "chapters": [
+    "postintro-mission-control",
+    "where-entries-live",
+    "form-entries-list",
+    "search-and-filter",
+    "entry-detail",
+    "export-entries"
+  ],
+  "outro": {
+    "variant": "sullie-system",
+    "eyebrow": "WPForms",
+    "title": "Stay on top of every response",
+    "subtitleVariants": [
+      "Search, filter, and act on entries without leaving WordPress.",
+      "Every submission stays organized and easy to manage.",
+      "Build smarter forms — and never lose a response again."
+    ],
+    "cta": "Build with WPForms",
+    "hold": 3
+  }
+}

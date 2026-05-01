@@ -1,0 +1,1 @@
+Click an icon in the choice settings to open the Icon Picker, where you can search and choose a different symbol for that option.

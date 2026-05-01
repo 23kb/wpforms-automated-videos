@@ -1,0 +1,1 @@
+The required marker appears on the field label.

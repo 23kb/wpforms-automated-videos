@@ -1,0 +1,55 @@
+import { defineChapter } from '/runtime/chapter-api.js';
+import sel from './_selectors/add-checkboxes-field.js';
+
+export default defineChapter({
+  slug: 'add-checkboxes-field',
+  title: 'Add the Checkboxes field',
+  snapshot: 'builder-fields',
+  chapter: 'add-checkboxes-field',
+  prep: [{ op: 'applyDefaultForm', keepIds: [1, 2, 4, 7] }, { op: 'hideFields', ids: [7] }],
+  steps: [
+    {
+      id: 'promise',
+      label: 'Let visitors pick more than one answer',
+      do: 'captionLine',
+      text: 'Let visitors pick more than one answer',
+      hold: 900,
+      narration: 'add-checkboxes-field-promise',
+    },
+    {
+      id: 'find-checkboxes',
+      label: 'Find Checkboxes',
+      do: 'typeInto',
+      target: sel.dragCheckboxesFieldSearch,
+      text: 'Checkboxes',
+      filter: 'wpforms-add-fields-checkbox',
+      clear: true,
+      fill: 0.55,
+      narration: 'add-checkboxes-field-find-checkboxes',
+    },
+    {
+      id: 'drag-checkboxes-field',
+      label: 'Drag Checkboxes onto the form',
+      do: 'dragGrab',
+      target: sel.dragCheckboxesFieldCanvas,
+      from: sel.dragCheckboxesFieldButton,
+      to: sel.dragCheckboxesFieldCanvas,
+      wait: 850,
+      revealAt: 0.58,
+      reveal: '#wpforms-field-7',
+      revealDisplay: 'block',
+      endRing: '#wpforms-field-7',
+      hideCursor: true,
+      narration: 'add-checkboxes-field-drag-checkboxes-field',
+    },
+    {
+      id: 'field-lands',
+      label: 'Checkboxes field added',
+      do: 'focusPull',
+      target: sel.dragCheckboxesFieldField,
+      blur: 3,
+      holdMs: 950,
+      narration: 'add-checkboxes-field-field-lands',
+    },
+  ],
+});

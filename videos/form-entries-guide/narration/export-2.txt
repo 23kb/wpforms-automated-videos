@@ -1,0 +1,1 @@
+Pick the form, choose which fields and date range to include, then download the entries as a CSV or Excel file. That’s your complete entries workflow.

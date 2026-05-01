@@ -1,0 +1,1 @@
+Sometimes you only want a notification to send in specific cases. Turn on Conditional Logic, then build a rule: send this notification if the Message field contains the word Urgent. That's it — the notification now only fires when the condition matches.

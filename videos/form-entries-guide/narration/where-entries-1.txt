@@ -1,0 +1,1 @@
+From your WordPress dashboard, open WPForms and head to All Forms. Each form has its own Entries column showing how many submissions it has received.

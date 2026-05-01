@@ -1,0 +1,58 @@
+{
+  "slug": "a-complete-guide-to-the-checkboxes-field",
+  "primarySnapshot": "builder-fields",
+  "coverColor": "#F4F7FB",
+  "hud": false,
+  "defaults": {
+    "breakStyle": "glide",
+    "swapStyle": "morph"
+  },
+  "intro": {
+    "variant": "sullie-system",
+    "eyebrow": "WPForms Tutorial",
+    "title": "Customize the Checkboxes field",
+    "subtitleVariants": [
+      "Let visitors choose more than one answer.",
+      "Turn a basic list into a clear visual choice.",
+      "Keep longer choice lists easy to scan."
+    ],
+    "hold": 3
+  },
+  "postIntro": {
+    "kind": "one-answer-enough",
+    "narration": "postintro-checkboxes-overview",
+    "duration": 14.5,
+    "theme": {
+      "background": "cool-paper",
+      "accent": "#056AAB"
+    },
+    "opts": {
+      "caption": "Use Checkboxes when users need multiple answers."
+    }
+  },
+  "bgm": {
+    "src": "/bgms/56.mp3",
+    "volume": 0.2
+  },
+  "narrationVolume": 0.25,
+  "chapters": [
+    "add-checkboxes-field",
+    "edit-label",
+    "multi-select-behavior",
+    "icon-choices",
+    "multi-column-layout",
+    "save-checkboxes-field"
+  ],
+  "outro": {
+    "variant": "sullie-system",
+    "eyebrow": "WPForms",
+    "title": "Build clearer forms with WPForms",
+    "subtitleVariants": [
+      "Use Checkboxes when visitors can choose more than one answer.",
+      "Keep every choice list easy to scan.",
+      "Create smarter forms with less busywork."
+    ],
+    "cta": "Build with WPForms",
+    "hold": 3
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "slug": "build-forms-faster-with-wpforms-ai",
+  "coverColor": "#F6F9FD",
+  "hud": false,
+  "narrationSpeed": 1.1,
+  "primarySnapshot": null,
+  "defaults": {
+    "breakStyle": "glide",
+    "swapStyle": "morph"
+  },
+  "intro": {
+    "variant": "sullie-system",
+    "eyebrow": "WPForms Tutorial",
+    "title": "Build forms faster with WPForms AI",
+    "subtitleVariants": [
+      "Transform Your Workflow With WPForms AI",
+      "Building Forms Just Got Easier",
+      "Unlock the Full Power of AI Forms"
+    ],
+    "pill": "Rough idea. Ready draft.",
+    "hold": 7.4,
+    "theme": {
+      "backgroundCss": "linear-gradient(to right, #C5796D, #DBE6F6)",
+      "waveFill": "#DBE6F6",
+      "accent": "#E27730"
+    }
+  },
+  "postIntro": {
+    "kind": "rough-thought-to-draft",
+    "narration": "postintro-rough-thought-to-draft",
+    "duration": 15.2,
+    "theme": {
+      "accent": "#056AAB"
+    },
+    "opts": {
+      "prompt": "online feedback survey",
+      "showSullieLogo": true
+    }
+  },
+  "bgm": {
+    "src": "/bgms/56.mp3",
+    "volume": 0.2
+  },
+  "chapters": [
+    "scene-1-hook",
+    "scene-2-add-new",
+    "scene-3-prompt",
+    "scene-4-burst",
+    "scene-5-builder-fills",
+    "scene-6-refine",
+    "scene-7-ai-choices",
+    "scene-8-feature-orbit",
+    "scene-10-form-crystallizes"
+  ],
+  "outro": null
+}

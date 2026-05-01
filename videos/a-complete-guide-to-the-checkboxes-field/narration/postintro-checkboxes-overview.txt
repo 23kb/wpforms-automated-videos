@@ -1,0 +1,1 @@
+Sometimes, one answer isn't enough. A user may need help with more than one thing. Checkboxes let them select everything that applies, from services to topics and preferences. Now let's build it in WPForms.

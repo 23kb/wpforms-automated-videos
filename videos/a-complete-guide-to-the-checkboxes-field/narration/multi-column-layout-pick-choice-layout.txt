@@ -1,0 +1,1 @@
+Set Choice Layout to Two Columns to keep longer lists compact.

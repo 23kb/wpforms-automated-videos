@@ -1,0 +1,1 @@
+When you need entries outside WordPress — for a spreadsheet, a report, or another tool — head to WPForms, then Tools, then Export.

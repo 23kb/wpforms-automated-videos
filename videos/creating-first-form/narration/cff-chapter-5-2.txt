@@ -1,0 +1,1 @@
+The Content field is great for dropping in rich text, headings, or short instructions right inside the form.

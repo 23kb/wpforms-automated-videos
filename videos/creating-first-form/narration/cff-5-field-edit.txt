@@ -1,0 +1,1 @@
+Click any field to tweak its label, placeholder text, or make it required — every change updates live in the preview.

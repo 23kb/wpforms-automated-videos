@@ -1,0 +1,1 @@
+You're not stuck with one notification. Click Add to create a new one from scratch, give it a name, and it's ready to configure. Need a similar notification? Click Duplicate for an instant copy you can tweak. And the status toggle turns any notification off without deleting it — great for testing.

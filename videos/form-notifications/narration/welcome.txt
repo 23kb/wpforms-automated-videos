@@ -1,0 +1,1 @@
+Welcome! In this video, we'll show you how to set up Form Notifications in WPForms — so every time someone submits your form, the right email reaches the right person, automatically.

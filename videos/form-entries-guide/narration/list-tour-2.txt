@@ -1,0 +1,1 @@
+Each row is a single submission, with the most useful fields shown as columns. You can customize which columns appear from the gear icon on the right.

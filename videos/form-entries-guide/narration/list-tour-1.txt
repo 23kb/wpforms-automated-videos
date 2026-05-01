@@ -1,0 +1,1 @@
+Click into a form to open its full entries list. This is where every submission for that form lives.

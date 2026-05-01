@@ -1,0 +1,1 @@
+Dropdowns keep long option lists tidy — perfect for countries, departments, or any choice with a lot of options.

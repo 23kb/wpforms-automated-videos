@@ -1,0 +1,26 @@
+{
+  "slug": "creating-first-form",
+  "primarySnapshot": "admin-forms-overview",
+  "intro": {
+    "eyebrow": "WPForms Tutorial",
+    "title": "Creating Your First Form",
+    "subtitleHTML": "From blank page to live form \u2014 in about two minutes.",
+    "logo": { "kind": "video", "src": "/assets/logo-animated.mp4" },
+    "hold": 3.6
+  },
+  "teaser": "dual-path",
+  "chapters": [
+    "cff-chapter-1-7",
+    "cff-chapter-2",
+    "cff-chapter-3",
+    "cff-chapter-4",
+    "cff-chapter-5"
+  ],
+  "outro": {
+    "eyebrow": "Thanks for watching",
+    "title": "You\u2019re all set.",
+    "subtitleHTML": "Learn more at wpforms.com/docs",
+    "logo": { "kind": "image", "src": "/assets/wpforms-mark.png" },
+    "hold": 3.4
+  }
+}

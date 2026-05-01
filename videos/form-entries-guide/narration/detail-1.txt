@@ -1,0 +1,1 @@
+Click any entry to open its detail view. The main panel shows every field the visitor submitted, exactly as you laid them out in the form builder.

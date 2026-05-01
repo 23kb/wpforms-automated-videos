@@ -1,0 +1,1 @@
+The builder opens with Name, Email, and a Comment field already in place — the essentials are ready to go.

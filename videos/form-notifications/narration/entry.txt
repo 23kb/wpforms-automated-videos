@@ -1,0 +1,1 @@
+To begin, in your form builder, open Settings — then click Notifications in the sidebar.

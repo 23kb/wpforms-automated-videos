@@ -1,0 +1,1 @@
+Then mark Extra cheese too, so more than one option starts selected.

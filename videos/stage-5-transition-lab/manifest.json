@@ -1,0 +1,24 @@
+{
+  "slug": "stage-5-transition-lab",
+  "coverColor": "#F6F9FD",
+  "hud": false,
+  "bgm": false,
+  "narrationSpeed": 1,
+  "primarySnapshot": "wpforms-ai-builder-empty",
+  "defaults": {
+    "breakStyle": "soft-dolly",
+    "swapStyle": "cover"
+  },
+  "intro": null,
+  "postIntro": null,
+  "teaser": null,
+  "outro": null,
+  "chapters": [
+    "a-empty-header",
+    "b-empty-panel-wide",
+    "c-empty-prompt",
+    "d-empty-send",
+    "e-generated-preview",
+    "f-empty-back"
+  ]
+}

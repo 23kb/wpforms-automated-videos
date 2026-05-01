@@ -1,0 +1,1 @@
+Under Settings, you can rename the form, customize the confirmation message people see after submitting, and decide who gets notified when a new entry comes in.

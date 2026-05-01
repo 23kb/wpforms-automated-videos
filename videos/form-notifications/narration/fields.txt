@@ -1,0 +1,1 @@
+Six fields do all the heavy lifting. Send To picks the recipient. Subject Line is what shows up in the inbox. From Name and From Email control who the email appears to be from — usually best to leave these as the site defaults. Reply-To is where replies land when someone hits reply. And Email Message is the body — by default, it includes every field the user filled out.

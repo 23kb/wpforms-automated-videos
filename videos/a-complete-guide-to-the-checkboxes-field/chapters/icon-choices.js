@@ -1,0 +1,60 @@
+import { defineChapter } from '/runtime/chapter-api.js';
+import sel from './_selectors/icon-choices.js';
+
+export default defineChapter({
+  slug: 'icon-choices',
+  title: 'Add icons to your choices',
+  snapshot: 'builder-field-options-checkbox',
+  chapter: 'icon-choices',
+  prep: [
+    { op: 'applyDefaultForm', keepIds: [1, 2, 4, 7], labels: { '7': 'Pizza Toppings' } },
+    { op: 'stripQuizEnabled' },
+    { op: 'activateFieldOptionGroup', fieldId: 7, group: 'basic' },
+    { op: 'setChoiceLabels', fieldId: 7, labels: ['Pepperoni', 'Mushrooms', 'Extra cheese'] },
+  ],
+  steps: [
+    {
+      id: 'toggle-icon-choices',
+      label: 'Turn on Use Icon Choices',
+      do: 'clickOn',
+      target: sel.toggleIconChoices,
+      instruction: 'Turn on Use Icon Choices',
+      direction: 'right',
+      fill: 0.48,
+      after: [{ op: 'applyIconChoicesV2', fieldId: 7, glyph: 'face-smile', iconStyle: 'regular', color: '#066aab', size: 'large', style: 'default' }],
+      narration: 'icon-choices-toggle-icon-choices',
+    },
+    {
+      id: 'icon-choices-payoff',
+      label: 'Choices become easier to scan',
+      do: 'focusPull',
+      target: sel.fieldPreview,
+      blur: 4,
+      holdMs: 1200,
+      narration: 'icon-choices-payoff',
+    },
+    {
+      id: 'open-icon-picker',
+      label: 'Open the Icon Picker',
+      do: 'iconPickerOpen',
+      target: sel.firstIconSelect,
+      instruction: 'Open Icon Picker',
+      direction: 'right',
+      fill: 0.55,
+      holdMs: 3200,
+      narration: 'icon-choices-open-icon-picker',
+    },
+    {
+      id: 'toggle-image-choices',
+      label: 'Mention Image Choices',
+      do: 'clickOn',
+      target: sel.toggleImageChoices,
+      instruction: 'Use images as choices',
+      direction: 'right',
+      fill: 0.78,
+      postHold: 1200,
+      after: [{ op: 'applyImageChoices', fieldId: 7 }],
+      narration: 'icon-choices-toggle-image-choices',
+    },
+  ],
+});

@@ -1,0 +1,1 @@
+Click the gear icon to choose which columns appear — pick from form fields or entry meta like date, IP, and geolocation.

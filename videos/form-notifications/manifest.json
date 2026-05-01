@@ -1,0 +1,38 @@
+{
+  "slug": "form-notifications",
+  "primarySnapshot": "builder-settings-notifications",
+  "intro": {
+    "eyebrow": "WPForms Tutorial",
+    "title": "Form Notifications",
+    "subtitleHTML": "Send the right email to the right person — every time your form is submitted.",
+    "logo": { "kind": "video", "src": "/assets/logo-animated.mp4" },
+    "hold": 3.6
+  },
+  "teaser": "form-to-inbox",
+  "teaserNarration": "welcome",
+  "teaserOpts": {
+    "brand": "Sullie's Bakery",
+    "url": "sulliesbakery.com/contact",
+    "inboxLabel": "sullie@wpforms.com",
+    "fields": [
+      { "label": "Name",    "text": "Sullie Eloso" },
+      { "label": "Email",   "text": "sullie@wpforms.com" },
+      { "label": "Message", "text": "Hi team — loving the site. Can we get in touch?", "textarea": true }
+    ]
+  },
+  "chapters": [
+    "entry",
+    "fields",
+    "smart-tags",
+    "advanced",
+    "managing",
+    "conditional-logic"
+  ],
+  "outro": {
+    "eyebrow": "Thanks for watching",
+    "title": "You\u2019re all set.",
+    "subtitleHTML": "Learn more at wpforms.com/docs",
+    "logo": { "kind": "image", "src": "/assets/wpforms-mark.png" },
+    "hold": 3.4
+  }
+}

@@ -1,0 +1,634 @@
+{
+  "schemaVersion": 1,
+  "slug": "a-complete-guide-to-the-checkboxes-field",
+  "briefHash": "b0ca809b5052550699eec64145881f42e3806ab10177febf309be741a97dd688",
+  "manifest": {
+    "intro": {
+      "eyebrow": "WPForms Tutorial",
+      "title": "Customize the Checkboxes field",
+      "subtitleHTML": "Give viewers a clean, scannable list of options.",
+      "hold": 3
+    },
+    "outro": {
+      "eyebrow": "Thanks for watching",
+      "title": "That's the Checkboxes field in WPForms.",
+      "subtitleHTML": "Learn more at wpforms.com/docs",
+      "hold": 3
+    },
+    "teaser": null,
+    "coverColor": null,
+    "bgm": "default",
+    "primarySnapshot": "builder-fields",
+    "chapterOrder": [
+      "add-checkboxes-field",
+      "edit-label",
+      "icon-choices",
+      "multi-column-layout",
+      "hide-label",
+      "required",
+      "save-checkboxes-field"
+    ]
+  },
+  "chapters": [
+    {
+      "id": "add-checkboxes-field",
+      "title": "Add the Checkboxes field",
+      "snapshot": "builder-fields",
+      "chapter": "add-checkboxes-field",
+      "prep": [
+        {
+          "op": "applyDefaultForm",
+          "keepIds": [
+            1,
+            2,
+            4,
+            7
+          ]
+        },
+        {
+          "op": "hideFields",
+          "ids": [
+            7
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "fields-fly-checkboxes",
+          "synthetic": true,
+          "source": "animatedMoments[0]",
+          "verb": "clickOn",
+          "selectorKey": "fieldsFlyCheckboxes",
+          "selectorSel": "#wpforms-add-fields-checkbox",
+          "selectorSrc": "snapshots/builder-fields/catalog.md#id--wpforms-add-fields-checkbox",
+          "label": "Today, you'll let people pick more than one option",
+          "instruction": "Today, you'll let people pick more than one option",
+          "dispatch": false,
+          "postHold": 900,
+          "estimatedAnimMs": 1200
+        },
+        {
+          "source": "chapters[0].beats[0]",
+          "id": "drag-checkboxes-field-search",
+          "synthetic": true,
+          "verb": "typeInto",
+          "selectorKey": "dragCheckboxesFieldSearch",
+          "selectorSel": "#wpforms-search-fields-input",
+          "selectorSrc": "pattern:add-field-search-drag search input (#wpforms-search-fields-input)",
+          "label": "Search for Checkboxes",
+          "estimatedAnimMs": 2400,
+          "pattern": "add-field-checkboxes",
+          "chapterPrep": [
+            {
+              "op": "applyDefaultForm",
+              "keepIds": [
+                1,
+                2,
+                4,
+                7
+              ]
+            },
+            {
+              "op": "hideFields",
+              "ids": [
+                7
+              ]
+            }
+          ],
+          "patternExtras": {
+            "text": {
+              "string": "Checkboxes"
+            },
+            "filter": {
+              "string": "wpforms-add-fields-checkbox"
+            },
+            "clear": {
+              "value": true
+            }
+          },
+          "narrationFile": null,
+          "narrationKey": null,
+          "narrationText": null
+        },
+        {
+          "source": "chapters[0].beats[0]",
+          "id": "drag-checkboxes-field-drag",
+          "synthetic": false,
+          "verb": "dragGrab",
+          "selectorKey": "dragCheckboxesFieldCanvas",
+          "selectorSel": "#wpforms-panel-fields .wpforms-field-wrap",
+          "selectorSrc": "pattern:add-field-search-drag canvas (#wpforms-panel-fields .wpforms-field-wrap)",
+          "label": "Drag the Checkboxes field into the form preview",
+          "narrationFile": "add-checkboxes-field-drag-checkboxes-field.txt",
+          "narrationText": "Find Checkboxes in the Add Fields panel and drag it onto your form.",
+          "estimatedAnimMs": 3600,
+          "pattern": "add-field-checkboxes",
+          "patternExtras": {
+            "from": {
+              "selectorKey": "dragCheckboxesFieldButton"
+            },
+            "to": {
+              "selectorKey": "dragCheckboxesFieldCanvas"
+            },
+            "wait": {
+              "value": 850
+            },
+            "revealAt": {
+              "value": 0.58
+            },
+            "reveal": {
+              "inline": "#wpforms-field-7"
+            },
+            "revealDisplay": {
+              "string": "block"
+            },
+            "endRing": {
+              "inline": "#wpforms-field-7"
+            },
+            "hideCursor": {
+              "value": true
+            }
+          },
+          "extraSelectors": [
+            {
+              "key": "dragCheckboxesFieldButton",
+              "selector": "#wpforms-add-fields-checkbox",
+              "src": "pattern:add-field-search-drag source button (#wpforms-add-fields-checkbox)"
+            }
+          ],
+          "narrationKey": "drag-checkboxes-field"
+        },
+        {
+          "source": "chapters[0].beats[0]",
+          "id": "drag-checkboxes-field-settle",
+          "synthetic": true,
+          "verb": "highlight",
+          "selectorKey": "dragCheckboxesFieldField",
+          "selectorSel": "#wpforms-field-7",
+          "selectorSrc": "pattern:add-field-search-drag reveal (#wpforms-field-7)",
+          "label": "Checkboxes added",
+          "estimatedAnimMs": 1500,
+          "pattern": "add-field-checkboxes",
+          "patternExtras": {
+            "hold": {
+              "value": 700
+            }
+          },
+          "narrationFile": null,
+          "narrationKey": null,
+          "narrationText": null
+        }
+      ]
+    },
+    {
+      "id": "edit-label",
+      "title": "Give it a clear label",
+      "snapshot": "builder-field-options-checkbox",
+      "chapter": "edit-label",
+      "prep": [
+        {
+          "op": "removeAdminBar"
+        },
+        {
+          "op": "removeBuilderCruft"
+        },
+        {
+          "op": "stripQuizEnabled"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "group": "basic"
+        }
+      ],
+      "beats": [
+        {
+          "id": "set-label",
+          "synthetic": false,
+          "source": "chapters[1].beats[0]",
+          "verb": "typeInto",
+          "selectorKey": "setLabel",
+          "selectorSel": "#wpforms-field-option-7-label",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-7-label",
+          "label": "Enter a custom label for the Checkboxes field",
+          "value": "Pizza Toppings",
+          "narrationOnly": false,
+          "narrationFile": "edit-label-set-label.txt",
+          "narrationText": "Click the field to open its options, then type a label that tells viewers what they're choosing.",
+          "estimatedAnimMs": 2400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": []
+        }
+      ]
+    },
+    {
+      "id": "icon-choices",
+      "title": "Add icons to your choices",
+      "snapshot": "builder-field-options-checkbox",
+      "chapter": "icon-choices",
+      "prep": [
+        {
+          "op": "removeAdminBar"
+        },
+        {
+          "op": "removeBuilderCruft"
+        },
+        {
+          "op": "stripQuizEnabled"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "group": "basic"
+        }
+      ],
+      "beats": [
+        {
+          "id": "toggle-icon-choices",
+          "synthetic": false,
+          "source": "chapters[2].beats[0]",
+          "verb": "clickOn",
+          "selectorKey": "toggleIconChoices",
+          "selectorSel": "#wpforms-field-option-row-7-choices_icons",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-row-7-choices_icons",
+          "label": "Toggle on Use Icon Choices to attach an icon to every option",
+          "value": null,
+          "narrationOnly": false,
+          "narrationFile": "icon-choices-toggle-icon-choices.txt",
+          "narrationText": "Toggle Use Icon Choices to give every option a small icon. Click any default icon afterward to open the Icon Picker and pick from over two thousand options. Image Choices works the same way if you'd rather upload pictures.",
+          "estimatedAnimMs": 1400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": []
+        }
+      ]
+    },
+    {
+      "id": "multi-column-layout",
+      "title": "Lay choices out in columns",
+      "snapshot": "builder-field-options-checkbox",
+      "chapter": "multi-column-layout",
+      "prep": [
+        {
+          "op": "removeAdminBar"
+        },
+        {
+          "op": "removeBuilderCruft"
+        },
+        {
+          "op": "stripQuizEnabled"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "group": "advanced"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "controlName": "input_columns"
+        }
+      ],
+      "beats": [
+        {
+          "id": "open-advanced-tab",
+          "synthetic": false,
+          "source": "chapters[3].beats[0]",
+          "verb": "clickOn",
+          "selectorKey": "openAdvancedTab",
+          "selectorSel": "#wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-advanced-7 (audit-rewrite: rect-zero → activateFieldOptionGroup advanced, anchor on group toggle)",
+          "label": "Switch to the Advanced field options tab",
+          "value": null,
+          "narrationOnly": false,
+          "narrationFile": "multi-column-layout-open-advanced-tab.txt",
+          "narrationText": "Switch to the Advanced tab on the field options panel.",
+          "estimatedAnimMs": 1400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": [
+            {
+              "op": "activateFieldOptionGroup",
+              "fieldId": 7,
+              "group": "advanced"
+            }
+          ]
+        },
+        {
+          "id": "pick-choice-layout",
+          "synthetic": false,
+          "source": "chapters[3].beats[1]",
+          "verb": "selectOption",
+          "selectorKey": "pickChoiceLayout",
+          "selectorSel": "#wpforms-field-option-7-input_columns",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-7-input_columns (audit-rewrite: rect-zero → activateFieldOptionGroup)",
+          "label": "Choose Two Columns from the Choice Layout dropdown",
+          "value": "2",
+          "narrationOnly": false,
+          "narrationFile": "multi-column-layout-pick-choice-layout.txt",
+          "narrationText": "Use Choice Layout to spread choices across two or three columns. Inline puts them all in one row and wraps when there's no space.",
+          "estimatedAnimMs": 2000,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": [
+            {
+              "op": "activateFieldOptionGroup",
+              "fieldId": 7,
+              "controlName": "input_columns"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hide-label",
+      "title": "Hide the field label",
+      "snapshot": "builder-field-options-checkbox",
+      "chapter": "hide-label",
+      "prep": [
+        {
+          "op": "removeAdminBar"
+        },
+        {
+          "op": "removeBuilderCruft"
+        },
+        {
+          "op": "stripQuizEnabled"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "group": "advanced"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "controlName": "label_hide"
+        }
+      ],
+      "beats": [
+        {
+          "id": "open-advanced-tab",
+          "synthetic": false,
+          "source": "chapters[4].beats[0]",
+          "verb": "clickOn",
+          "selectorKey": "openAdvancedTab",
+          "selectorSel": "#wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-advanced-7 (audit-rewrite: rect-zero → activateFieldOptionGroup advanced, anchor on group toggle)",
+          "label": "Switch to the Advanced field options tab",
+          "value": null,
+          "narrationOnly": false,
+          "narrationFile": "hide-label-open-advanced-tab.txt",
+          "narrationText": "Back on the Advanced tab,",
+          "estimatedAnimMs": 1400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": [
+            {
+              "op": "activateFieldOptionGroup",
+              "fieldId": 7,
+              "group": "advanced"
+            }
+          ]
+        },
+        {
+          "id": "toggle-hide-label",
+          "synthetic": false,
+          "source": "chapters[4].beats[1]",
+          "verb": "clickOn",
+          "selectorKey": "toggleHideLabel",
+          "selectorSel": "#wpforms-field-option-row-7-label_hide",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-row-7-label_hide (audit-rewrite: rect-zero → activateFieldOptionGroup)",
+          "label": "Toggle on Hide Label to drop the label from the rendered form",
+          "value": null,
+          "narrationOnly": false,
+          "narrationFile": "hide-label-toggle-hide-label.txt",
+          "narrationText": "toggle Hide Label to drop the label from the rendered form while keeping it visible in entries — handy when the surrounding copy already explains the choices.",
+          "estimatedAnimMs": 1400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": [
+            {
+              "op": "activateFieldOptionGroup",
+              "fieldId": 7,
+              "controlName": "label_hide"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "required",
+      "title": "Make the field required",
+      "snapshot": "builder-field-options-checkbox",
+      "chapter": "required",
+      "prep": [
+        {
+          "op": "removeAdminBar"
+        },
+        {
+          "op": "removeBuilderCruft"
+        },
+        {
+          "op": "stripQuizEnabled"
+        },
+        {
+          "op": "activateFieldOptionGroup",
+          "fieldId": 7,
+          "group": "basic"
+        }
+      ],
+      "beats": [
+        {
+          "id": "toggle-required",
+          "synthetic": false,
+          "source": "chapters[5].beats[0]",
+          "verb": "clickOn",
+          "selectorKey": "toggleRequired",
+          "selectorSel": "#wpforms-field-option-row-7-required",
+          "selectorSrc": "snapshots/builder-field-options-checkbox/catalog.md#id--wpforms-field-option-row-7-required",
+          "label": "Toggle on Required so users must make a selection",
+          "value": null,
+          "narrationOnly": false,
+          "narrationFile": "required-toggle-required.txt",
+          "narrationText": "Required forces viewers to pick at least one option before submitting — the asterisk on the label tells them so. Choice Limit caps how many boxes a viewer can tick, Randomize Choices shuffles the order on each load, and Bulk Add, Image Choices, Dynamic Choices, the Disclaimer / Terms of Service mode, the Generate Choices AI helper, and dragging choices to reorder all live in this same panel when you need them.",
+          "estimatedAnimMs": 1400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": []
+        }
+      ]
+    },
+    {
+      "id": "save-checkboxes-field",
+      "title": "Save and close out",
+      "snapshot": "builder-fields",
+      "chapter": "save-checkboxes-field",
+      "prep": [
+        {
+          "op": "applyDefaultForm",
+          "keepIds": [
+            1,
+            2,
+            4
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "save-form",
+          "synthetic": false,
+          "source": "chapters[6].beats[0]",
+          "verb": "clickOn",
+          "selectorKey": "saveForm",
+          "selectorSel": "#wpforms-save",
+          "selectorSrc": "snapshots/builder-fields/catalog.md#id--wpforms-save",
+          "label": "Save the form so the Checkboxes settings persist",
+          "value": null,
+          "narrationOnly": false,
+          "narrationFile": "save-checkboxes-field-save-form.txt",
+          "narrationText": "Click Save at the top right. Your form is ready for visitors to make their picks.",
+          "estimatedAnimMs": 1400,
+          "pattern": null,
+          "patternExtras": null,
+          "chapterPrep": []
+        }
+      ]
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "animatedMoments": [
+      {
+        "id": "fields-fly-checkboxes",
+        "slot": "post-intro",
+        "chapter": "add-checkboxes-field",
+        "kind": "cursor-aha",
+        "targetHint": "Checkboxes",
+        "label": "Today, you'll let people pick more than one option"
+      }
+    ],
+    "manifest": {
+      "intro": {
+        "eyebrow": "WPForms Tutorial",
+        "title": "Customize the Checkboxes field",
+        "subtitleHTML": "Give viewers a clean, scannable list of options.",
+        "hold": 3
+      },
+      "outro": {
+        "eyebrow": "Thanks for watching",
+        "title": "That's the Checkboxes field in WPForms.",
+        "subtitleHTML": "Learn more at wpforms.com/docs",
+        "hold": 3
+      }
+    },
+    "chapters": [
+      {
+        "id": "add-checkboxes-field",
+        "title": "Add the Checkboxes field",
+        "stateCue": "form builder add fields panel showing standard fields",
+        "beats": [
+          {
+            "id": "drag-checkboxes-field",
+            "intent": "Drag the Checkboxes field into the form preview",
+            "targetHint": "Checkboxes",
+            "narration": "Find Checkboxes in the Add Fields panel and drag it onto your form."
+          }
+        ]
+      },
+      {
+        "id": "edit-label",
+        "title": "Give it a clear label",
+        "stateCue": "checkboxes field selected, general field options open showing the label input",
+        "beats": [
+          {
+            "id": "set-label",
+            "intent": "Enter a custom label for the Checkboxes field",
+            "targetHint": "Label",
+            "value": "Pizza Toppings",
+            "narration": "Click the field to open its options, then type a label that tells viewers what they're choosing."
+          }
+        ]
+      },
+      {
+        "id": "icon-choices",
+        "title": "Add icons to your choices",
+        "stateCue": "general field options showing the use icon choices toggle",
+        "beats": [
+          {
+            "id": "toggle-icon-choices",
+            "intent": "Toggle on Use Icon Choices to attach an icon to every option",
+            "targetHint": "Use Icon Choices",
+            "narration": "Toggle Use Icon Choices to give every option a small icon. Click any default icon afterward to open the Icon Picker and pick from over two thousand options. Image Choices works the same way if you'd rather upload pictures."
+          }
+        ]
+      },
+      {
+        "id": "multi-column-layout",
+        "title": "Lay choices out in columns",
+        "stateCue": "advanced field options tab showing the choice layout dropdown",
+        "beats": [
+          {
+            "id": "open-advanced-tab",
+            "intent": "Switch to the Advanced field options tab",
+            "targetHint": "Advanced",
+            "narration": "Switch to the Advanced tab on the field options panel."
+          },
+          {
+            "id": "pick-choice-layout",
+            "intent": "Choose Two Columns from the Choice Layout dropdown",
+            "targetHint": "Choice Layout",
+            "value": "2",
+            "narration": "Use Choice Layout to spread choices across two or three columns. Inline puts them all in one row and wraps when there's no space."
+          }
+        ]
+      },
+      {
+        "id": "hide-label",
+        "title": "Hide the field label",
+        "stateCue": "advanced field options tab showing the hide label toggle",
+        "beats": [
+          {
+            "id": "open-advanced-tab",
+            "intent": "Switch to the Advanced field options tab",
+            "targetHint": "Advanced",
+            "narration": "Back on the Advanced tab,"
+          },
+          {
+            "id": "toggle-hide-label",
+            "intent": "Toggle on Hide Label to drop the label from the rendered form",
+            "targetHint": "Hide Label",
+            "narration": "toggle Hide Label to drop the label from the rendered form while keeping it visible in entries — handy when the surrounding copy already explains the choices."
+          }
+        ]
+      },
+      {
+        "id": "required",
+        "title": "Make the field required",
+        "stateCue": "general field options showing the required toggle",
+        "beats": [
+          {
+            "id": "toggle-required",
+            "intent": "Toggle on Required so users must make a selection",
+            "targetHint": "Required",
+            "narration": "Required forces viewers to pick at least one option before submitting — the asterisk on the label tells them so. Choice Limit caps how many boxes a viewer can tick, Randomize Choices shuffles the order on each load, and Bulk Add, Image Choices, Dynamic Choices, the Disclaimer / Terms of Service mode, the Generate Choices AI helper, and dragging choices to reorder all live in this same panel when you need them."
+          }
+        ]
+      },
+      {
+        "id": "save-checkboxes-field",
+        "title": "Save and close out",
+        "stateCue": "form builder save button",
+        "beats": [
+          {
+            "id": "save-form",
+            "intent": "Save the form so the Checkboxes settings persist",
+            "targetHint": "Save",
+            "narration": "Click Save at the top right. Your form is ready for visitors to make their picks."
+          }
+        ]
+      }
+    ]
+  }
+}

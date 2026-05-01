@@ -1,0 +1,1 @@
+WPForms AI replies in the same panel and shows a draft you can review before using it.

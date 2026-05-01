@@ -1,0 +1,20 @@
+{
+  "slug": "Surveys and Polls - Refreshed!",
+  "primarySnapshot": "sp-results-old-168",
+  "bgm": { "src": "/bgms/2.mp3", "volume": 0.05, "startDelayMs": 2000 },
+  "chapters": [
+    "carousel-opener",
+    "hero-transform",
+    "customize",
+    "filters",
+    "export",
+    "resolution"
+  ],
+  "outro": {
+    "variant": "editorial-v4",
+    "eyebrow": "Available now",
+    "title": "Surveys & Polls. Refreshed.",
+    "url": "wpforms.com/docs",
+    "hold": 3.8
+  }
+}

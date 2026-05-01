@@ -1,0 +1,1 @@
+Sometimes you only want a notification to send in specific cases. Turn on Conditional Logic, then build a rule:

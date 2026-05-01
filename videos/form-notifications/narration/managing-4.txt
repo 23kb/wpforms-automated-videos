@@ -1,0 +1,1 @@
+And the status toggle turns any notification off without deleting it — great for testing.

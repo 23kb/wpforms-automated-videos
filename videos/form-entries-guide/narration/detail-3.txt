@@ -1,0 +1,1 @@
+Below the fields, you’ll see the visitor’s approximate location and the log of notifications and integrations triggered by this entry.

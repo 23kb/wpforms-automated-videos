@@ -1,0 +1,1 @@
+Once the popup opens, give the notification a name, and click OK and it's ready to configure.

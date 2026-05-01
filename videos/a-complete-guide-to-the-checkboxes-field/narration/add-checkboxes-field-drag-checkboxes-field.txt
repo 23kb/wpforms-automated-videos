@@ -1,0 +1,1 @@
+Drag it onto the form when visitors need to choose more than one answer.

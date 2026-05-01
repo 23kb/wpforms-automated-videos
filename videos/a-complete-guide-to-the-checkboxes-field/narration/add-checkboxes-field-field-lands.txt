@@ -1,0 +1,1 @@
+The field lands as a real multi-select question in the form preview.

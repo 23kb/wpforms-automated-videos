@@ -1,0 +1,1 @@
+The Entries dashboard lists every form on your site, when it last received an entry, and a quick activity graph for context.

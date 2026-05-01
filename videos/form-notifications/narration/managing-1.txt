@@ -1,0 +1,1 @@
+If you would like to create additional notifications, click the "Add New Notification" button from the top right corner of the builder.

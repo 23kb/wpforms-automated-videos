@@ -1,0 +1,1 @@
+Now the choices are editable like anything else in WPForms.

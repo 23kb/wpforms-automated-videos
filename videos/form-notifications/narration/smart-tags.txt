@@ -1,0 +1,1 @@
+Want to pull data from the form itself into your notification? That's what Smart Tags are for. Click the tags icon, pick any field, and WPForms drops in a dynamic placeholder that fills with whatever the user typed.

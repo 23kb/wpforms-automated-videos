@@ -1,0 +1,1 @@
+Turn on Use Icon Choices when each option needs a visual cue.

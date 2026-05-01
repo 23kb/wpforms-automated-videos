@@ -1,0 +1,1 @@
+Click any field to fine-tune it. The General tab covers the label and placeholder, while Advanced unlocks defaults, CSS classes, and conditional logic.
