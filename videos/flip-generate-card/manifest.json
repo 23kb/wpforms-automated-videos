@@ -1,0 +1,33 @@
+{
+  "slug": "flip-generate-card",
+  "primarySnapshot": "builder-setup",
+  "coverColor": "#FAF6EF",
+  "hud": false,
+  "bgm": false,
+  "defaults": {
+    "breakStyle": "soft-dolly"
+  },
+  "intro": {
+    "variant": "sullie-system",
+    "eyebrow": "Capability Sandbox",
+    "title": "Flip on a Real Template Card",
+    "subtitleVariants": [
+      "Four Flip patterns on #wpforms-template-generate."
+    ],
+    "hold": 2
+  },
+  "postIntro": null,
+  "teaser": null,
+  "chapters": [
+    "generate-card-flip-tour"
+  ],
+  "outro": {
+    "variant": "sullie-system",
+    "eyebrow": "Sandbox",
+    "title": "Card Flip tour complete",
+    "subtitleVariants": [
+      "Same real card, four motions."
+    ],
+    "hold": 2
+  }
+}

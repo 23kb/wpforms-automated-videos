@@ -1,0 +1,33 @@
+{
+  "slug": "flip-sandbox",
+  "primarySnapshot": "admin-forms-overview",
+  "coverColor": "#FAF6EF",
+  "hud": false,
+  "bgm": false,
+  "defaults": {
+    "breakStyle": "soft-dolly"
+  },
+  "intro": {
+    "variant": "sullie-system",
+    "eyebrow": "Capability Sandbox",
+    "title": "GSAP Flip Sandbox",
+    "subtitleVariants": [
+      "Four Flip patterns on editorial DOM."
+    ],
+    "hold": 2
+  },
+  "postIntro": null,
+  "teaser": null,
+  "chapters": [
+    "flip-tour"
+  ],
+  "outro": {
+    "variant": "sullie-system",
+    "eyebrow": "Sandbox",
+    "title": "End of Flip tour",
+    "subtitleVariants": [
+      "Patterns validated on real DOM."
+    ],
+    "hold": 2
+  }
+}
