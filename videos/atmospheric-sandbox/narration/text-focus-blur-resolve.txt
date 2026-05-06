@@ -1,0 +1,1 @@
+Placeholder narration for the focus-blur-resolve text reveal sandbox.
