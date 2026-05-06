@@ -13,7 +13,7 @@ export default [
   {
     id: 'sweep-with-grain',
     chapter: 'sweep-with-grain',
-    duration: 6,
+    duration: 0.2,
     effect: async () => {
       const gsap = await loadGsap({ flip: false, motionPath: false });
       const grain = mountGrain({ opacity: 0.03, seed: 1, zIndex: 60 });
