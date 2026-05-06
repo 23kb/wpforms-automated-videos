@@ -19,14 +19,10 @@ export default [
       const grain = mountGrain({ opacity: 0.03, seed: 1, zIndex: 60 });
       const sweep = mountSweep();
 
-      const tl = gsap.timeline({ paused: true });
-      const sweepTween = sweep.sweep({ duration: 4 });
-      tl.add(sweepTween, 0);
-      sweepTween.paused(false);
+      const tl = gsap.timeline();
+      sweep.tweenInto(tl, { duration: 4, position: 0 });
       tl.to({}, { duration: 2 });
-      const done = tlDone(tl);
-      tl.play(0);
-      await done;
+      await tlDone(tl);
 
       sweep.dispose();
       grain.dispose();

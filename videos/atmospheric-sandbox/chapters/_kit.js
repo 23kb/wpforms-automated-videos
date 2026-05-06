@@ -83,15 +83,20 @@ export function mountSweep({
     position: 'fixed', inset: '0', width: '100vw', height: '100vh',
     pointerEvents: 'none', zIndex: String(zIndex),
     background: `linear-gradient(${angle}deg, transparent 0%, transparent ${edge}%, ${color} 50%, transparent ${farEdge}%, transparent 100%)`,
-    transform: 'translateX(-100%)', willChange: 'transform',
+    willChange: 'transform',
   });
   document.body.appendChild(layer);
+  // Chapter callers load GSAP before mounting so the sweep starts off-canvas without inline transform stacking.
+  if (window.gsap) window.gsap.set(layer, { xPercent: -100 });
   return {
     layer,
-    sweep({ duration = 4, ease = 'sine.inOut' } = {}) {
-      return window.gsap.fromTo(layer, { xPercent: -100 }, {
-        xPercent: 100, duration, ease, paused: true,
-      });
+    tweenInto(tl, { duration = 4, ease = 'sine.inOut', position = 0 } = {}) {
+      return tl.fromTo(
+        layer,
+        { xPercent: -100 },
+        { xPercent: 100, duration, ease },
+        position
+      );
     },
     dispose() {
       layer?.remove();
