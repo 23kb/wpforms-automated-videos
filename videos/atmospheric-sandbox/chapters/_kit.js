@@ -166,10 +166,13 @@ export function scalePush({ target, scaleFrom = 1.00, scaleTo = 1.02 } = {}) {
 }
 
 const TEXT_REVEAL_PRESETS = {
-  'mask-reveal-up': { split: true, yFrom: 110, duration: 0.68, ease: 'expo.out' },
-  'top-down-letters': { split: true, yFrom: -110, duration: 0.82, ease: 'expo.out' },
+  'mask-reveal-up': { split: true, masked: true, yFrom: 110, duration: 0.68, ease: 'expo.out' },
+  'top-down-letters': { split: true, masked: true, yFrom: -110, duration: 0.82, ease: 'expo.out' },
+  'per-character-rise': { split: true, masked: false, yFrom: 40, opacityFrom: 0, opacityTo: 1, duration: 0.55, ease: 'power3.out' },
   'focus-blur-resolve': { filterFrom: 'blur(10px)', filterTo: 'blur(0px)', duration: 0.70, ease: 'power2.out' },
+  'soft-blur-in': { filterFrom: 'blur(6px)', filterTo: 'blur(0px)', duration: 0.50, ease: 'power2.out' },
   'spring-scale-in': { scaleFrom: 0.72, scaleTo: 1, duration: 0.52, ease: 'back.out(1.4)' },
+  'micro-scale-fade': { scaleFrom: 0.96, scaleTo: 1, duration: 0.42, ease: 'power2.out' },
 };
 
 export function mountTextReveal(text, {
@@ -193,18 +196,23 @@ export function mountTextReveal(text, {
   }, position);
   if (spec.split) {
     [...text].forEach((char) => {
-      const mask = document.createElement('span');
       const ch = document.createElement('span');
-      mask.className = 'mask';
       ch.className = 'ch';
-      Object.assign(mask.style, {
-        display: 'inline-block', overflow: 'hidden', verticalAlign: 'baseline',
-        padding: '0.12em 0', margin: '-0.12em 0', lineHeight: 'inherit',
-      });
       Object.assign(ch.style, { display: 'inline-block', willChange: 'transform' });
       ch.innerHTML = char === ' ' ? '&nbsp;' : char;
-      mask.appendChild(ch);
-      el.appendChild(mask);
+      if (spec.masked) {
+        const mask = document.createElement('span');
+        mask.className = 'mask';
+        Object.assign(mask.style, {
+          display: 'inline-block', overflow: 'hidden', verticalAlign: 'baseline',
+          padding: '0.12em 0', margin: '-0.12em 0', lineHeight: 'inherit',
+        });
+        mask.appendChild(ch);
+        el.appendChild(mask);
+      } else {
+        // per-character-rise uses flat visible .ch spans so letters travel without clipping.
+        el.appendChild(ch);
+      }
     });
   } else {
     el.textContent = text;
@@ -212,8 +220,12 @@ export function mountTextReveal(text, {
   document.body.appendChild(el);
   const targets = spec.split ? [...el.querySelectorAll('.ch')] : [el];
   if (window.gsap) {
-    if (spec.split) window.gsap.set(targets, { yPercent: spec.yFrom });
-    else if (preset === 'focus-blur-resolve') window.gsap.set(el, { filter: spec.filterFrom, opacity: 0 });
+    if (spec.split) {
+      window.gsap.set(targets, {
+        yPercent: spec.yFrom,
+        ...(spec.opacityFrom != null ? { opacity: spec.opacityFrom } : {}),
+      });
+    } else if (spec.filterFrom) window.gsap.set(el, { filter: spec.filterFrom, opacity: 0 });
     else window.gsap.set(el, { scale: spec.scaleFrom, opacity: 0 });
   }
   return {
@@ -222,9 +234,13 @@ export function mountTextReveal(text, {
       const total = duration ?? (spec.duration + (spec.split ? Math.max(0, targets.length - 1) * stagger : 0));
       if (spec.split) {
         const each = Math.max(0.001, total - Math.max(0, targets.length - 1) * stagger);
-        return tl.to(targets, { yPercent: 0, duration: each, ease: spec.ease, stagger }, at);
+        return tl.to(targets, {
+          yPercent: 0,
+          ...(spec.opacityTo != null ? { opacity: spec.opacityTo } : {}),
+          duration: each, ease: spec.ease, stagger,
+        }, at);
       }
-      if (preset === 'focus-blur-resolve') {
+      if (spec.filterFrom) {
         return tl.to(el, { filter: spec.filterTo, opacity: 1, duration: total, ease: spec.ease }, at);
       }
       return tl.to(el, { scale: spec.scaleTo, opacity: 1, duration: total, ease: spec.ease }, at);
