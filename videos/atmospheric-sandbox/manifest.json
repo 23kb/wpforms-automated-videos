@@ -9,7 +9,8 @@
   "postIntro": null,
   "teaser": null,
   "chapters": [
-    "grain-only"
+    "grain-only",
+    "sweep-with-grain"
   ],
   "outro": null
 }
