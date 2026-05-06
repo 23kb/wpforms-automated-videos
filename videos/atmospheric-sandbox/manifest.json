@@ -12,7 +12,11 @@
     "grain-only",
     "sweep-with-grain",
     "parallax-with-grain",
-    "scale-push-with-grain"
+    "scale-push-with-grain",
+    "text-mask-reveal-up",
+    "text-top-down-letters",
+    "text-focus-blur-resolve",
+    "text-spring-scale-in"
   ],
   "outro": null
 }
