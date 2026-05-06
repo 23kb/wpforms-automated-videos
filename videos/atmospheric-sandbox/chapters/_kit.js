@@ -8,8 +8,8 @@ export * from '../../_shared/kit.js';
 export function mountGrain({ opacity = 0.03, seed = 1, zIndex = 60 } = {}) {
   let layer = document.createElement('canvas');
   let ctx = layer.getContext('2d');
-  const width = Math.max(1, Math.ceil(window.innerWidth));
-  const height = Math.max(1, Math.ceil(window.innerHeight));
+  const width = Math.max(1920, Math.ceil(window.innerWidth));
+  const height = Math.max(1080, Math.ceil(window.innerHeight));
   const alpha = Math.round(Math.max(0, Math.min(1, opacity)) * 255);
   const rand = (() => {
     let a = seed >>> 0;
