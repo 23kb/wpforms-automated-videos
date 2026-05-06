@@ -11,7 +11,8 @@
   "chapters": [
     "grain-only",
     "sweep-with-grain",
-    "parallax-with-grain"
+    "parallax-with-grain",
+    "scale-push-with-grain"
   ],
   "outro": null
 }

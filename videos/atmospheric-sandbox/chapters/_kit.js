@@ -148,3 +148,19 @@ export function mountParallaxPair({
     },
   };
 }
+
+export function scalePush({ target, scaleFrom = 1.00, scaleTo = 1.02 } = {}) {
+  if (!target) throw new Error('scalePush: target is required');
+  // Chapter callers load GSAP before scalePush.
+  if (window.gsap) window.gsap.set(target, { scale: scaleFrom });
+  return {
+    target,
+    tweenInto(tl, { duration = 4, ease = 'sine.inOut', position = 0 } = {}) {
+      return tl.fromTo(target, { scale: scaleFrom }, { scale: scaleTo, duration, ease }, position);
+    },
+    dispose() {
+      window.gsap?.killTweensOf(target);
+      target = null;
+    },
+  };
+}
