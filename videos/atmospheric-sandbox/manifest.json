@@ -16,7 +16,10 @@
     "text-mask-reveal-up",
     "text-top-down-letters",
     "text-focus-blur-resolve",
-    "text-spring-scale-in"
+    "text-spring-scale-in",
+    "text-soft-blur-in",
+    "text-per-character-rise",
+    "text-micro-scale-fade"
   ],
   "outro": null
 }
