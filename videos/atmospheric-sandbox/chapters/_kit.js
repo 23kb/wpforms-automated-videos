@@ -104,3 +104,47 @@ export function mountSweep({
     },
   };
 }
+
+export function mountParallaxPair({
+  backBg = 'radial-gradient(ellipse 80% 60% at 30% 40%, rgba(40,90,130,0.35) 0%, transparent 70%)',
+  frontBg = 'radial-gradient(ellipse 60% 50% at 70% 60%, rgba(120,60,140,0.30) 0%, transparent 65%)',
+  zIndexBack = 57,
+  zIndexFront = 58,
+  backScale = { from: 1.00, to: 1.08 },
+  frontScale = { from: 1.04, to: 1.00 },
+  backY = { from: 0, to: 16 },
+  frontY = { from: 0, to: -10 },
+} = {}) {
+  let layerBack = document.createElement('div');
+  let layerFront = document.createElement('div');
+  const mountLayer = (layer, background, zIndex) => {
+    Object.assign(layer.style, {
+      position: 'fixed', inset: '0', width: '100vw', height: '100vh',
+      pointerEvents: 'none', zIndex: String(zIndex), background,
+      willChange: 'transform',
+    });
+    document.body.appendChild(layer);
+  };
+  mountLayer(layerBack, backBg, zIndexBack);
+  mountLayer(layerFront, frontBg, zIndexFront);
+  // Chapter callers load GSAP before mounting so initial state lands cleanly without a flash.
+  if (window.gsap) {
+    window.gsap.set(layerBack, { scale: backScale.from, y: backY.from });
+    window.gsap.set(layerFront, { scale: frontScale.from, y: frontY.from });
+  }
+  return {
+    layerBack,
+    layerFront,
+    tweenInto(tl, { duration = 6, ease = 'sine.inOut', position = 0 } = {}) {
+      tl.to(layerBack, { scale: backScale.to, y: backY.to, duration, ease }, position);
+      tl.to(layerFront, { scale: frontScale.to, y: frontY.to, duration, ease }, position);
+      return tl;
+    },
+    dispose() {
+      layerBack?.remove();
+      layerFront?.remove();
+      layerBack = null;
+      layerFront = null;
+    },
+  };
+}

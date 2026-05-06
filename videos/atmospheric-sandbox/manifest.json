@@ -10,7 +10,8 @@
   "teaser": null,
   "chapters": [
     "grain-only",
-    "sweep-with-grain"
+    "sweep-with-grain",
+    "parallax-with-grain"
   ],
   "outro": null
 }
