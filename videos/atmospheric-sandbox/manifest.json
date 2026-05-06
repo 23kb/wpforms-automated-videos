@@ -1,0 +1,15 @@
+{
+  "slug": "atmospheric-sandbox",
+  "surface": "editorial",
+  "primarySnapshot": "admin-forms-overview",
+  "coverColor": "#0a0e14",
+  "hud": false,
+  "bgm": false,
+  "intro": null,
+  "postIntro": null,
+  "teaser": null,
+  "chapters": [
+    "grain-only"
+  ],
+  "outro": null
+}
