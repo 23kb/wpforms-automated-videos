@@ -1,0 +1,25 @@
+{
+  "slug": "atmospheric-sandbox",
+  "surface": "editorial",
+  "primarySnapshot": "admin-forms-overview",
+  "coverColor": "#0a0e14",
+  "hud": false,
+  "bgm": false,
+  "intro": null,
+  "postIntro": null,
+  "teaser": null,
+  "chapters": [
+    "grain-only",
+    "sweep-with-grain",
+    "parallax-with-grain",
+    "scale-push-with-grain",
+    "text-mask-reveal-up",
+    "text-top-down-letters",
+    "text-focus-blur-resolve",
+    "text-spring-scale-in",
+    "text-soft-blur-in",
+    "text-per-character-rise",
+    "text-micro-scale-fade"
+  ],
+  "outro": null
+}
