@@ -1,1 +1,0 @@
-Lottie is now ready for lightweight editorial motion inside WPForms videos.
