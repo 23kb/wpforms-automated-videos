@@ -5,6 +5,26 @@
 
 export * from '../../_shared/kit.js';
 
+export function mountDarkBackdrop({ id = 'atmo-dark-canvas', zIndex = 55 } = {}) {
+  document.getElementById(id)?.remove();
+  const layer = document.createElement('canvas');
+  layer.id = id;
+  layer.width = 1920;
+  layer.height = 1080;
+  Object.assign(layer.style, {
+    position: 'fixed', inset: '0', width: '100vw', height: '100vh',
+    pointerEvents: 'none', zIndex: String(zIndex),
+  });
+  const ctx = layer.getContext('2d');
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, layer.width, layer.height);
+  document.body.appendChild(layer);
+  return {
+    layer,
+    dispose() { layer.remove(); },
+  };
+}
+
 export function mountGrain({ opacity = 0.03, seed = 1, zIndex = 60 } = {}) {
   let layer = document.createElement('canvas');
   let ctx = layer.getContext('2d');
@@ -45,6 +65,37 @@ export function mountGrain({ opacity = 0.03, seed = 1, zIndex = 60 } = {}) {
       layer?.remove();
       layer = null;
       ctx = null;
+    },
+  };
+}
+
+export function mountSweep({
+  color = 'rgba(255,255,255,0.18)',
+  angle = 110,
+  bandWidth = 0.30,
+  zIndex = 65,
+} = {}) {
+  let layer = document.createElement('div');
+  const clamped = Math.max(0, Math.min(1, bandWidth));
+  const edge = (50 - clamped * 50).toFixed(2);
+  const farEdge = (50 + clamped * 50).toFixed(2);
+  Object.assign(layer.style, {
+    position: 'fixed', inset: '0', width: '100vw', height: '100vh',
+    pointerEvents: 'none', zIndex: String(zIndex),
+    background: `linear-gradient(${angle}deg, transparent 0%, transparent ${edge}%, ${color} 50%, transparent ${farEdge}%, transparent 100%)`,
+    transform: 'translateX(-100%)', willChange: 'transform',
+  });
+  document.body.appendChild(layer);
+  return {
+    layer,
+    sweep({ duration = 4, ease = 'sine.inOut' } = {}) {
+      return window.gsap.fromTo(layer, { xPercent: -100 }, {
+        xPercent: 100, duration, ease, paused: true,
+      });
+    },
+    dispose() {
+      layer?.remove();
+      layer = null;
     },
   };
 }
