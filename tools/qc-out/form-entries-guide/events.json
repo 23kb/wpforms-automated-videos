@@ -1,0 +1,246 @@
+{
+  "slug": "form-entries-guide",
+  "totalSeconds": 301.372,
+  "events": [
+    {
+      "t": 0.168,
+      "text": "%c[player]%c cadence break=manifest:glide swap=manifest:morph color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 12.006,
+      "text": "[zoomTo:pre-scroll] body rect= DOMRect"
+    },
+    {
+      "t": 12.514,
+      "text": "[zoomTo:post-scroll] body rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 12.514,
+      "text": "[zoomTo] body {rect: Object, cx: 720, cy: 450, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 30.307,
+      "text": "%c[transition]%c chapter-break: glide color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 30.51,
+      "text": "[zoomTo:pre-scroll] #wpforms-overview-table rect= DOMRect"
+    },
+    {
+      "t": 31.01,
+      "text": "[zoomTo:post-scroll] #wpforms-overview-table rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 31.011,
+      "text": "[zoomTo] #wpforms-overview-table {rect: Object, cx: 800, cy: 412.25, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 41.372,
+      "text": "[zoomTo:pre-scroll] #toplevel_page_wpforms-overview rect= DOMRect"
+    },
+    {
+      "t": 41.872,
+      "text": "[zoomTo:post-scroll] #toplevel_page_wpforms-overview rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 41.872,
+      "text": "[zoomTo] #toplevel_page_wpforms-overview {rect: Object, cx: 80, cy: 386.8203125, cxClamped: 600, cyClamped: 386.8203125}"
+    },
+    {
+      "t": 46.58,
+      "text": "%c[player]%c transitionSnapshots → runSwapTransition style=morph slug=admin-entries-overview color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 46.58,
+      "text": "%c[transition]%c swap: morph color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 46.84,
+      "text": "%c[overlays]%c styles installed (transitionSnapshots swapStyle branch) color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 47.54,
+      "text": "[zoomTo:pre-scroll] .wpforms-admin-content rect= DOMRect"
+    },
+    {
+      "t": 48.046,
+      "text": "[zoomTo:post-scroll] .wpforms-admin-content rect= DOMRect scrollY= 251"
+    },
+    {
+      "t": 48.046,
+      "text": "[zoomTo] .wpforms-admin-content {rect: Object, cx: 800, cy: 466, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 55.45,
+      "text": "%c[player]%c transitionSnapshots → runSwapTransition style=morph slug=admin-entries-list color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 55.45,
+      "text": "%c[transition]%c swap: morph color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 55.715,
+      "text": "%c[overlays]%c styles installed (transitionSnapshots swapStyle branch) color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 56.244,
+      "text": "[zoomTo:pre-scroll] #wpforms-entries-table rect= DOMRect"
+    },
+    {
+      "t": 56.761,
+      "text": "[zoomTo:post-scroll] #wpforms-entries-table rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 56.761,
+      "text": "[zoomTo] #wpforms-entries-table {rect: Object, cx: 800, cy: 457.453125, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 63.127,
+      "text": "[zoomTo:pre-scroll] #the-list rect= DOMRect"
+    },
+    {
+      "t": 63.635,
+      "text": "[zoomTo:post-scroll] #the-list rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 63.635,
+      "text": "[zoomTo] #the-list {rect: Object, cx: 800, cy: 483.453125, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}"
+    },
+    {
+      "t": 73.347,
+      "text": "[zoomTo:pre-scroll] #wpforms-entries-table rect= DOMRect"
+    },
+    {
+      "t": 73.857,
+      "text": "[zoomTo:post-scroll] #wpforms-entries-table rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 73.857,
+      "text": "[zoomTo] #wpforms-entries-table {rect: Object, cx: 800, cy: 457.453125, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 81.811,
+      "text": "%c[transition]%c chapter-break: glide color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 82.018,
+      "text": "[zoomTo:pre-scroll] #wpforms-entries-table rect= DOMRect"
+    },
+    {
+      "t": 82.526,
+      "text": "[zoomTo:post-scroll] #wpforms-entries-table rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 82.526,
+      "text": "[zoomTo] #wpforms-entries-table {rect: Object, cx: 800, cy: 457.453125, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 88.656,
+      "text": "[zoomTo:pre-scroll] #wpforms-entries-table rect= DOMRect"
+    },
+    {
+      "t": 89.158,
+      "text": "[zoomTo:post-scroll] #wpforms-entries-table rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 89.159,
+      "text": "[zoomTo] #wpforms-entries-table {rect: Object, cx: 800, cy: 457.453125, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 95.411,
+      "text": "%c[player]%c transitionSnapshots → runSwapTransition style=morph slug=admin-entry-detail color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 95.411,
+      "text": "%c[transition]%c swap: morph color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 95.721,
+      "text": "%c[overlays]%c styles installed (transitionSnapshots swapStyle branch) color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 96.295,
+      "text": "[zoomTo:pre-scroll] #wpforms-entries-single rect= DOMRect"
+    },
+    {
+      "t": 96.81,
+      "text": "[zoomTo:post-scroll] #wpforms-entries-single rect= DOMRect scrollY= 113"
+    },
+    {
+      "t": 96.81,
+      "text": "[zoomTo] #wpforms-entries-single {rect: Object, cx: 800, cy: 465.765625, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 105.883,
+      "text": "[zoomTo:pre-scroll] #wpforms-entry-notes rect= DOMRect"
+    },
+    {
+      "t": 106.394,
+      "text": "[zoomTo:post-scroll] #wpforms-entry-notes rect= DOMRect scrollY= 76"
+    },
+    {
+      "t": 106.394,
+      "text": "[zoomTo] #wpforms-entry-notes {rect: Object, cx: 640, cy: 465.8125, cxClamped: 640, cyClamped: 465.8125}"
+    },
+    {
+      "t": 114.202,
+      "text": "[zoomTo:pre-scroll] #wpforms-entry-geolocation rect= DOMRect"
+    },
+    {
+      "t": 114.706,
+      "text": "[zoomTo:post-scroll] #wpforms-entry-geolocation rect= DOMRect scrollY= 204"
+    },
+    {
+      "t": 114.706,
+      "text": "[zoomTo] #wpforms-entry-geolocation {rect: Object, cx: 640, cy: 466.3125, cxClamped: 640, cyClamped: 466.3125}"
+    },
+    {
+      "t": 123.188,
+      "text": "[zoomTo:pre-scroll] #wpforms-entry-actions rect= DOMRect"
+    },
+    {
+      "t": 123.7,
+      "text": "[zoomTo:post-scroll] #wpforms-entry-actions rect= DOMRect scrollY= 169"
+    },
+    {
+      "t": 123.7,
+      "text": "[zoomTo] #wpforms-entry-actions {rect: Object, cx: 1270, cy: 465.890625, cxClamped: 864, cyClamped: 465.890625}"
+    },
+    {
+      "t": 132.26,
+      "text": "%c[player]%c transitionSnapshots → runSwapTransition style=morph slug=admin-tools-export color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 132.26,
+      "text": "%c[transition]%c swap: morph color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 132.526,
+      "text": "%c[overlays]%c styles installed (transitionSnapshots swapStyle branch) color:#E27730;font-weight:600 "
+    },
+    {
+      "t": 133.044,
+      "text": "[zoomTo:pre-scroll] .wpforms-admin-content rect= DOMRect"
+    },
+    {
+      "t": 133.55,
+      "text": "[zoomTo:post-scroll] .wpforms-admin-content rect= DOMRect scrollY= 51"
+    },
+    {
+      "t": 133.55,
+      "text": "[zoomTo] .wpforms-admin-content {rect: Object, cx: 800, cy: 465.5, cxClamped: 720, cyClamped: 450}"
+    },
+    {
+      "t": 142.662,
+      "text": "[zoomTo:pre-scroll] .wpforms-setting-row rect= DOMRect"
+    },
+    {
+      "t": 143.174,
+      "text": "[zoomTo:post-scroll] .wpforms-setting-row rect= DOMRect scrollY= 0"
+    },
+    {
+      "t": 143.174,
+      "text": "[zoomTo] .wpforms-setting-row {rect: Object, cx: 800, cy: 516.5, cxClamped: 800, cyClamped: 508.695652173913}"
+    }
+  ]
+}
