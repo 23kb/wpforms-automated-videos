@@ -22,6 +22,22 @@ _(none currently — all Phase A starting questions answered 2026-05-07)_
 
 ---
 
+## 2.2 Phase C deferrals (architectural debt)
+
+Five deviations from the Phase C prompt's stated architectural ambition. Each shipped a working simpler form that meets the Phase C win condition (cream-bleed kill on cross-snapshot transitions). The deeper integration is real debt that future phases or features will surface. Format: what was deferred, what triggered the deferral, which phase will surface the cost.
+
+- **Element-level Flip carry across snapshot boundaries.** The prompt asked for `Flip.from(state, ...)` of named carry elements declared via a chapter-level `carry: [sel.x, sel.y]` field. Codex shipped iframe-to-iframe opacity crossfade with camera-state preservation instead. Trigger for deferral: opacity crossfade was sufficient to eliminate the cream-bleed seam (the win condition), and the simpler form did not require a chapter API extension. Cost surfaces in **Phase D** when `videos/_shared/blocks/` introduces named blocks that authors will want to carry across snapshots — at that point the `carry: [...]` field becomes worth the API extension.
+
+- **Camera transform owned by frame driver / GSAP timeline.** The prompt asked for the iframe transform to be moved off CSS-transition land onto a GSAP timeline registered with the Phase B frame driver, so `seek(t)` would deterministically position the camera. Codex centralized CSS-transition writes into `applyCamera()` / `setCameraTransform()` but the transform stays CSS-driven. Trigger for deferral: the visible jolts (`engine.js:135–141` snap-to-scale-1, `engine.js:592–598` hard dolly) ARE fixed without timeline ownership, and the timeline-owned camera was a means to scrub-preview rather than a means to clean visuals. Cost surfaces in **Phase E** when `tools/render.js` and the author scrubber land — at that point camera frames must be deterministic on `seek(t)` to make scrub-preview honest.
+
+- **`runtime/shared-scene.js` ships unused.** The prompt named pilot 1 as "REST API replaces `window.__raShared` with this primitive." Codex shipped the primitive but no video uses it. Trigger for deferral: REST API has no actual `__raShared` symbol to migrate — the audit's reference (`analysis-quality-and-transitions.md` §3) was pattern-level, describing what worked in REST API, not a literal singleton name. Cost surfaces whenever a future video genuinely needs a Three.js or editorial scene to survive chapter teardown — likely **Phase D or E** as marketing-mode work begins to need persistent atmospheric layers.
+
+- **`runtime/camera-poses.js` shallow integration.** The prompt asked for pose-to-pose interpolation as a paused timeline registered through the Phase B frame driver. Codex shipped a registry + resolver wired into `player.js`'s `resolveCameraPose(b.camera)` call so `camera: 'focus'` works as a name, but the resolved spec flows through the existing `zoomTo` (CSS-transition) path. Trigger for deferral: same as the camera-routing deferral — the visible win is the named pose vocabulary, not the timeline-registered interpolation. Cost surfaces alongside the camera-on-driver debt in **Phase E** when scrub-preview demands deterministic pose seek.
+
+- **`noChange` floor wait dropped from `min(120, duration·0.1)` to 0.** The prompt directed this change directly. Trigger for deferral: not a deferral per se — explicit prompt directive — but worth flagging as a behavioral change that hand-tuned beats with sub-noChange-threshold drift may now feel snappier than before. Cost surfaces if a future regression report names a beat that desyncs from narration after Phase C; the fix is a per-beat `postHold` rather than reverting the floor.
+
+---
+
 ## 2.1 Known gaps (tracked, not blocking)
 
 Issues that surfaced during Phase 0–A work and are documented but not blocking the active phase. Each entry: what, where, why deferred.
