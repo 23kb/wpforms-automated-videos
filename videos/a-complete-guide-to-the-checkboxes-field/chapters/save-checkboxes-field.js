@@ -6,11 +6,7 @@ export default defineChapter({
   title: 'Save and close out',
   snapshot: 'builder-fields',
   chapter: 'save-checkboxes-field',
-  // Override the manifest's 'morph' swap for this boundary only — the prev
-  // chapter ends in a different snapshot with its own zoom, and morph carries
-  // that transform over so the first focusOn measures against stale state.
-  // 'fast' resets the iframe to identity before the swap. (Same fix as edit-label.)
-  swapStyle: 'fast',
+  swapStyle: 'flipBridge',
   prep: [
     { op: 'applyDefaultForm', keepIds: [1, 2, 4, 7] },
     { op: 'setFieldLabel', id: 7, label: 'Pizza Toppings' },
