@@ -6,11 +6,12 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase E (`tools/render.js` Puppeteer+FFmpeg → MP4 + `tools/preview.js` live-reload + author scrubber) — prompt drafting
-- **Active branch:** `main` (Phase D merged via `--no-ff`)
-- **Last verified-good commit:** Phase D merge commit on `main`
-- **Next action:** Phase E codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-e-render-and-preview.md` and `docs/codex-prompts/phase-e-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
-- **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for upcoming phases (E, F).
+- **Active phase:** Phase F (skill packaging + validator extensions + deterministic-logic linter) — prompt drafting
+- **Active branch:** `main` (Phase E.5 merged via `--no-ff` at `6e58fdc`)
+- **Last verified-good commit:** Phase E.5 merge commit `6e58fdc` on `main`
+- **Next action:** Phase F codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-f-skills-and-linter.md` and `docs/codex-prompts/phase-f-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
+- **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for the final phase (F).
+- **Note on Phase E:** Phase E (`phase-e-render-and-preview`, branch tip `c09240b`) was REJECTED at oversight — render + HMR were good, scrubber UI was observation-only and contradicted the mandate. Phase E branch was NOT merged. Phase E.5 cherry-picked the render + HMR foundation and added pause/seek + camera-on-driver + a real working scrubber. The phase-e branch remains in the repo for history but is dead-ended.
 
 ---
 
@@ -48,6 +49,112 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 ---
 
 ## 3. Per-step log (reverse chronological)
+
+### 2026-05-07 — Phase E.5 — completed and merged
+
+Merged `phase-e5-real-pause-seek` into `main` with `--no-ff`. Merge commit
+`6e58fdc`. Phase-E.5 branch tip: `d5cc02c`. Phase E (`phase-e-render-and-preview`)
+was REJECTED at oversight; that branch was NOT merged. Phase E.5 cherry-picked
+the render + HMR foundation from phase-e and added the rest.
+
+**Shipped:**
+
+- `runtime/pause-manager.js` (new): single owner of every motion source.
+  `pause()` / `resume()` / `seekToChapter(index)` / `state()`. Pairs
+  `gsap.globalTimeline.pause()` with `frameDriver.stop()`. Pause hammer
+  fires atomically; resume reverses each source from frozen position.
+  `shiftFrameDriverClock(pausedMs)` adjusts `entry.t0` on resume so the
+  registered timelines don't jump forward by the pause duration.
+- `engine/engine.js` `sleep()` swap: now delegates to
+  `pauseManager.pausableSleep(ms)`. Single-point change — every `sleep()`
+  call site across runtime/, engine/, and chapter modules is automatically
+  pausable. Behavior contract: resolves after `ms` of cumulative unpaused
+  time; paused intervals do not count.
+- **Camera-on-driver refactor (closes Phase C §2.2 second bullet, commit
+  `ba20e47`):** `engine/engine.js` maintains a single paused GSAP timeline
+  registered with the frame driver. `zoomTo` and `setCameraTransform`
+  append to this timeline rather than mutating CSS directly. Camera frames
+  are deterministic on `seek(t)` — necessary for scrubber + render parity.
+  `flipBridge` camera carry reads from the timeline's current value.
+- `scenes/shared.js` audio pause/resume: narration + BGM `<audio>` register
+  with the pause manager at construction. `pauseAllAudio()` walks the set
+  and calls `el.pause()`; `resumeAllAudio()` calls `el.play()` (browser
+  preserves currentTime).
+- `videos/_shared/kit.js` exports `pausableRaf(cb)`. **Required for any
+  author-owned RAF loop in a chapter or cinematic** — vanilla
+  `requestAnimationFrame` will not honor pause. Migrated 8 sites:
+  `videos/wpforms-rest-api-overview/chapters/*.js` (7) and
+  `runtime/cinematic-rough-thought-to-draft.js` (1).
+- `runtime/chapter-runner.js` + `runtime/player.js` chapter-seek: each
+  chapter-loop iteration consults `pauseManager.consumeSeekTarget()`.
+  Mid-chapter wall-clock seek is NOT a deliverable — restart-from-chapter-N
+  is the seek granularity. Documented as a hard scope limit.
+- Real scrubber UI at `/scrubber?video=<slug>` served by both
+  `tools/preview.js` (live-reload + scrubber + WebSocket) and `serve.js`
+  (scrubber via the static path). Pause / Resume / Prev / Restart / Next
+  buttons. Visible numeric chapter clock + 60s-ceiling progress bar.
+  Chapter clock resets to 0 on every Next/Prev/Restart click. Registered-
+  timeline strip filters to chapter-local entries (camera adapter, which
+  registers at video-load, doesn't leak across chapter resets). Iframe
+  dim + "PAUSED" overlay on pause for visual confirmation.
+- `tools/render.js` (cherry-picked from rejected phase-e): Puppeteer +
+  FFmpeg → MP4. Wall-clock screencast default; `--seek` mode for editorial
+  videos. Tutorial seek-render is refused with a clear error message.
+- `tools/preview.js` live-reload preview server with chokidar + WebSocket
+  reload broadcast + injected scrubber-state client.
+- Docs: `docs/pause-manager.md` (new), `docs/render.md` and `docs/preview.md`
+  (cherry-picked + extended). `docs/authoring-api.md` extended with
+  pausableRaf rule + scrubber/pause section. `docs/gsap-rules.md` Phase E.5
+  L0 rule for author RAF loops.
+
+**Validation:** 0 errors on all 7 targets (4 baselines + editorial pilot +
+form-entries-guide + form-notifications).
+
+**Smoke (`--seconds 30 --allow-resource-404`):** all 7 reach `sceneBooted=true`
+with empty `bootError`, `pageErrors`, `consoleErrors`.
+
+**Hidden-tab regression (Phase B win condition):** synthetic 10s paused
+timeline; force `document.visibilityState='hidden'` for ~3s via
+visibilitychange event; drift = 0.0003s (well under 100ms ceiling).
+
+**Render duration regression:**
+- Wall-clock: 11.233s (within `[11.2, 11.4]` baseline).
+- Seek: 10.533s (within `[10.4, 10.6]` baseline).
+- Seek refusal on tutorials: confirmed.
+
+**Pause win condition (8 sources):** all frozen on UI Pause click.
+- Wall-clock player: chapter advance halted (currentChapterIndex stable).
+- Camera transform: matrix() static.
+- Narration audio: `currentTime` static, `paused=true`.
+- BGM: `currentTime` static.
+- Iframe CSS animations: `playState='paused'`.
+- Three.js scenes: `renderer.render` calls halt (after `pausableRaf` migration).
+- Frame-driver registered timelines: tick loop stopped.
+- GSAP global timeline: `gsap.globalTimeline.paused()===true`.
+- Resume: each source continues from frozen position.
+
+**Chapter seek scripted test:** `seekChapter(N)` from scrubber tears down
+current chapter cleanly (`frameDriver.registry.size === 0` post-teardown);
+new chapter enters at beat 0.
+
+**Visual smoke (Umair):** PASS after four UX-iteration commits on the
+scrubber clock (`f94f386`, `0d1e7b2`, `2b5319d`, `4f7de8a`) and one
+follow-up scrubber UX hardening commit by Codex (`d5cc02c`) addressing:
+chapter clock resets on every button click; progress-bar fill uses fixed
+60s ceiling so 0.0s reads as 0% width; visible numeric clock; chapter
+pill shows `—` pre-boot; pause adds visible iframe overlay.
+
+**Doc updates this merge:**
+
+- `CLAUDE.md`: Protected Areas adds `runtime/pause-manager.js`;
+  Per-Video Files extended with pausableRaf requirement + scrubber/pause
+  section.
+- `tools/skill-context.js`: do-not-touch adds `runtime/pause-manager.js`;
+  on-demand adds `docs/pause-manager.md`.
+- `docs/authoring-api.md`: pausableRaf rule + Scrubber and pause section.
+- `docs/gsap-rules.md`: Phase E.5 Patterns L0 rule for author RAF loops.
+- `REFACTOR-PROGRESS.md`: this entry; §1 advanced to Phase F; §2.2 second
+  bullet (camera-on-driver) annotated `[CLOSED in Phase E.5 commit ba20e47]`.
 
 ### 2026-05-07 — Phase D — completed and merged
 
