@@ -80,7 +80,7 @@ Create branch `phase-f-skills-and-linter` from `main` HEAD (Phase E.5 merge comm
 
 **Phase F edits ZERO protected core** (REFACTOR-BRIEF.md §4):
 
-- `.claude/skills/<name>/skill.md` (NEW directory + 5 skill files; check the repo's skill convention — look at any existing `.claude/` folder structure first).
+- `.claude/skills/<name>/SKILL.md` (NEW directory + 5 SKILL.md files — uppercase filename, single file per skill, YAML frontmatter required; format pinned in §"Skill packaging" below).
 - `tools/validate-video.js` — additive lint passes only. **Do not change existing exit-code semantics** for any of the 7 regression-set videos. New warnings are fine; new errors must not fire on any existing video that passed pre-Phase-F validation.
 - `tools/lint-determinism.js` (NEW).
 - `tools/skill-context.js` — flag the new docs and the new skill bundle as on-demand reads.
@@ -105,15 +105,23 @@ Create branch `phase-f-skills-and-linter` from `main` HEAD (Phase E.5 merge comm
 
 ### 1. Skill packaging
 
-First, verify the repo's skill format. Look for existing `.claude/skills/` or similar. If none exists, the standard format (per Anthropic's skill convention) is:
+**Format is pinned. Do not propose alternatives.**
 
 ```
 .claude/skills/<name>/
-├── skill.md       # Body content
-└── meta.yaml      # Optional metadata (description, when-to-use, version)
+└── SKILL.md       # uppercase filename — case-sensitive
 ```
 
-If the repo doesn't already have a skill convention, propose one in `docs/skills.md` and stick with it.
+`SKILL.md` is a single file per skill. No separate `meta.yaml`. Required YAML frontmatter:
+
+```yaml
+---
+name: wpforms-video
+description: One-line "when to use this skill" — used to decide relevance.
+---
+```
+
+Body is markdown after the frontmatter. This is the standard Anthropic skill convention; the case of the filename matters (skills are case-sensitive on the loader side).
 
 For each skill, the body should:
 
@@ -174,7 +182,7 @@ node tools/lint-determinism.js --all
 # in a separate session (NOT this Phase F PR — Phase F does not migrate code).
 
 # 4. Skills are loadable.
-ls .claude/skills/wpforms-{video,postintro,gsap-rules,marketing,transitions}/skill.md
+ls .claude/skills/wpforms-{video,postintro,gsap-rules,marketing,transitions}/SKILL.md
 
 # 5. npm run lint composes both linters.
 npm run lint
@@ -202,7 +210,6 @@ When done:
 
 ## If you get stuck
 
-- **Repo has no `.claude/skills/` precedent.** Propose the format in `docs/skills.md` and ship that. The format used by Anthropic's standard skills convention is a safe default.
 - **`ffprobe` unavailable on Codex's machine.** Fall back to `mp3-parser` or similar lightweight npm dep, OR skip the audio-vs-duration lint with a `--no-audio-lint` flag and document the gap.
 - **The linter flags 50+ violations across existing videos.** Log them; do NOT migrate. Phase F is enforcement; migration is a separate human-driven session.
 - **Skill bundle conflicts with `tools/skill-context.js`.** The two are complementary — `skill-context.js` stays the canonical startup dump; skills are topic-scoped opt-ins. Document the relationship in `docs/skills.md`.
