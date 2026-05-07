@@ -6,11 +6,11 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase 0 (audit + briefing)
-- **Active branch:** `main` (pre-refactor; phases run on independent branches)
+- **Active phase:** Phase B (paused-timeline + Frame Adapter player driver) — prompt drafting next
+- **Active branch:** `main` (Phase A merged); Phase B branch `phase-b-paused-timeline-driver` will be created when prompt is sent
 - **Current pilot video for Phase B:** `creating-first-form` (simplest tutorial; switch to checkboxes/REST API after first migration succeeds)
-- **Last verified-good commit:** `ed15f78` (chore: ignore local-only files)
-- **Next action:** Phase A starts in fresh Claude session + Codex; this Phase 0 session ends after handing over briefing files and prompts.
+- **Last verified-good commit:** `1367e3b` (Merge branch 'phase-a-gsap-foundation' into main)
+- **Next action:** Draft `docs/codex-prompts/phase-b-paused-timeline-driver.md`. Pause for Umair review before sending to Codex — Phase B is the largest and riskiest phase.
 
 ---
 
@@ -23,6 +23,30 @@ _(none currently — all Phase A starting questions answered 2026-05-07)_
 ---
 
 ## 3. Per-step log (reverse chronological)
+
+### 2026-05-07 — Phase A — completed and merged
+
+Merged `phase-a-gsap-foundation` into `main` as merge commit `1367e3b` (no fast-forward, preserves phase boundary for bisect).
+
+**Shipped:**
+
+- Vendored GSAP 3.15.0 with all free plugins under `vendor/gsap/3.15.0/`: `gsap.min.js`, `Flip.min.js`, `MotionPathPlugin.min.js`, `SplitText.min.js`, `MorphSVGPlugin.min.js`, `DrawSVGPlugin.min.js`, `CustomEase.min.js`, `GSDevTools.min.js`, `MotionPathHelper.min.js`. Bumped from 3.12.5 → 3.15.0; the original 3.12.5 folder was unused on disk so the bump is clean.
+- `videos/_shared/kit.js`: `loadGsap()` extended with opt-in flags (`splitText`, `morphSVG`, `drawSVG`, `customEase`, `gsDevTools`, `motionPathHelper`); `flip` and `motionPath` remain default-on. New helpers `awaitTween` and `withGsapContext`.
+- `videos/_shared/effects.js` (new): five `gsap.registerEffect()` entries — `highlightPulse`, `fieldBurst`, `labelReveal`, `popOutTilt`, `cardReflow`. Module-side-effect registers on first `effectsReady` resolve.
+- `docs/gsap-rules.md`: Phase A patterns appended.
+- `docs/effects-library.md` (new): per-effect API reference.
+
+**Validation:** 0 errors on all four baselines.
+
+**Smoke:** all four return `sceneDone: false` with no boot/page/console errors. Pre-existing on `main` before Phase A — `assets/sfx/click-alt.mp3` and `bgms/56.mp3` are referenced in manifests / `runtime/sfx.js` but never existed in git. Not a Phase A regression. Filed as a known gap to address separately (either lengthen `--seconds`, fix the `body.dataset.sceneDone` setter, or commit the missing assets).
+
+**Doc updates this session:**
+
+- `tools/skill-context.js`: `effects.js` flagged as a capability kit alongside `kit.js`/`atmospheric.js`.
+- `docs/authoring-api.md` §Capability kits: documented `effects.js`, `awaitTween`, `withGsapContext`, and `loadGsap()` opt-in flags.
+- `REFACTOR-PROGRESS.md`: this entry; current state header advanced to Phase B.
+
+**No `CLAUDE.md` change** — Phase A was additive only.
 
 ### 2026-05-07 — Phase 0 — engine.js zoom audit (initial findings)
 
