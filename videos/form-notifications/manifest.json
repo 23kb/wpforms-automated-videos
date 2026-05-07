@@ -1,6 +1,9 @@
 {
   "slug": "form-notifications",
   "primarySnapshot": "builder-settings-notifications",
+  "defaults": {
+    "swapStyle": "flipBridge"
+  },
   "intro": {
     "eyebrow": "WPForms Tutorial",
     "title": "Form Notifications",
