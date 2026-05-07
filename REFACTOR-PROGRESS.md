@@ -6,8 +6,8 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase C (cross-snapshot Flip-bridge + shared-scene primitive + camera-pose vocabulary + editorial surface mode + engine.js camera routing) — prompt drafting
-- **Active branch:** `main` (Phase B merged via `--no-ff`)
+- **Active phase:** Phase C (cross-snapshot Flip-bridge + shared-scene primitive + camera-pose vocabulary + editorial surface mode + engine.js camera routing) — implementation
+- **Active branch:** `phase-c-transitions-overhaul`
 - **Last verified-good commit:** Phase B merge commit on `main` (parent `ef8ffdb` ↔ phase-b tip `a298800`)
 - **Next action:** Phase C codex prompt + kickoff pair at `docs/codex-prompts/phase-c-transitions-overhaul.md` and `docs/codex-prompts/phase-c-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex — Phase C is the transition fix Umair has been waiting for.
 
@@ -32,6 +32,27 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 ---
 
 ## 3. Per-step log (reverse chronological)
+
+### 2026-05-07 — Phase C — implementation pass in progress
+
+Started `phase-c-transitions-overhaul`.
+
+**Shipped in this pass:**
+
+- Added `surface` dispatch in `runtime/player.js` and `runtime/chapter-runner.js`.
+- Added `runtime/shared-scene.js` and migrated the REST API abilities scene to
+  the runtime primitive while preserving the video-local authoring wrapper.
+- Added `runtime/camera-poses.js` and surfaced `registerCameraPose()` through
+  `videos/_shared/kit.js`.
+- Added `flipBridge` swap support with hidden iframe preload/adopt path and
+  debug `data-flipbridge-armed` / `data-flipbridge-committed` markers.
+- Migrated the two Checkboxes `fast` swap overrides to `flipBridge`.
+- Added `_phase-c-editorial-pilot` as a true no-iframe editorial surface smoke
+  target.
+
+**Decision:** `wpforms-rest-api-overview` now uses `surface: "mixed"` rather
+than `editorial` because its existing chapter code still relies on a hidden
+real snapshot iframe for `cloneFromIframe()` geometry.
 
 ### 2026-05-07 — Phase B — completed and merged
 
