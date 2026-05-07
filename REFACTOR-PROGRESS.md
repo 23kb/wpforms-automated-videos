@@ -29,7 +29,6 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 - **Smoke `sceneBooted` hang on two baselines.** `a-complete-guide-to-the-checkboxes-field` and `creating-first-form` never reach `sceneBooted=true` even at `--seconds 90`. No bootError, no console/page errors — silent stall in the introCard or pre-postIntro path. The other two baselines (REST API, AI) reach `sceneBooted` within 30s. Phase A.5 fixed the gate semantics (commit `ee35378`); the remaining hang is a separate runtime bug. Deferred — not Phase B's problem unless Codex's player edits incidentally fix or worsen it; revisit after Phase B merge.
 - **`assets/sfx/click-alt.mp3` referenced but missing.** `runtime/sfx.js:37` declares it; nothing in the repo provides it. Smoke reports as missing-resource; `--allow-resource-404` masks. Either alias to existing `click.mp3` or add the asset. Low priority.
 - **`bgms/56.mp3` referenced but missing.** Two baseline manifests (checkboxes, AI) point at `/bgms/56.mp3`; only `1.mp3`–`5.mp3` exist. Suggests the manifests want a track Umair hasn't supplied. Confirm intent and either add the track or repoint the manifests. Low priority.
-- **Phase 0 frame-level QC artifact lingers.** `tools/qc-out/form-entries-guide/` is untracked from a Phase 0 capture session. Decide whether to commit, gitignore, or delete — not Phase B's call.
 
 ---
 
