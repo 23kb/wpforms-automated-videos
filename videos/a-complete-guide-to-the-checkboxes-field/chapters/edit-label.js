@@ -6,15 +6,7 @@ export default defineChapter({
   title: 'Give it a clear label',
   snapshot: 'builder-field-options-checkbox',
   chapter: 'edit-label',
-  // Override the manifest's 'morph' swap for this boundary only. Morph
-  // re-applies the outgoing iframe's transform to the incoming iframe so the
-  // crossfade preserves framing — but the prev chapter ends with a focusPull
-  // zoom on field-7 which doesn't match this chapter's options-panel layout,
-  // so the carry-over leaves the first focusOn measuring against a stale
-  // transform. 'fast' resets the iframe to identity before the swap (per
-  // runtime/chapter-runner.js handling of non-morph styles), giving edit-label
-  // a clean boot identical to its solo-mode behaviour.
-  swapStyle: 'fast',
+  swapStyle: 'flipBridge',
   prep: [
     { op: 'applyDefaultForm', keepIds: [1, 2, 4, 7], labels: { '7': 'Checkboxes' } },
     { op: 'stripQuizEnabled' },
