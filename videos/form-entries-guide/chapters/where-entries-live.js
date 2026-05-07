@@ -30,7 +30,7 @@ export default [
       await cursor.moveTo(sel.sidebarWPForms);
       await sleep(280);
       await highlight([sel.sidebarEntriesLink], { label: 'Click Entries in the WPForms menu', pad: 6 });
-      await cursor.moveTo(sel.sidebarEntriesLink);
+      await cursor.glideTo(sel.sidebarEntriesLink, { via: sel.sidebarWPForms, wait: 700 });
       await sleep(620);
       await clearHighlights();
       await swapToSnapshot('admin-entries-overview');
