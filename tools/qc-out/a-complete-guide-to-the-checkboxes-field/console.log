@@ -1,0 +1,223 @@
+[0.06s][log] %c[motion] active cadence color:#E27730;font-weight:600 — breakStyle=glide, swapStyle=morph, coverColor=#F4F7FB
+[0.06s][log] %c[scene]%c bootSnapshot builder-fields color:#E27730;font-weight:600 
+[0.76s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[1.68s][log] %c[sfx]%c initialised color:#E27730;font-weight:600  {state: running, master: 0.8999999761581421}
+[1.68s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[1.68s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[1.69s][warning] BGM autoplay blocked NotSupportedError: Failed to load because no supported source was found.
+[1.69s][log] %c[sfx]%c some channels failed to load color:#E27730;font-weight:600  {failed: Array(1)}
+[3.13s][warning] [.WebGL-0x7dec01f13800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[3.77s][warning] [.WebGL-0x7dec01f13800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[3.81s][warning] [.WebGL-0x7dec01f13800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[3.85s][warning] [.WebGL-0x7dec01f13800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[27.04s][log] %c[runner]%c add-checkboxes-field :: promise (captionLine) color:#E27730;font-weight:600 
+[27.35s][log] %c[verb:start]%c add-checkboxes-field :: promise (captionLine) color:#E27730;font-weight:600  {chapter: add-checkboxes-field, snapshot: builder-fields, step: Object}
+[30.15s][log] %c[verb:end]%c add-checkboxes-field :: promise ok (2799ms) color:#E27730;font-weight:600  null
+[30.15s][log] %c[runner]%c add-checkboxes-field :: find-checkboxes (typeInto) color:#E27730;font-weight:600 
+[30.35s][log] %c[resolve]%c ok: #wpforms-search-fields-input color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: wpforms-search-fields-input}
+[30.35s][log] %c[focusOn]%c level 1.61× (raw 2.21 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-search-fields-input, rect: Object, fill: 0.55, iframe: Object}
+[30.35s][log] [zoomTo:pre-scroll] #wpforms-search-fields-input rect= DOMRect
+[30.86s][log] [zoomTo:post-scroll] #wpforms-search-fields-input rect= DOMRect scrollY= 0
+[30.86s][log] [zoomTo] #wpforms-search-fields-input {rect: Object, cx: 294.5, cy: 164, cxClamped: 448.2830385015608, cyClamped: 280.1768990634755}
+[32.06s][log] %c[verb:start]%c add-checkboxes-field :: find-checkboxes (typeInto) color:#E27730;font-weight:600  {chapter: add-checkboxes-field, snapshot: builder-fields, step: Object}
+[32.06s][log] %c[resolve]%c ok: #wpforms-search-fields-input color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: wpforms-search-fields-input}
+[32.06s][log] %c[resolve]%c ok: #wpforms-search-fields-input color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: wpforms-search-fields-input}
+[32.06s][log] %c[highlight]%c ring on #wpforms-search-fields-input color:#E27730;font-weight:600  {pad: 12, label: Find Checkboxes, count: 1}
+[34.37s][log] %c[verb:end]%c add-checkboxes-field :: find-checkboxes ok (2306ms) color:#E27730;font-weight:600  null
+[34.37s][log] %c[runner]%c add-checkboxes-field :: drag-checkboxes-field (dragGrab) color:#E27730;font-weight:600 
+[34.57s][log] %c[resolve]%c ok: #wpforms-panel-fields .wpforms-field-wrap color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: null}
+[34.57s][log] %c[focusOn]%c level 1.05× (raw 0.84 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-panel-fields .wpforms-field-wrap, rect: Object, fill: 0.5, iframe: Object}
+[34.57s][log] [zoomTo:pre-scroll] #wpforms-panel-fields .wpforms-field-wrap rect= DOMRect
+[35.07s][log] [zoomTo:post-scroll] #wpforms-panel-fields .wpforms-field-wrap rect= DOMRect scrollY= 0
+[35.07s][log] [zoomTo] #wpforms-panel-fields .wpforms-field-wrap {rect: Object, cx: 967, cy: 425, cxClamped: 754.2857142857143, cyClamped: 428.57142857142856}
+[36.28s][log] %c[verb:start]%c add-checkboxes-field :: drag-checkboxes-field (dragGrab) color:#E27730;font-weight:600  {chapter: add-checkboxes-field, snapshot: builder-fields, step: Object}
+[38.17s][log] %c[popOut]%c injected iframe font-faces color:#E27730;font-weight:600  {count: 209, families: 18}
+[38.19s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[38.20s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[38.20s][log] %c[popOut]%c #wpforms-field-7 color:#E27730;font-weight:600  {tilt: 0, lift: 1.06}
+[39.17s][log] %c[highlight]%c ring on #wpforms-panel-fields .wpforms-field-wrap color:#E27730;font-weight:600  {pad: 12, label: null, count: 1}
+[40.59s][log] %c[verb:end]%c add-checkboxes-field :: drag-checkboxes-field ok (4313ms) color:#E27730;font-weight:600  null
+[40.59s][log] %c[runner]%c add-checkboxes-field :: field-lands (focusPull) color:#E27730;font-weight:600 
+[40.80s][log] %c[resolve]%c ok: #wpforms-field-7 color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-7}
+[40.80s][log] %c[focusOn]%c level 1.05× (raw 0.84 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-7, rect: Object, fill: 0.5, iframe: Object}
+[40.80s][log] [zoomTo:pre-scroll] #wpforms-field-7 rect= DOMRect
+[41.30s][log] [zoomTo:post-scroll] #wpforms-field-7 rect= DOMRect scrollY= 0
+[41.30s][log] [zoomTo] #wpforms-field-7 {rect: Object, cx: 967, cy: 692, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}
+[42.51s][log] %c[verb:start]%c add-checkboxes-field :: field-lands (focusPull) color:#E27730;font-weight:600  {chapter: add-checkboxes-field, snapshot: builder-fields, step: Object}
+[42.51s][log] %c[focusPull]%c #wpforms-field-7 color:#E27730;font-weight:600  {blur: 3}
+[44.18s][log] %c[verb:end]%c add-checkboxes-field :: field-lands ok (1675ms) color:#E27730;font-weight:600  null
+[45.54s][log] %c[scene]%c swapSnapshot → builder-field-options-checkbox (style=fast) color:#E27730;font-weight:600 
+[45.54s][log] %c[transition]%c swap: fast color:#E27730;font-weight:600 
+[46.19s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[46.47s][log] %c[runner]%c edit-label :: set-label (typeInto) color:#E27730;font-weight:600 
+[46.78s][log] %c[resolve]%c ok: #wpforms-field-option-7-label color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: wpforms-field-option-7-label}
+[46.78s][log] %c[focusOn]%c level 1.34× (raw 1.94 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-7-label, rect: Object, fill: 0.48, iframe: Object}
+[46.80s][log] [zoomTo:pre-scroll] #wpforms-field-option-7-label rect= DOMRect
+[46.91s][log] [zoomTo:post-scroll] #wpforms-field-option-7-label rect= DOMRect scrollY= 0
+[46.91s][log] [zoomTo] #wpforms-field-option-7-label {rect: Object, cx: 293.5, cy: 263, cxClamped: 538.867924528302, cyClamped: 336.7924528301888}
+[48.11s][log] %c[verb:start]%c edit-label :: set-label (typeInto) color:#E27730;font-weight:600  {chapter: edit-label, snapshot: builder-field-options-checkbox, step: Object}
+[48.11s][log] %c[resolve]%c ok: #wpforms-field-option-7-label color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: wpforms-field-option-7-label}
+[48.11s][log] %c[resolve]%c ok: #wpforms-field-option-7-label color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: wpforms-field-option-7-label}
+[48.11s][log] %c[highlight]%c ring on #wpforms-field-option-7-label color:#E27730;font-weight:600  {pad: 12, label: Type the field label, count: 1}
+[50.74s][log] %c[verb:end]%c edit-label :: set-label ok (2631ms) color:#E27730;font-weight:600  null
+[51.35s][log] %c[runner]%c edit-label :: set-choices (typeInto) color:#E27730;font-weight:600 
+[51.55s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) input.label color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[51.55s][log] %c[focusOn]%c level 1.80× (raw 2.85 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-7-choices-list > li:nth-child(1) input.label, rect: Object, fill: 0.5, iframe: Object}
+[51.55s][log] [zoomTo:pre-scroll] #wpforms-field-option-7-choices-list > li:nth-child(1) input.label rect= DOMRect
+[52.05s][log] [zoomTo:post-scroll] #wpforms-field-option-7-choices-list > li:nth-child(1) input.label rect= DOMRect scrollY= 0
+[52.05s][log] [zoomTo] #wpforms-field-option-7-choices-list > li:nth-child(1) input.label {rect: Object, cx: 293.875, cy: 341, cxClamped: 400, cyClamped: 341}
+[53.27s][log] %c[verb:start]%c edit-label :: set-choices (typeInto) color:#E27730;font-weight:600  {chapter: edit-label, snapshot: builder-field-options-checkbox, step: Object}
+[53.27s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) input.label color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[53.27s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) input.label color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[53.27s][log] %c[highlight]%c ring on #wpforms-field-option-7-choices-list > li:nth-child(1) input.label color:#E27730;font-weight:600  {pad: 12, label: Rename the choices, count: 1}
+[55.51s][log] %c[verb:end]%c edit-label :: set-choices ok (2244ms) color:#E27730;font-weight:600  null
+[56.12s][log] %c[runner]%c edit-label :: preview-custom-list (popOut) color:#E27730;font-weight:600 
+[56.32s][log] %c[resolve]%c ok: #wpforms-field-7 color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-7}
+[56.32s][log] %c[focusOn]%c level 1.05× (raw 0.84 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-7, rect: Object, fill: 0.5, iframe: Object}
+[56.32s][log] [zoomTo:pre-scroll] #wpforms-field-7 rect= DOMRect
+[56.82s][log] [zoomTo:post-scroll] #wpforms-field-7 rect= DOMRect scrollY= 0
+[56.82s][log] [zoomTo] #wpforms-field-7 {rect: Object, cx: 967, cy: 494, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}
+[58.03s][log] %c[verb:start]%c edit-label :: preview-custom-list (popOut) color:#E27730;font-weight:600  {chapter: edit-label, snapshot: builder-field-options-checkbox, step: Object}
+[58.03s][log] %c[popOut]%c #wpforms-field-7 color:#E27730;font-weight:600  {tilt: 0, lift: 1.08}
+[59.88s][log] %c[verb:end]%c edit-label :: preview-custom-list ok (1842ms) color:#E27730;font-weight:600  null
+[61.07s][log] %c[runner]%c multi-select-behavior :: select-first-choice (clickOn) color:#E27730;font-weight:600 
+[61.36s][log] %c[transition]%c chapter-break: glide color:#E27730;font-weight:600 
+[61.38s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) input.default color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[61.38s][log] %c[focusOn]%c level 1.80× (raw 32.63 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-7-choices-list > li:nth-child(1) input.default, rect: Object, fill: 0.58, iframe: Object}
+[61.40s][log] [zoomTo:pre-scroll] #wpforms-field-option-7-choices-list > li:nth-child(1) input.default rect= DOMRect
+[61.51s][log] [zoomTo:post-scroll] #wpforms-field-option-7-choices-list > li:nth-child(1) input.default rect= DOMRect scrollY= 0
+[61.51s][log] [zoomTo] #wpforms-field-option-7-choices-list > li:nth-child(1) input.default {rect: Object, cx: 149.75, cy: 341, cxClamped: 400, cyClamped: 341}
+[62.73s][log] %c[verb:start]%c multi-select-behavior :: select-first-choice (clickOn) color:#E27730;font-weight:600  {chapter: multi-select-behavior, snapshot: builder-field-options-checkbox, step: Object}
+[62.73s][log] %c[click]%c target #wpforms-field-option-7-choices-list > li:nth-child(1) input.default color:#E27730;font-weight:600  {instruction: Set Pepperoni as default, direction: right}
+[62.73s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) input.default color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[62.73s][log] %c[instruction]%c "Set Pepperoni as default" → #wpforms-field-option-7-choices-list > li:nth-child(1) input (right) color:#E27730;font-weight:600 
+[63.32s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) input.default color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[63.32s][log] %c[highlight]%c ring on #wpforms-field-option-7-choices-list > li:nth-child(1) input.default color:#E27730;font-weight:600  {pad: 12, label: Set Pepperoni as default, count: 1}
+[65.98s][log] %c[verb:end]%c multi-select-behavior :: select-first-choice ok (3255ms) color:#E27730;font-weight:600  null
+[66.59s][log] %c[runner]%c multi-select-behavior :: select-third-choice (clickOn) color:#E27730;font-weight:600 
+[66.79s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(3) input.default color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[66.79s][log] %c[focusOn]%c level 1.80× (raw 32.63 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-7-choices-list > li:nth-child(3) input.default, rect: Object, fill: 0.58, iframe: Object}
+[66.79s][log] [zoomTo:pre-scroll] #wpforms-field-option-7-choices-list > li:nth-child(3) input.default rect= DOMRect
+[67.30s][log] [zoomTo:post-scroll] #wpforms-field-option-7-choices-list > li:nth-child(3) input.default rect= DOMRect scrollY= 0
+[67.30s][log] [zoomTo] #wpforms-field-option-7-choices-list > li:nth-child(3) input.default {rect: Object, cx: 149.75, cy: 447, cxClamped: 400, cyClamped: 447}
+[68.50s][log] %c[verb:start]%c multi-select-behavior :: select-third-choice (clickOn) color:#E27730;font-weight:600  {chapter: multi-select-behavior, snapshot: builder-field-options-checkbox, step: Object}
+[68.50s][log] %c[click]%c target #wpforms-field-option-7-choices-list > li:nth-child(3) input.default color:#E27730;font-weight:600  {instruction: Set Extra cheese as default, direction: right}
+[68.50s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(3) input.default color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[68.50s][log] %c[instruction]%c "Set Extra cheese as default" → #wpforms-field-option-7-choices-list > li:nth-child(3) input (right) color:#E27730;font-weight:600 
+[69.09s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(3) input.default color:#E27730;font-weight:600  {rect: Object, tag: INPUT, id: null}
+[69.09s][log] %c[highlight]%c ring on #wpforms-field-option-7-choices-list > li:nth-child(3) input.default color:#E27730;font-weight:600  {pad: 12, label: Set Extra cheese as default, count: 1}
+[71.78s][log] %c[verb:end]%c multi-select-behavior :: select-third-choice ok (3278ms) color:#E27730;font-weight:600  null
+[72.39s][log] %c[runner]%c multi-select-behavior :: multi-select-payoff (focusPull) color:#E27730;font-weight:600 
+[72.59s][log] %c[resolve]%c ok: #wpforms-field-7 color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-7}
+[72.59s][log] %c[focusOn]%c level 1.05× (raw 0.84 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-7, rect: Object, fill: 0.5, iframe: Object}
+[72.59s][log] [zoomTo:pre-scroll] #wpforms-field-7 rect= DOMRect
+[73.11s][log] [zoomTo:post-scroll] #wpforms-field-7 rect= DOMRect scrollY= 0
+[73.11s][log] [zoomTo] #wpforms-field-7 {rect: Object, cx: 967, cy: 494, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}
+[74.31s][log] %c[verb:start]%c multi-select-behavior :: multi-select-payoff (focusPull) color:#E27730;font-weight:600  {chapter: multi-select-behavior, snapshot: builder-field-options-checkbox, step: Object}
+[74.31s][log] %c[focusPull]%c #wpforms-field-7 color:#E27730;font-weight:600  {blur: 3}
+[76.14s][log] %c[verb:end]%c multi-select-behavior :: multi-select-payoff ok (1833ms) color:#E27730;font-weight:600  null
+[78.19s][log] %c[runner]%c icon-choices :: toggle-icon-choices (clickOn) color:#E27730;font-weight:600 
+[78.48s][log] %c[transition]%c chapter-break: glide color:#E27730;font-weight:600 
+[78.50s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-choices_icons color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-choices_icons}
+[78.50s][log] %c[focusOn]%c level 1.33× (raw 1.93 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-row-7-choices_icons, rect: Object, fill: 0.48, iframe: Object}
+[78.52s][log] [zoomTo:pre-scroll] #wpforms-field-option-row-7-choices_icons rect= DOMRect
+[78.63s][log] [zoomTo:post-scroll] #wpforms-field-option-row-7-choices_icons rect= DOMRect scrollY= 0
+[78.63s][log] [zoomTo] #wpforms-field-option-row-7-choices_icons {rect: Object, cx: 294.5, cy: 583, cxClamped: 543.2534678436319, cyClamped: 560.46658259773}
+[79.83s][log] %c[verb:start]%c icon-choices :: toggle-icon-choices (clickOn) color:#E27730;font-weight:600  {chapter: icon-choices, snapshot: builder-field-options-checkbox, step: Object}
+[79.83s][log] %c[click]%c target #wpforms-field-option-row-7-choices_icons color:#E27730;font-weight:600  {instruction: Turn on Use Icon Choices, direction: right}
+[79.83s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-choices_icons color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-choices_icons}
+[79.83s][log] %c[instruction]%c "Turn on Use Icon Choices" → #wpforms-field-option-row-7-choices_icons (right) color:#E27730;font-weight:600 
+[80.41s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-choices_icons color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-choices_icons}
+[80.41s][log] %c[highlight]%c ring on #wpforms-field-option-row-7-choices_icons color:#E27730;font-weight:600  {pad: 12, label: Turn on Use Icon Choices, count: 1}
+[83.09s][log] %c[verb:end]%c icon-choices :: toggle-icon-choices ok (3255ms) color:#E27730;font-weight:600  null
+[83.12s][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[83.70s][log] %c[runner]%c icon-choices :: icon-choices-payoff (focusPull) color:#E27730;font-weight:600 
+[83.90s][log] %c[resolve]%c ok: #wpforms-field-7 color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-7}
+[83.90s][log] %c[focusOn]%c level 1.05× (raw 0.78 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-7, rect: Object, fill: 0.5, iframe: Object}
+[83.90s][log] [zoomTo:pre-scroll] #wpforms-field-7 rect= DOMRect
+[84.41s][log] [zoomTo:post-scroll] #wpforms-field-7 rect= DOMRect scrollY= 0
+[84.41s][log] [zoomTo] #wpforms-field-7 {rect: Object, cx: 967, cy: 487.5, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}
+[85.61s][log] %c[verb:start]%c icon-choices :: icon-choices-payoff (focusPull) color:#E27730;font-weight:600  {chapter: icon-choices, snapshot: builder-field-options-checkbox, step: Object}
+[85.61s][log] %c[focusPull]%c #wpforms-field-7 color:#E27730;font-weight:600  {blur: 4}
+[87.56s][log] %c[verb:end]%c icon-choices :: icon-choices-payoff ok (1943ms) color:#E27730;font-weight:600  null
+[88.32s][log] %c[runner]%c icon-choices :: open-icon-picker (iconPickerOpen) color:#E27730;font-weight:600 
+[88.53s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: null}
+[88.53s][log] %c[focusOn]%c level 1.80× (raw 3.14 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select, rect: Object, fill: 0.55, iframe: Object}
+[88.53s][log] [zoomTo:pre-scroll] #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select rect= DOMRect
+[89.03s][log] [zoomTo:post-scroll] #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select rect= DOMRect scrollY= 0
+[89.03s][log] [zoomTo] #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select {rect: Object, cx: 293.875, cy: 413, cxClamped: 400, cyClamped: 413}
+[90.24s][log] %c[verb:start]%c icon-choices :: open-icon-picker (iconPickerOpen) color:#E27730;font-weight:600  {chapter: icon-choices, snapshot: builder-field-options-checkbox, step: Object}
+[90.24s][log] %c[click]%c target #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select color:#E27730;font-weight:600  {instruction: Open Icon Picker, direction: right}
+[90.24s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: null}
+[90.24s][log] %c[instruction]%c "Open Icon Picker" → #wpforms-field-option-7-choices-list > li:nth-child(1) .wpfo (right) color:#E27730;font-weight:600 
+[90.84s][log] %c[resolve]%c ok: #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: null}
+[90.84s][log] %c[highlight]%c ring on #wpforms-field-option-7-choices-list > li:nth-child(1) .wpforms-icon-select color:#E27730;font-weight:600  {pad: 12, label: Open the Icon Picker, count: 1}
+[96.97s][log] %c[verb:end]%c icon-choices :: open-icon-picker ok (6729ms) color:#E27730;font-weight:600  null
+[96.97s][log] %c[runner]%c icon-choices :: toggle-image-choices (clickOn) color:#E27730;font-weight:600 
+[97.17s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-choices_images color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-choices_images}
+[97.17s][log] %c[focusOn]%c level 1.80× (raw 3.13 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-row-7-choices_images, rect: Object, fill: 0.78, iframe: Object}
+[97.17s][log] [zoomTo:pre-scroll] #wpforms-field-option-row-7-choices_images rect= DOMRect
+[97.68s][log] [zoomTo:post-scroll] #wpforms-field-option-row-7-choices_images rect= DOMRect scrollY= 0
+[97.68s][log] [zoomTo] #wpforms-field-option-row-7-choices_images {rect: Object, cx: 294.5, cy: 532, cxClamped: 400, cyClamped: 532}
+[98.88s][log] %c[verb:start]%c icon-choices :: toggle-image-choices (clickOn) color:#E27730;font-weight:600  {chapter: icon-choices, snapshot: builder-field-options-checkbox, step: Object}
+[98.88s][log] %c[click]%c target #wpforms-field-option-row-7-choices_images color:#E27730;font-weight:600  {instruction: Use images as choices, direction: right}
+[98.88s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-choices_images color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-choices_images}
+[98.88s][log] %c[instruction]%c "Use images as choices" → #wpforms-field-option-row-7-choices_images (right) color:#E27730;font-weight:600 
+[99.47s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-choices_images color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-choices_images}
+[99.47s][log] %c[highlight]%c ring on #wpforms-field-option-row-7-choices_images color:#E27730;font-weight:600  {pad: 12, label: Mention Image Choices, count: 1}
+[103.34s][log] %c[verb:end]%c icon-choices :: toggle-image-choices ok (4462ms) color:#E27730;font-weight:600  null
+[104.55s][log] %c[runner]%c multi-column-layout :: open-advanced-tab (clickOn) color:#E27730;font-weight:600 
+[104.83s][log] %c[transition]%c chapter-break: glide color:#E27730;font-weight:600 
+[104.85s][log] %c[resolve]%c ok: #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle color:#E27730;font-weight:600  {rect: Object, tag: A, id: null}
+[104.85s][log] %c[focusOn]%c level 1.80× (raw 7.90 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle, rect: Object, fill: 0.5, iframe: Object}
+[104.87s][log] [zoomTo:pre-scroll] #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle rect= DOMRect
+[104.97s][log] [zoomTo:post-scroll] #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle rect= DOMRect scrollY= 0
+[104.97s][log] [zoomTo] #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle {rect: Object, cx: 237.5625, cy: 144.5, cxClamped: 400, cyClamped: 250}
+[106.19s][log] %c[verb:start]%c multi-column-layout :: open-advanced-tab (clickOn) color:#E27730;font-weight:600  {chapter: multi-column-layout, snapshot: builder-field-options-checkbox, step: Object}
+[106.19s][log] %c[click]%c target #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle color:#E27730;font-weight:600  {instruction: Open Advanced, direction: null}
+[106.19s][log] %c[resolve]%c ok: #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle color:#E27730;font-weight:600  {rect: Object, tag: A, id: null}
+[106.19s][log] %c[instruction]%c "Open Advanced" → #wpforms-field-option-advanced-7 > .wpforms-field-option-gro (down) color:#E27730;font-weight:600 
+[106.77s][log] %c[resolve]%c ok: #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle color:#E27730;font-weight:600  {rect: Object, tag: A, id: null}
+[106.77s][log] %c[highlight]%c ring on #wpforms-field-option-advanced-7 > .wpforms-field-option-group-toggle color:#E27730;font-weight:600  {pad: 12, label: Open Advanced, count: 1}
+[109.44s][log] %c[verb:end]%c multi-column-layout :: open-advanced-tab ok (3251ms) color:#E27730;font-weight:600  null
+[109.44s][log] %c[runner]%c multi-column-layout :: pick-choice-layout (selectFauxDropdown) color:#E27730;font-weight:600 
+[109.64s][log] %c[resolve]%c ok: #wpforms-field-option-row-7-input_columns color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-option-row-7-input_columns}
+[109.64s][log] %c[focusOn]%c level 1.49× (raw 2.09 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-option-row-7-input_columns, rect: Object, fill: 0.52, iframe: Object}
+[109.64s][log] [zoomTo:pre-scroll] #wpforms-field-option-row-7-input_columns rect= DOMRect
+[110.15s][log] [zoomTo:post-scroll] #wpforms-field-option-row-7-input_columns rect= DOMRect scrollY= 0
+[110.15s][log] [zoomTo] #wpforms-field-option-row-7-input_columns {rect: Object, cx: 294.5, cy: 324.5, cxClamped: 484.58942632170977, cyClamped: 324.5}
+[111.35s][log] %c[verb:start]%c multi-column-layout :: pick-choice-layout (selectFauxDropdown) color:#E27730;font-weight:600  {chapter: multi-column-layout, snapshot: builder-field-options-checkbox, step: Object}
+[113.90s][log] %c[verb:end]%c multi-column-layout :: pick-choice-layout ok (2542ms) color:#E27730;font-weight:600  null
+[114.50s][log] %c[runner]%c multi-column-layout :: layout-payoff (popOut) color:#E27730;font-weight:600 
+[114.71s][log] %c[resolve]%c ok: #wpforms-field-7 color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-7}
+[114.71s][log] %c[focusOn]%c level 1.05× (raw 0.84 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-7, rect: Object, fill: 0.5, iframe: Object}
+[114.71s][log] [zoomTo:pre-scroll] #wpforms-field-7 rect= DOMRect
+[115.22s][log] [zoomTo:post-scroll] #wpforms-field-7 rect= DOMRect scrollY= 0
+[115.22s][log] [zoomTo] #wpforms-field-7 {rect: Object, cx: 967, cy: 487.5, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}
+[116.44s][log] %c[verb:start]%c multi-column-layout :: layout-payoff (popOut) color:#E27730;font-weight:600  {chapter: multi-column-layout, snapshot: builder-field-options-checkbox, step: Object}
+[116.44s][log] %c[popOut]%c #wpforms-field-7 color:#E27730;font-weight:600  {tilt: 0, lift: 1.08}
+[118.40s][log] %c[verb:end]%c multi-column-layout :: layout-payoff ok (1964ms) color:#E27730;font-weight:600  null
+[118.58s][log] %c[scene]%c swapSnapshot → builder-fields (style=fast) color:#E27730;font-weight:600 
+[118.58s][log] %c[transition]%c swap: fast color:#E27730;font-weight:600 
+[119.61s][log] %c[runner]%c save-checkboxes-field :: final-field-preview (focusPull) color:#E27730;font-weight:600 
+[119.92s][log] %c[resolve]%c ok: #wpforms-field-7 color:#E27730;font-weight:600  {rect: Object, tag: DIV, id: wpforms-field-7}
+[119.92s][log] %c[focusOn]%c level 1.05× (raw 0.84 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-field-7, rect: Object, fill: 0.5, iframe: Object}
+[119.94s][log] [zoomTo:pre-scroll] #wpforms-field-7 rect= DOMRect
+[120.05s][log] [zoomTo:post-scroll] #wpforms-field-7 rect= DOMRect scrollY= 0
+[120.05s][log] [zoomTo] #wpforms-field-7 {rect: Object, cx: 967, cy: 660.5, cxClamped: 754.2857142857143, cyClamped: 471.42857142857144}
+[121.26s][log] %c[verb:start]%c save-checkboxes-field :: final-field-preview (focusPull) color:#E27730;font-weight:600  {chapter: save-checkboxes-field, snapshot: builder-fields, step: Object}
+[121.26s][log] %c[focusPull]%c #wpforms-field-7 color:#E27730;font-weight:600  {blur: 3}
+[122.94s][log] %c[verb:end]%c save-checkboxes-field :: final-field-preview ok (1677ms) color:#E27730;font-weight:600  null
+[122.94s][log] %c[runner]%c save-checkboxes-field :: save-form (clickOn) color:#E27730;font-weight:600 
+[123.14s][log] %c[resolve]%c ok: #wpforms-save color:#E27730;font-weight:600  {rect: Object, tag: BUTTON, id: wpforms-save}
+[123.14s][log] %c[focusOn]%c level 1.80× (raw 7.92 −0.6 trim, clamp [1.05,1.8]) color:#E27730;font-weight:600  {sel: #wpforms-save, rect: Object, fill: 0.55, iframe: Object}
+[123.14s][log] [zoomTo:pre-scroll] #wpforms-save rect= DOMRect
+[123.65s][log] [zoomTo:post-scroll] #wpforms-save rect= DOMRect scrollY= 0
+[123.65s][log] [zoomTo] #wpforms-save {rect: Object, cx: 1304.015625, cy: 38, cxClamped: 1040, cyClamped: 250}
+[124.86s][log] %c[verb:start]%c save-checkboxes-field :: save-form (clickOn) color:#E27730;font-weight:600  {chapter: save-checkboxes-field, snapshot: builder-fields, step: Object}
+[124.86s][log] %c[click]%c target #wpforms-save color:#E27730;font-weight:600  {instruction: Save your form, direction: null}
+[124.86s][log] %c[resolve]%c ok: #wpforms-save color:#E27730;font-weight:600  {rect: Object, tag: BUTTON, id: wpforms-save}
+[124.86s][log] %c[instruction]%c "Save your form" → #wpforms-save (down) color:#E27730;font-weight:600 
+[125.45s][log] %c[resolve]%c ok: #wpforms-save color:#E27730;font-weight:600  {rect: Object, tag: BUTTON, id: wpforms-save}
+[125.45s][log] %c[highlight]%c ring on #wpforms-save color:#E27730;font-weight:600  {pad: 12, label: Save your form, count: 1}
+[128.12s][log] %c[verb:end]%c save-checkboxes-field :: save-form ok (3254ms) color:#E27730;font-weight:600  null
