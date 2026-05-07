@@ -6,10 +6,10 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase C (cross-snapshot Flip-bridge + shared-scene primitive + camera-pose vocabulary + editorial surface mode + engine.js camera routing) — implementation
-- **Active branch:** `phase-c-transitions-overhaul`
-- **Last verified-good commit:** Phase B merge commit on `main` (parent `ef8ffdb` ↔ phase-b tip `a298800`)
-- **Next action:** Phase C codex prompt + kickoff pair at `docs/codex-prompts/phase-c-transitions-overhaul.md` and `docs/codex-prompts/phase-c-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex — Phase C is the transition fix Umair has been waiting for.
+- **Active phase:** Phase D (`videos/_shared/blocks/` library + Pixel-Point text-kit completion + helper rollout) — implementation
+- **Active branch:** `phase-d-blocks-and-text-kit`
+- **Last verified-good commit:** Phase C merge commit `6176826` on `main`
+- **Next action:** Run Phase D validation and smoke on the five regression targets plus the two helper-rollout videos.
 
 ---
 
@@ -32,6 +32,27 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 ---
 
 ## 3. Per-step log (reverse chronological)
+
+### 2026-05-07 — Phase D — implementation draft
+
+Started branch `phase-d-blocks-and-text-kit` from Phase C merge commit
+`6176826`.
+
+**Shipped in this pass:**
+
+- Added `videos/_shared/blocks/` with seven parent-document editorial blocks:
+  code-card, mac-window, phone-frame, pill, arrow, route-line, terminal.
+- Expanded `videos/_shared/text-kit.js` to 24 Pixel-Point-style presets with
+  SplitText support and deterministic fallback splitting.
+- Added helper rollout proof in non-baseline packages:
+  `form-entries-guide` `where-entries-2` and `form-notifications`
+  `managing-3` now use `cursor.glideTo(..., { via })`.
+- Added `docs/blocks.md`, `docs/text-kit.md`,
+  `docs/helper-rollout-backlog.md`; updated authoring/postIntro/skill-context
+  callouts.
+- Added kit smoke page at `tools/_phase-d-kit-smoke.html`.
+
+**Open questions:** none.
 
 ### 2026-05-07 — Phase C — implementation pass in progress
 
