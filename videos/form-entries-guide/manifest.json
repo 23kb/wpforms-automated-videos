@@ -7,7 +7,7 @@
   "narrationVolume": 0.3,
   "defaults": {
     "breakStyle": "glide",
-    "swapStyle": "morph"
+    "swapStyle": "flipBridge"
   },
   "intro": {
     "variant": "sullie-system",

@@ -7,7 +7,7 @@ export const snapshot = 'admin-entries-list';
 export const validator = { snapshot: 'admin-entries-list' };
 export const mode = 'per-beat-narration';
 export const breakStyle = 'glide';
-export const swapStyle = 'morph';
+export const swapStyle = 'flipBridge';
 
 function installInteractionStyle(doc) {
   if (doc.getElementById('fe-search-style')) return;

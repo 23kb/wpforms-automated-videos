@@ -5,7 +5,7 @@ export const snapshot = 'admin-entries-list';
 export const validator = { snapshot: 'admin-entries-list' };
 export const mode = 'per-beat-narration';
 export const breakStyle = 'glide';
-export const swapStyle = 'morph';
+export const swapStyle = 'flipBridge';
 
 // Editorial column-picker dropdown — DOM cloned from product truth supplied
 // by the user (.wpforms-multiselect-checkbox-list). The base snapshot ships

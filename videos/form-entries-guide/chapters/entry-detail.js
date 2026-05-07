@@ -5,7 +5,7 @@ export const snapshot = 'admin-entry-detail';
 export const validator = { snapshot: 'admin-entry-detail' };
 export const mode = 'per-beat-narration';
 export const breakStyle = 'glide';
-export const swapStyle = 'morph';
+export const swapStyle = 'flipBridge';
 
 export default [
   {

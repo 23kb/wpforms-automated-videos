@@ -5,7 +5,7 @@ export const snapshot = 'admin-tools-export';
 export const validator = { snapshot: 'admin-tools-export' };
 export const mode = 'per-beat-narration';
 export const breakStyle = 'glide';
-export const swapStyle = 'morph';
+export const swapStyle = 'flipBridge';
 
 export default [
   {
