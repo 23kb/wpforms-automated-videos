@@ -6,11 +6,11 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase D (`videos/_shared/blocks/` library + Pixel-Point text-kit completion + helper rollout) — prompt drafting
-- **Active branch:** `main` (Phase C merged via `--no-ff` at `6176826`)
-- **Last verified-good commit:** Phase C merge commit `6176826` on `main`
-- **Next action:** Phase D codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-d-blocks-and-text-kit.md` and `docs/codex-prompts/phase-d-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
-- **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for upcoming phases (D, E, F).
+- **Active phase:** Phase E (`tools/render.js` Puppeteer+FFmpeg → MP4 + `tools/preview.js` live-reload + author scrubber) — prompt drafting
+- **Active branch:** `main` (Phase D merged via `--no-ff`)
+- **Last verified-good commit:** Phase D merge commit on `main`
+- **Next action:** Phase E codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-e-render-and-preview.md` and `docs/codex-prompts/phase-e-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
+- **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for upcoming phases (E, F).
 
 ---
 

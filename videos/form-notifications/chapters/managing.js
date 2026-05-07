@@ -50,7 +50,7 @@ export default [
     labelDwell: 0.9, keepLabels: true,
     effect: async ({ cursor, zoomTo, clearLabels, duplicateBlock, collapseBlock }) => {
       await cursor.park({ x: 1400, y: 600 });
-      await cursor.moveTo(cloneBtn);
+      await cursor.glideTo(cloneBtn, { via: block2Head, wait: 700 });
       await cursor.click();
       await clearLabels();
       await cursor.hide();
