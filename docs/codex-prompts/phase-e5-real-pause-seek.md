@@ -48,7 +48,7 @@ Rejected Phase E branch tip is `c09240b` (on `phase-e-render-and-preview`). Two 
 
 Also cherry-pick the docs commit `c09240b docs: update phase e tooling context` for `docs/render.md` and `docs/preview.md` baseline content. Update them in your final docs commit to reflect the real scrubber.
 
-The two follow-up Phase E hotfix commits on the rejected branch (`6b5b6c8` scrubber route from serve.js, `[next commit hash if any]` split preview client) — **DO NOT cherry-pick**. They were patches on the broken design and are obsolete.
+The two follow-up Phase E hotfix commits on the rejected branch (`6b5b6c8` scrubber route from serve.js, `91702e9` split preview client) — **DO NOT cherry-pick**. They were patches on the broken design and are obsolete.
 
 After cherry-pick, your branch should have render + HMR working but no scrubber UI. From there, build the real work.
 
@@ -133,25 +133,42 @@ export async function resume() {
 }
 
 // pausableSleep is the workhorse. engine.js sleep() delegates here.
-export function pausableSleep(ms) {
-  return new Promise((resolve) => {
-    let elapsed = 0;
-    let started = performance.now();
-    const tick = () => {
-      if (paused) {
-        wallClockWaiters.add(tick);
-        return;
-      }
-      const now = performance.now();
-      elapsed += now - started;
-      started = now;
-      const remaining = ms - elapsed;
-      if (remaining <= 0) { resolve(); return; }
-      setTimeout(tick, Math.min(remaining, 33));
-    };
-    tick();
-  });
-}
+//
+// Behavior contract (this is the spec — implementation can vary as long as
+// it satisfies the contract):
+//
+//   pausableSleep(ms) resolves after `ms` of CUMULATIVE UNPAUSED time.
+//   Time spent while window.__hfPaused === true does NOT count toward the
+//   sleep. A sleep that begins, gets paused for 30 seconds, then resumes
+//   must still wait the remaining unpaused milliseconds before resolving.
+//
+// Reference implementation:
+//
+//   export function pausableSleep(ms) {
+//     return new Promise((resolve) => {
+//       let remaining = ms;
+//       let lastResume = paused ? null : performance.now();
+//       const tick = () => {
+//         if (paused) {
+//           if (lastResume != null) {
+//             remaining -= performance.now() - lastResume;
+//             lastResume = null;
+//           }
+//           wallClockWaiters.add(tick);
+//           return;
+//         }
+//         if (lastResume == null) lastResume = performance.now();
+//         const elapsed = performance.now() - lastResume;
+//         if (elapsed >= remaining) { resolve(); return; }
+//         setTimeout(tick, Math.min(remaining - elapsed, 33));
+//       };
+//       tick();
+//     });
+//   }
+//
+// Critical: do NOT credit paused wall-clock time toward `elapsed`. A naïve
+// implementation that does will resolve sleeps immediately on resume and
+// break the entire pause invariant.
 
 // Audio registration — scenes/shared.js calls registerAudio(el) when it
 // creates a narration or BGM element.
@@ -333,14 +350,52 @@ for slug in a-complete-guide-to-the-checkboxes-field wpforms-rest-api-overview c
 done
 
 # 3. Hidden-tab regression test (Phase B win condition must still pass).
-#    Synthetic 10s paused timeline; force tab hidden 3s; assert drift < 100ms.
-#    Reuse the probe from Phase B oversight session.
+#    Synthetic 10s paused timeline; force document.visibilityState = 'hidden'
+#    for 3s via visibilitychange event; assert the timeline advanced 3.0s ± 100ms
+#    via the frame driver's setTimeout fallback. Probe (Playwright):
+#
+#    import { chromium } from 'playwright';
+#    const browser = await chromium.launch();
+#    const page = await (await browser.newContext()).newPage();
+#    await page.goto('http://localhost:4321/scenes/player.html?video=wpforms-rest-api-overview&debug=1');
+#    await page.waitForTimeout(1500);
+#    const btn = await page.$('button'); if (btn) await btn.click().catch(()=>{});
+#    await page.waitForFunction(() => document.body?.dataset?.sceneBooted === 'true', null, { timeout: 60000 });
+#    await page.evaluate(async () => {
+#      const fd = await import('/runtime/frame-driver.js');
+#      const { gsapTimelineAdapter } = await import('/runtime/frame-adapter.js');
+#      if (!window.gsap) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = '/vendor/gsap/3.15.0/gsap.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+#      const target = document.createElement('div'); target.style.cssText = 'position:absolute;left:-9999px';
+#      document.body.appendChild(target);
+#      const tl = gsap.timeline({ paused: true });
+#      tl.to(target, { x: 1000, duration: 10, ease: 'none' });
+#      fd.register(gsapTimelineAdapter(tl, { id: 'probe:hidden-tab' }));
+#      window.__probeTl = tl;
+#    });
+#    await page.waitForTimeout(500);
+#    const v1 = await page.evaluate(() => window.__probeTl.time());
+#    await page.evaluate(() => {
+#      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+#      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+#      document.dispatchEvent(new Event('visibilitychange'));
+#    });
+#    const tHide = Date.now();
+#    await page.waitForTimeout(3000);
+#    const v2 = await page.evaluate(() => window.__probeTl.time());
+#    const tElapsed = (Date.now() - tHide) / 1000;
+#    const drift = Math.abs((v1 + tElapsed) - v2);
+#    // ASSERT: drift < 0.1 (100ms). Phase B's win condition stays the bar.
 
 # 4. Render output regression — no MP4 quality/duration change.
+#    Wall-clock baseline: 11.3s ± 0.1. Seek baseline: 10.5s ± 0.1.
 node tools/render.js _phase-c-editorial-pilot --fps 30 --timeout 60
 ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \
   videos/_phase-c-editorial-pilot/render/_phase-c-editorial-pilot.mp4
-# duration must match pre-Phase-E.5 baseline within 0.1s.
+# ASSERT: duration ∈ [11.2, 11.4]
+node tools/render.js _phase-c-editorial-pilot --seek --fps 30
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \
+  videos/_phase-c-editorial-pilot/render/_phase-c-editorial-pilot-seek.mp4
+# ASSERT: duration ∈ [10.4, 10.6]
 
 # 5. Pause win condition (manual + scripted).
 #    a. Open scrubber for wpforms-rest-api-overview.
