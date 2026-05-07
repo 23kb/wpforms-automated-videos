@@ -1,10 +1,9 @@
 # Helper Rollout Backlog
 
-Phase D audited high-value places to use `popOut`, `cursor.glideTo`, and
-`lineDraw` without mass-migrating existing videos. Rollout remains opt-in per
-storyboard.
+High-value places to use `popOut`, `cursor.glideTo`, and `lineDraw` without
+mass-migrating existing videos. Rollout remains opt-in per storyboard.
 
-## Shipped In Phase D
+## Already shipped
 
 - `form-entries-guide`, `where-entries-2`: replaced the straight cursor move
   from the WPForms sidebar parent to the Entries submenu with
