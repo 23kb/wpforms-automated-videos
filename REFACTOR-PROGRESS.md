@@ -49,6 +49,78 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 
 ## 3. Per-step log (reverse chronological)
 
+### 2026-05-07 — Phase D — completed and merged
+
+Merged `phase-d-blocks-and-text-kit` into `main` with `--no-ff`. Phase-D
+branch tip: `0fb6395`. Merge resolved one conflict in REFACTOR-PROGRESS.md
+(both branches had updated §1 + §3; took main's Phase C completion entry,
+discarded Codex's in-progress Phase D draft entry — replaced here).
+
+**Shipped:**
+
+- `videos/_shared/blocks/` (new directory): 7 parent-document editorial
+  blocks (`mountCodeCard`, `mountMacWindow`, `mountPhoneFrame`, `mountPill`,
+  `mountArrow`, `mountRouteLine`, `mountTerminal`) with shared
+  `_utils.js` (escape, tokenize, ID generation, mountStyle, disposeBlock).
+  Each block lives in the parent doc only — blocks never read iframe DOM.
+  Each returns `{ el, dispose, tweenInto?(tl, opts) }` with idempotent
+  dispose. `index.js` re-exports for ergonomic imports.
+- `videos/_shared/text-kit.js`: extended from 7 to 24 presets. Uses
+  `SplitText` when `loadGsap({ splitText: true })` has run; deterministic
+  DOM fallback keeps the factory usable in older chapters and the kit
+  smoke page. Factory signature unchanged. New
+  `TEXT_REVEAL_PRESET_NAMES` and `listTextRevealPresets()` exports.
+- `tools/_phase-d-kit-smoke.html` (sandbox): standalone page that mounts
+  every block + every preset in a loop and verifies dispose. Not part of
+  the regression set; can be deleted post-merge if desired.
+- Helper rollouts (pinned non-baselines):
+  - `videos/form-entries-guide/chapters/where-entries-live.js` —
+    `cursor.moveTo(sidebarEntriesLink)` → `cursor.glideTo(sidebarEntriesLink,
+    { via: sidebarWPForms, wait: 700 })`. Natural arc through the WPForms
+    parent menu before landing on Entries.
+  - `videos/form-notifications/chapters/managing.js` —
+    `cursor.moveTo(cloneBtn)` → `cursor.glideTo(cloneBtn, { via: block2Head,
+    wait: 700 })`. Cursor travels via the block header before reaching the
+    clone button.
+- Docs: `docs/blocks.md`, `docs/text-kit.md`, `docs/helper-rollout-backlog.md`
+  (all NEW). `docs/authoring-api.md` and `docs/postintro-patterns.md`
+  extended with block / text-kit / helper-rollout guidance.
+
+**Validation:** 0 errors on all 7 targets (4 baselines + editorial pilot +
+2 helper-rollout videos).
+
+**Smoke (`--seconds 30 --allow-resource-404`):** all 7 reach
+`sceneBooted=true` with `bootError=""`, `pageErrors=[]`, `consoleErrors=[]`.
+
+**Kit-disposal + preset-coverage assertion (independently measured):** all
+7 blocks mount + double-dispose without throwing. All 24 presets mount +
+double-dispose without throwing. Each preset returns `{ el, dispose,
+tweenInto }`. After full round-trip: `document.body.children.length`
+returned to baseline (9 → 9). Style count returned to baseline + 1 (text-kit
+injects one shared `<style>` once on first mount; idempotent on subsequent
+mounts).
+
+**Visual smoke:** Codex provided playable URLs for the two helper-rollout
+migrations. Umair's QC owns.
+
+**Doc updates this merge:**
+
+- `CLAUDE.md`: Per-Video Files extended with Phase D capability-kit
+  callouts (blocks, text-kit 24-preset, helper-rollout reminder).
+  Protected Areas unchanged (Phase D added no runtime modules).
+- `tools/skill-context.js` (Codex's pass): capabilityKits adds blocks
+  index entry, bumps text-kit description from 7 to 24 presets; on-demand
+  adds the 3 new docs.
+- `docs/authoring-api.md` (Codex's pass): block library callout, full
+  preset list reference.
+- `docs/postintro-patterns.md` (Codex's pass): "when to reach for popOut /
+  glideTo / lineDraw" section.
+- `REFACTOR-PROGRESS.md`: this entry; §1 advanced to Phase E.
+
+**No deviations from prompt.** All tier-1 blocks shipped; tier-2 list
+landed `terminal` (the most-used pattern). Pixel-Point preset names
+checked against the public Animate Text skill reference.
+
 ### 2026-05-07 — Phase C — completed and merged
 
 Merged `phase-c-transitions-overhaul` into `main` with `--no-ff`. Merge
