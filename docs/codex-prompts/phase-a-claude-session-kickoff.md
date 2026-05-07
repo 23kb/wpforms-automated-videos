@@ -35,7 +35,7 @@ Umair will paste Codex's response into the chat. You then:
 5. Run the acceptance commands from `docs/codex-prompts/phase-a-gsap-foundation.md`:
    - validators on all four baselines
    - smoke test on all four baselines
-   - visual smoke on at least one (open in browser, watch postIntro + first chapter)
+   - **Visual QC is Umair's job, not yours.** Do NOT open a headed browser, screen-record, or frame-extract to verify visual quality. Token cost rule: agents don't burn tokens on visual verification a human does faster locally. Trust the validators + smoke + your diff review; flag visual concerns in your handoff for Umair to confirm in his browser.
 
 ### Step 3 — decide
 
