@@ -6,11 +6,15 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase F (skill packaging + validator extensions + deterministic-logic linter) — implementation in progress
-- **Active branch:** `phase-f-skills-and-linter`
-- **Last verified-good commit:** Phase E.5 merge commit `6e58fdc` on `main`
-- **Next action:** Review Phase F implementation, deterministic findings, and validation output.
-- **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for the final phase (F).
+- **Status: REFACTOR COMPLETE.** Phases A → B → C → D → E.5 → F all merged. Phase E rejected at oversight; not merged.
+- **Active phase:** none — refactor closed at Phase F merge `da06464`.
+- **Last verified-good commit:** `da06464` (Phase F merge).
+- **Phase plan reference:** [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 — all 6 phases shipped.
+- **Closure summary:** see [REFACTOR-DONE.md](REFACTOR-DONE.md) for the one-page recap (cream-bleed killed, pause/seek delivered, scrubber working, skills packaged, linter active).
+- **Open work (no scheduled phase):**
+  - §2.2 architectural debt — three bullets remain open (Flip carry, shared-scene unused, camera-poses shallow integration). Future-work, no scheduled phase.
+  - §2.1 known gaps — two missing-asset items (`click-alt.mp3`, `bgms/56.mp3`), low priority.
+  - `docs/deterministic-logic-findings.md` — 56 warnings logged in Phase F (`Math.random` without seeded RNG + `setTimeout` outside allowlist). Cleanup is a separate per-video session at the user's pace.
 - **Note on Phase E:** Phase E (`phase-e-render-and-preview`, branch tip `c09240b`) was REJECTED at oversight — render + HMR were good, scrubber UI was observation-only and contradicted the mandate. Phase E branch was NOT merged. Phase E.5 cherry-picked the render + HMR foundation and added pause/seek + camera-on-driver + a real working scrubber. The phase-e branch remains in the repo for history but is dead-ended.
 
 ---
@@ -54,27 +58,54 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 
 ## 3. Per-step log (reverse chronological)
 
-### 2026-05-07 — Phase F — implementation pass
+### 2026-05-07 — Phase F — completed and merged (FINAL PHASE)
 
-Implemented Phase F on branch `phase-f-skills-and-linter`.
+Merged `phase-f-skills-and-linter` into `main` with `--no-ff`. Merge commit
+`da06464`. Phase-F branch tip: `7390c40`. **Refactor complete.**
 
-**Shipped in this pass:**
+**Shipped:**
 
-- Five repo-local skills under `.claude/skills/`: `wpforms-video`,
-  `wpforms-postintro`, `wpforms-gsap-rules`, `wpforms-marketing`, and
-  `wpforms-transitions`.
-- `tools/validate-video.js` additive warning-only lint passes:
-  audio-vs-duration, raw `requestAnimationFrame()`, and
-  `registerTimeline()` paused-precondition. Added `--skip-lint <rule>` and
-  `--all`.
-- `tools/lint-determinism.js` with the Phase F exit-code contract.
-- Docs: `docs/skills.md`, `docs/deterministic-logic.md`, and
-  `docs/deterministic-logic-findings.md`.
-- `npm run lint` now composes `validate-video.js --all` and
-  `lint-determinism.js --all`.
+- `.claude/skills/wpforms-{video,postintro,gsap-rules,marketing,transitions}/SKILL.md`
+  — 5 Anthropic-standard skill bundles. Single file per skill, YAML frontmatter
+  (name + description), body re-uses canonical docs without duplication.
+- `tools/validate-video.js` additive warn-only lint passes:
+  audio-vs-duration, raw `requestAnimationFrame` outside `pausableRaf`,
+  `registerTimeline` paused-precondition. New flags: `--all`,
+  `--skip-lint <rule>`. **Exit codes preserved on all 7 baselines.**
+- `tools/lint-determinism.js` (NEW): scans for `Date.now`, unseeded
+  `Math.random`, `fetch`, `setTimeout` outside allowlist. Exit contract:
+  `0` clean / `1` errors / `2` warnings.
+- `docs/skills.md` (NEW): skill index + relationship to `tools/skill-context.js`.
+- `docs/deterministic-logic.md` (NEW): rule rationale tied to Phase E.5 seek-
+  render parity.
+- `docs/deterministic-logic-findings.md` (NEW): 56 existing warnings logged
+  per file. Phase F does NOT migrate; cleanup is a separate session.
+- `package.json` `lint` script composes `validate-video.js --all` and
+  `lint-determinism.js --all`. (Note: npm normalizes the underlying linter's
+  exit-2 contract to exit-1 in the wrapper, so warnings cause `npm run lint`
+  non-zero — minor CI quirk, not a contract violation.)
 
-**Deterministic findings:** 0 errors, 56 warnings. Existing warnings are logged
-in `docs/deterministic-logic-findings.md` for a separate migration session.
+**Validation:** all 7 targets exit 0. Warning counts (was → now from new lints):
+checkboxes 4→4, REST API 0→9, CFF 38→38, AI 8→4, editorial pilot 1→1,
+form-entries-guide 0→32, form-notifications 1→3.
+
+**Smoke (`--seconds 30 --allow-resource-404`):** all 7 reach `sceneBooted=true`
+with empty `bootError`, `pageErrors`, `consoleErrors`.
+
+**Deterministic findings:** 0 errors, 56 warnings, exit code 2.
+
+**Doc updates this merge:**
+
+- `CLAUDE.md`: Tools section adds `render`, `preview`, `lint-determinism`,
+  `npm run lint`. New Skills section + Determinism section.
+- `tools/skill-context.js` (Codex's pass): 5 SKILL.md entries in
+  capabilityKits; `docs/skills.md`, `docs/deterministic-logic.md`,
+  `docs/deterministic-logic-findings.md` in on-demand; `lint-determinism.js`
+  in tools list.
+- `REFACTOR-PROGRESS.md`: this entry; §1 updated to "REFACTOR COMPLETE";
+  link to `REFACTOR-DONE.md` summary.
+- `REFACTOR-DONE.md` (NEW): one-page closure summary.
+- `REFACTOR-BRIEF.md` §1: status updated to complete.
 
 ### 2026-05-07 — Phase E.5 — completed and merged
 

@@ -1,5 +1,17 @@
 # REFACTOR-BRIEF.md
 
+**STATUS: REFACTOR COMPLETE.** All six phases (A → B → C → D → E.5 → F) merged.
+Phase E was rejected at oversight; not merged. See
+[REFACTOR-DONE.md](REFACTOR-DONE.md) for the closure summary and
+[REFACTOR-PROGRESS.md](REFACTOR-PROGRESS.md) for the per-phase log. Last
+verified-good commit: `da06464` (Phase F merge).
+
+This file remains as the historical mandate, locked decisions (§3), and
+protected-core list (§4). Future sessions should read it for context, but no
+further phase work is scheduled.
+
+---
+
 **Living document. Update at phase boundaries only.** Any session — Claude or Codex — reads this file first to understand the refactor's mandate, scope, decisions, and protected boundaries. Pair with [REFACTOR-PROGRESS.md](REFACTOR-PROGRESS.md) for current state.
 
 ---
