@@ -9,8 +9,8 @@
 - **Active phase:** Phase B (paused-timeline + Frame Adapter player driver) — prompt drafting next
 - **Active branch:** `main` (Phase A merged); Phase B branch `phase-b-paused-timeline-driver` will be created when prompt is sent
 - **Current pilot video for Phase B:** `creating-first-form` (simplest tutorial; switch to checkboxes/REST API after first migration succeeds)
-- **Last verified-good commit:** `1367e3b` (Merge branch 'phase-a-gsap-foundation' into main)
-- **Next action:** Draft `docs/codex-prompts/phase-b-paused-timeline-driver.md`. Pause for Umair review before sending to Codex — Phase B is the largest and riskiest phase.
+- **Last verified-good commit:** `ee35378` (phase A.5: smoke gate fix — sceneBooted milestone)
+- **Next action:** Phase B prompt + kickoff pair drafted at `docs/codex-prompts/phase-b-paused-timeline-driver.md` and `docs/codex-prompts/phase-b-claude-session-kickoff.md`. Locked answers (migration 2 file pinned, `tl.seek(t, false)` events fire, per-registration `t0`, registry-empty assertion, `awaitTween` coexistence) applied. Awaiting Umair's send-to-Codex signal.
 
 ---
 
@@ -22,7 +22,33 @@ _(none currently — all Phase A starting questions answered 2026-05-07)_
 
 ---
 
+## 2.1 Known gaps (tracked, not blocking)
+
+Issues that surfaced during Phase 0–A work and are documented but not blocking the active phase. Each entry: what, where, why deferred.
+
+- **Smoke `sceneBooted` hang on two baselines.** `a-complete-guide-to-the-checkboxes-field` and `creating-first-form` never reach `sceneBooted=true` even at `--seconds 90`. No bootError, no console/page errors — silent stall in the introCard or pre-postIntro path. The other two baselines (REST API, AI) reach `sceneBooted` within 30s. Phase A.5 fixed the gate semantics (commit `ee35378`); the remaining hang is a separate runtime bug. Deferred — not Phase B's problem unless Codex's player edits incidentally fix or worsen it; revisit after Phase B merge.
+- **`assets/sfx/click-alt.mp3` referenced but missing.** `runtime/sfx.js:37` declares it; nothing in the repo provides it. Smoke reports as missing-resource; `--allow-resource-404` masks. Either alias to existing `click.mp3` or add the asset. Low priority.
+- **`bgms/56.mp3` referenced but missing.** Two baseline manifests (checkboxes, AI) point at `/bgms/56.mp3`; only `1.mp3`–`5.mp3` exist. Suggests the manifests want a track Umair hasn't supplied. Confirm intent and either add the track or repoint the manifests. Low priority.
+- **Phase 0 frame-level QC artifact lingers.** `tools/qc-out/form-entries-guide/` is untracked from a Phase 0 capture session. Decide whether to commit, gitignore, or delete — not Phase B's call.
+
+---
+
 ## 3. Per-step log (reverse chronological)
+
+### 2026-05-07 — Phase A.5 — smoke gate fix (sceneBooted milestone)
+
+Merge commit `ee35378` (fast-forward; trivial micro-fix).
+
+**Problem:** `tools/check-video-playback.js` gated exit-0 on `body.dataset.sceneDone === 'true'`, which is set in `runtime/player.js:622` only AFTER intro + chapters + outro plays through. For tutorials that's many minutes; smoke at `--seconds 90` always exited 1 even on clean boots. Phase B's "regress on baselines" gate was partially blind.
+
+**Fix:**
+
+- `runtime/player.js`: set `body.dataset.sceneBooted='true'` right after the intro/start-gate clears (before postIntro/teaser/chapters). Answers the real smoke question: "did boot fail or not?"
+- `tools/check-video-playback.js`: poll `sceneBooted`, gate exit-0 on `(sceneDone || sceneBooted) && !bootError`.
+
+**Result:** `wpforms-rest-api-overview` and `build-forms-faster-with-wpforms-ai` now reach `sceneBooted=true` and exit 0 at `--seconds 30`. `a-complete-guide-to-the-checkboxes-field` and `creating-first-form` still don't (introCard hang) — see Known gaps §2.1. Net-positive: the gate is now semantically correct for boot-vs-not, even if the underlying hang on two baselines is a separate bug.
+
+**Phase B implication:** the prompt's smoke acceptance command now reads `sceneBooted` and tolerates the two slow baselines via no-error gating. Documented inline in the prompt and in §2.1.
 
 ### 2026-05-07 — Phase A — completed and merged
 
