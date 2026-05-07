@@ -48,6 +48,19 @@ Read `engine/engine.js` lines 1–430 + `runScene` 580–646. Findings — full 
 
 **Implication for Phase C:** The body-wipe stays (no plan to live-mount snapshots), but Phase C pre-loads the next snapshot to a hidden iframe and crossfades, so the wipe is invisible.
 
+### 2026-05-07 — Phase 0 — second QC capture: form-entries-guide (morph swaps)
+
+Captured `form-entries-guide` (4 snapshot swaps, all `morph` style — vs checkboxes' 2 swaps both `fast`). Comparison answers: is morph meaningfully better than fast? **No.**
+
+Full report: `tools/qc-out/form-entries-guide/FINDINGS.md`. Key new findings on top of checkboxes:
+
+1. **`morph` and `fast` produce same-shape gaps.** Both flat-color windows ~1-1.5s with body content gone. Differences are noise within the same architectural failure.
+2. **Two distinct failure shapes:** mid-effect swaps keep chrome mounted (~1s gap, less bad); chapter-boundary swaps unmount chrome (~1.2s gap including ~0.5s pure-flat-color).
+3. **Camera-state-not-carried bug observed in the wild** at swap 4 (132.26s): incoming Tools page renders at wrong scale/position for ~600ms before next `zoomTo` corrects.
+4. **Race conditions:** 4 swaps in same video produced 3 distinct visual behaviors despite identical code path. Independent timers (cover, fade-in, fade-out, chrome-remount) sometimes win in different orders. **Phase B's paused-timeline driver is the architectural fix for this** — single owner sequences all the timers.
+
+**Phase C requirements updated:** chrome must stay ABOVE cover (never unmount); camera transform carried by default not opt-in; pre-loaded incoming iframe makes cover obsolete; two-iframe crossfade replaces cover entirely.
+
 ### 2026-05-07 — Phase 0 — frame-level transition QC capture (complete)
 
 Wrote `tools/transition-qc.js`. Captured `a-complete-guide-to-the-checkboxes-field` end-to-end in headless Playwright at 1920×1080. 5:01 runtime, 82 events, 15.2 MB recording.
