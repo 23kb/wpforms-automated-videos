@@ -6,10 +6,10 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase C (cross-snapshot Flip-bridge + shared-scene primitive + camera-pose vocabulary + editorial surface mode + engine.js camera routing) — implementation
-- **Active branch:** `phase-c-transitions-overhaul`
-- **Last verified-good commit:** Phase B merge commit on `main` (parent `ef8ffdb` ↔ phase-b tip `a298800`)
-- **Next action:** Phase C codex prompt + kickoff pair at `docs/codex-prompts/phase-c-transitions-overhaul.md` and `docs/codex-prompts/phase-c-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex — Phase C is the transition fix Umair has been waiting for.
+- **Active phase:** Phase D (`videos/_shared/blocks/` library + Pixel-Point text-kit completion + helper rollout) — prompt drafting
+- **Active branch:** `main` (Phase C merged via `--no-ff` at `6176826`)
+- **Last verified-good commit:** Phase C merge commit `6176826` on `main`
+- **Next action:** Phase D codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-d-blocks-and-text-kit.md` and `docs/codex-prompts/phase-d-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
 
 ---
 
@@ -25,7 +25,6 @@ _(none currently — all Phase A starting questions answered 2026-05-07)_
 
 Issues that surfaced during Phase 0–A work and are documented but not blocking the active phase. Each entry: what, where, why deferred.
 
-- **Smoke `sceneBooted` hang on two baselines.** `a-complete-guide-to-the-checkboxes-field` and `creating-first-form` never reach `sceneBooted=true` even at `--seconds 90`. No bootError, no console/page errors — silent stall in the introCard or pre-postIntro path. The other two baselines (REST API, AI) reach `sceneBooted` within 30s. Phase A.5 fixed the gate semantics (commit `ee35378`); Phase B did not incidentally fix or worsen it. If Phase C's pre-load-iframe rework incidentally fixes this, log it. If not, defer to Phase C.5 micro-fix like A.5 — not a Phase C deliverable, do not block on it.
 - **`assets/sfx/click-alt.mp3` referenced but missing.** `runtime/sfx.js:37` declares it; nothing in the repo provides it. Smoke reports as missing-resource; `--allow-resource-404` masks. Either alias to existing `click.mp3` or add the asset. Low priority.
 - **`bgms/56.mp3` referenced but missing.** Two baseline manifests (checkboxes, AI) point at `/bgms/56.mp3`; only `1.mp3`–`5.mp3` exist. Suggests the manifests want a track Umair hasn't supplied. Confirm intent and either add the track or repoint the manifests. Low priority.
 
@@ -33,26 +32,141 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 
 ## 3. Per-step log (reverse chronological)
 
-### 2026-05-07 — Phase C — implementation pass in progress
+### 2026-05-07 — Phase C — completed and merged
 
-Started `phase-c-transitions-overhaul`.
+Merged `phase-c-transitions-overhaul` into `main` with `--no-ff`. Merge
+commit `6176826`. Phase-C branch tip: `04be1de`.
 
-**Shipped in this pass:**
+**Shipped:**
 
-- Added `surface` dispatch in `runtime/player.js` and `runtime/chapter-runner.js`.
-- Added `runtime/shared-scene.js` and migrated the REST API abilities scene to
-  the runtime primitive while preserving the video-local authoring wrapper.
-- Added `runtime/camera-poses.js` and surfaced `registerCameraPose()` through
-  `videos/_shared/kit.js`.
-- Added `flipBridge` swap support with hidden iframe preload/adopt path and
-  debug `data-flipbridge-armed` / `data-flipbridge-committed` markers.
-- Migrated the two Checkboxes `fast` swap overrides to `flipBridge`.
-- Added `_phase-c-editorial-pilot` as a true no-iframe editorial surface smoke
-  target.
+- `runtime/shared-scene.js` (new): persistent per-video scene registry with
+  `getSharedScene({ id, mount })` / `disposeSharedScene(id)` / `disposeAll`.
+  No video uses it yet — primitive shipped for future use (REST API doesn't
+  actually have a `__raShared` to migrate; the audit reference was
+  pattern-level, not literal).
+- `runtime/camera-poses.js` (new): named-pose registry with `register` /
+  `unregister` / `clear` / `resolveCameraPose`. Wired through `player.js`
+  (`runBeatsPerNarration` and beat-mapper resolve `b.camera` against the
+  registry before passing to `zoomTo`).
+- `videos/_shared/kit.js`: re-exports `registerCameraPose` and
+  `resolveCameraPose` for video authors.
+- `engine/engine.js`: centralized iframe transform writes into
+  `applyCamera()` / `setCameraTransform()` / `cameraTransform()` /
+  `cameraState()`. Removed the snap-to-scale-1 + `sleep(20)` reset path
+  (the documented "page-refresh feel" jolt in `zoomTo` `smooth: false`
+  branch). Removed the inline 1.2s CSS transition from the iframe `.ui`
+  class. `runScene` chapter-break path now delegates to
+  `runtime/transitions.runChapterBreak('dolly')`. Added `adoptSnapshotIframe`
+  for flipBridge handoff. **Note:** transform stays CSS-transition-driven,
+  not GSAP-timeline / frame-driver-driven. The visible jolts are gone; the
+  deeper "camera owned by registered timeline" architectural goal is
+  deferred (defensible — Phase C win condition was the cream-bleed kill,
+  not scrub-preview camera).
+- `runtime/scene-helpers.js`: added `preloadSnapshot(slug, { prep })` and
+  `commitPreloadedSnapshot(preloaded, { fadeMs, preserveCamera })`. The
+  preload mounts a hidden iframe at z:-1 / opacity 0, awaits double-RAF
+  after `load`, applies sanitize + prep against the hidden contentDocument,
+  sets `data-flipbridgeArmed`. The commit copies the old iframe's transform
+  to the new, calls `adoptSnapshotIframe`, runs an opacity crossfade
+  (220ms ease-out), removes the old iframe, sets
+  `data-flipbridgeCommitted`. **No cream cover, no body-wipe** — the cream-
+  bleed seam is structurally gone for `flipBridge` swaps.
+- `runtime/transitions.js`: replaced direct `style.transform` writes with
+  `setCameraTransform()` calls. Added `swapFlipBridge` style (delegates to
+  `doSwap` since the actual preload/adopt happens upstream in
+  `bootSnapshot` / `transitionSnapshots`).
+- `runtime/player.js` + `runtime/chapter-runner.js`: `surface` dispatch
+  added (`iframe` | `editorial` | `mixed`). Editorial mode skips iframe
+  load, Mac chrome, and watermark; chapter-runner branches on `mode:
+  'editorial'` to run effect() + `sleep(duration*1000)`. `flipBridge`
+  swap path integrated at `transitionSnapshots` (legacy) and `bootSnapshot`
+  (descriptor) call sites.
+- `runtime/chapter-runner.js`: also moved `data-sceneBooted` flag-setting
+  into the descriptor path. **This explains the "Phase C fixed the §2.1
+  introCard hang" win:** the videos were never actually hanging — the
+  descriptor-mode path simply never set the flag, and Phase A.5 had only
+  patched the legacy/effect path in player.js. Phase C made the smoke gate
+  symmetric. Removed the §2.1 bullet at this merge.
+- Pilot 2 (Checkboxes): both `swapStyle: 'fast'` overrides
+  (`videos/a-complete-guide-to-the-checkboxes-field/chapters/edit-label.js`,
+  `save-checkboxes-field.js`) migrated to `swapStyle: 'flipBridge'`.
+  Multi-line workaround comments removed. The framing-carry concern that
+  motivated the original `'fast'` overrides is now correct by construction
+  (flipBridge preserves camera transform).
+- Pilot 3 (`videos/_phase-c-editorial-pilot/`): single 11s hero beat
+  proving the surface-mode dispatch fork. Atmospheric grain + sweep +
+  parallax + dark backdrop, text-kit `'WPForms 2.0'` reveal, brand mark
+  fade-in. Sandbox prefix `_` keeps it out of production. Smoke confirms
+  `iframe.ui` count = 0, Mac chrome count = 0, viewport 1920×1080.
+- `tools/validate-video.js`: `flipBridge` added to known swap styles;
+  `surface` validated against `{iframe, editorial, mixed}` (warn-only).
+- Docs: `docs/transitions.md`, `docs/shared-scene.md`,
+  `docs/camera-poses.md` (all NEW). `docs/authoring-api.md` extended
+  with §3 `surface`, §5 `flipBridge`, "Opt-in: camera poses" section.
 
-**Decision:** `wpforms-rest-api-overview` now uses `surface: "mixed"` rather
-than `editorial` because its existing chapter code still relies on a hidden
-real snapshot iframe for `cloneFromIframe()` geometry.
+**Validation:** 0 errors on all four baselines + `_phase-c-editorial-pilot`.
+
+**Smoke (`--seconds 30 --allow-resource-404`):** all five targets reach
+`sceneBooted=true` with `bootError=""`, `pageErrors=[]`, `consoleErrors=[]`.
+Note: pre-Phase C, `a-complete-guide-to-the-checkboxes-field` and
+`creating-first-form` did not reach `sceneBooted=true` because the
+descriptor path didn't set the flag; Phase C made the gate symmetric.
+
+**flipBridge marker assertion (independently measured):** open
+`a-complete-guide-to-the-checkboxes-field` to chapter `edit-label`,
+observe `body.dataset.flipbridgeArmed = 'builder-field-options-checkbox'`
+followed by `body.dataset.flipbridgeCommitted = 'builder-field-options-
+checkbox'`. Hidden-iframe preload / adopt cycle works.
+
+**Camera-routing assertion (independently measured):** regex check on
+`engine/engine.js` confirms the `transform = 'scale(1) translate(0px,0px)'
++ sleep(20)` reset path is no longer present.
+
+**Editorial surface assertion (independently measured):** open
+`_phase-c-editorial-pilot`, post-`sceneBooted` DOM has 0 `iframe.ui`
+elements, 0 `.mac-frame`/`.mac-chrome` elements, `body.dataset.surface =
+'editorial'`, `body.classList.contains('surface-editorial') = true`.
+
+**Visual smoke (Umair):** PASS on all four baselines + editorial pilot.
+Cream-bleed seam eliminated on Checkboxes flipBridge swaps — the Phase C
+win condition met.
+
+**Scope deviations from prompt (documented for Phase D / future planning,
+not blockers):**
+
+1. `flipBridge` is iframe-crossfade with camera-state carry, not
+   `Flip.from(state)` carry of named elements. The prompt's `carry: [...]`
+   chapter field is not implemented. Sufficient for cream-bleed kill;
+   element-level Flip carry deferred — could land in Phase D when
+   `videos/_shared/blocks/` rollout creates carry-friendly named blocks.
+2. `engine.js` camera routing centralized but stays CSS-transition-driven.
+   Iframe transform is not GSAP-timeline / frame-driver-owned. Scrub-
+   preview / seek determinism for camera not delivered. The visible jolt
+   bugs ARE fixed. Architectural goal partial — revisit if scrub-preview
+   tooling lands in Phase E.
+3. `runtime/shared-scene.js` shipped as a primitive but no video uses it.
+   REST API has no actual `__raShared` symbol to migrate. Pilot 1 from
+   the prompt was unrealized — not a regression, just unrealized.
+4. `runtime/camera-poses.js` is a registry without deeper engine/frame-
+   driver composition. Authors register and resolve; the resolved spec
+   flows through existing `zoomTo` path. Pose-to-pose interpolation as a
+   registered timeline is not delivered.
+5. `noChange` floor wait dropped from `min(120, duration*0.1)` to 0 (per
+   prompt directive). Smoke + visual didn't surface narration desync.
+
+**Doc updates this merge:**
+
+- `CLAUDE.md`: Protected Areas adds `runtime/shared-scene.js` and
+  `runtime/camera-poses.js`; Per-Video Files extended with surface modes,
+  `flipBridge` swap, and camera-pose vocabulary callouts.
+- `tools/skill-context.js` (Codex's pass): on-demand docs adds
+  `docs/transitions.md`, `docs/shared-scene.md`, `docs/camera-poses.md`;
+  do-not-touch list adds the two new runtime modules.
+- `docs/authoring-api.md` (Codex's pass): §3 manifest schema, §5
+  `flipBridge`, "Opt-in: camera poses" section.
+- `REFACTOR-PROGRESS.md`: this entry; §1 advanced to Phase D; §2.1
+  introCard hang bullet removed (root cause was descriptor-path missing
+  `data-sceneBooted` write, fixed in chapter-runner.js).
 
 ### 2026-05-07 — Phase B — completed and merged
 
