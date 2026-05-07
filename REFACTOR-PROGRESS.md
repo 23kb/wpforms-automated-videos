@@ -10,6 +10,7 @@
 - **Active branch:** `main` (Phase C merged via `--no-ff` at `6176826`)
 - **Last verified-good commit:** Phase C merge commit `6176826` on `main`
 - **Next action:** Phase D codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-d-blocks-and-text-kit.md` and `docs/codex-prompts/phase-d-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
+- **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for upcoming phases (D, E, F).
 
 ---
 
