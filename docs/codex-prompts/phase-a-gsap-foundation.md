@@ -143,7 +143,7 @@ done
 
 If validators fail, **revert and ask** — do not patch around. The point of Phase A is "additive only, no regressions."
 
-Open `http://localhost:4321/scenes/player.html?video=a-complete-guide-to-the-checkboxes-field` and confirm postIntro + first chapter render normally. Visual smoke is required since validators don't catch all visual regressions.
+**Do NOT do visual QC yourself.** Visual QC of playable URLs is owned by Umair. Do not screen-record, frame-extract, or open a headed browser. Validators + smoke + diff review are sufficient for your handoff. Umair will do visual QC after he reviews your PR. Token cost rule: agents don't burn tokens on visual verification when a human does it faster locally.
 
 ## What you do NOT do in Phase A
 

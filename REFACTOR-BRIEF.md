@@ -94,7 +94,7 @@ for slug in a-complete-guide-to-the-checkboxes-field wpforms-rest-api-overview c
 done
 ```
 
-Plus visual smoke at `/scenes/player.html?video=<slug>` for at least one of them.
+**Visual QC is owned by Umair, not by Claude or Codex.** Agents run validators + smoke tests + diff review. Visual QC of playable URLs is a human task — agents do not screen-record, frame-extract, or open headed browsers to verify visual quality, because token cost is high and Umair already does this faster locally. The Phase 0 ffmpeg QC was a one-time diagnostic; not a per-phase pattern. Exception: if a phase introduces a *new* visual primitive that has no validator coverage, agents may capture one short clip for archival, but only when explicitly approved.
 
 ---
 
