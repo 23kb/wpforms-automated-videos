@@ -144,6 +144,28 @@ These are storyboard-stage rules, surfaced in Phase F skills. Ignoring them prod
 
 ---
 
+## 8.1 Session output rules (HARD RULES — non-negotiable)
+
+Violations waste tokens, break the handoff chain, and force re-do work. These apply to both Claude oversight sessions and Codex.
+
+1. **Never paste long content into chat.** Anything > 30 lines (prompt drafts, docs, code patches, specs) is a **file**, not a chat reply. Use the Write tool. Reply in chat only with: file path + line count + 3-5 bullet summary + open questions.
+
+2. **Phase boundaries require a pair of files, both committed.** Every phase-X completion produces both:
+   - `docs/codex-prompts/phase-<N>-<name>.md` — Codex prompt for the next phase
+   - `docs/codex-prompts/phase-<N>-claude-session-kickoff.md` — Oversight kickoff for the next Claude session
+
+   Both must be **written, committed, and pushed** before claiming the boundary is done. Untracked or in-chat-only counts as not done.
+
+3. **No "draft pasted for review" pattern.** Save the file, commit it, then in chat: "drafted at `<path>`, X lines, key open questions A/B/C — review and tell me what to change." The reviewer reads the file, not the chat.
+
+4. **Status replies cap at 15 lines.** If you need more, you're conflating doing with explaining. Save the explanation to `REFACTOR-PROGRESS.md` and link.
+
+5. **Pin file paths in prompts; don't make Codex hunt.** "Find the file via the manifest reference" is a leak — the prompt-writer looks it up and pins the absolute path. Codex hunting wastes more tokens than the lookup.
+
+6. **One change-request round trip.** If review flags issues, fix all of them in one revision, save, commit, reply "fixed A/B/C; see `<path>`." Don't ask "fix A?" then "fix B?" — batch.
+
+---
+
 ## 9. Out of scope
 
 For this refactor — flag if reconsidering.
