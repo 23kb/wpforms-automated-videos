@@ -6,11 +6,10 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase B (paused-timeline + Frame Adapter player driver) — prompt drafting next
-- **Active branch:** `main` (Phase A merged); Phase B branch `phase-b-paused-timeline-driver` will be created when prompt is sent
-- **Current pilot video for Phase B:** `creating-first-form` (simplest tutorial; switch to checkboxes/REST API after first migration succeeds)
-- **Last verified-good commit:** `ee35378` (phase A.5: smoke gate fix — sceneBooted milestone)
-- **Next action:** Phase B prompt + kickoff pair drafted at `docs/codex-prompts/phase-b-paused-timeline-driver.md` and `docs/codex-prompts/phase-b-claude-session-kickoff.md`. Locked answers (migration 2 file pinned, `tl.seek(t, false)` events fire, per-registration `t0`, registry-empty assertion, `awaitTween` coexistence) applied. Awaiting Umair's send-to-Codex signal.
+- **Active phase:** Phase C (cross-snapshot Flip-bridge + shared-scene primitive + camera-pose vocabulary + editorial surface mode + engine.js camera routing) — prompt drafting
+- **Active branch:** `main` (Phase B merged via `--no-ff`)
+- **Last verified-good commit:** Phase B merge commit on `main` (parent `ef8ffdb` ↔ phase-b tip `a298800`)
+- **Next action:** Phase C codex prompt + kickoff pair at `docs/codex-prompts/phase-c-transitions-overhaul.md` and `docs/codex-prompts/phase-c-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex — Phase C is the transition fix Umair has been waiting for.
 
 ---
 
@@ -26,7 +25,7 @@ _(none currently — all Phase A starting questions answered 2026-05-07)_
 
 Issues that surfaced during Phase 0–A work and are documented but not blocking the active phase. Each entry: what, where, why deferred.
 
-- **Smoke `sceneBooted` hang on two baselines.** `a-complete-guide-to-the-checkboxes-field` and `creating-first-form` never reach `sceneBooted=true` even at `--seconds 90`. No bootError, no console/page errors — silent stall in the introCard or pre-postIntro path. The other two baselines (REST API, AI) reach `sceneBooted` within 30s. Phase A.5 fixed the gate semantics (commit `ee35378`); the remaining hang is a separate runtime bug. Deferred — not Phase B's problem unless Codex's player edits incidentally fix or worsen it; revisit after Phase B merge.
+- **Smoke `sceneBooted` hang on two baselines.** `a-complete-guide-to-the-checkboxes-field` and `creating-first-form` never reach `sceneBooted=true` even at `--seconds 90`. No bootError, no console/page errors — silent stall in the introCard or pre-postIntro path. The other two baselines (REST API, AI) reach `sceneBooted` within 30s. Phase A.5 fixed the gate semantics (commit `ee35378`); Phase B did not incidentally fix or worsen it. Carrying into Phase C — chrome-above-cover and pre-loaded-iframe rework will likely interact with the introCard path, so Phase C should re-check.
 - **`assets/sfx/click-alt.mp3` referenced but missing.** `runtime/sfx.js:37` declares it; nothing in the repo provides it. Smoke reports as missing-resource; `--allow-resource-404` masks. Either alias to existing `click.mp3` or add the asset. Low priority.
 - **`bgms/56.mp3` referenced but missing.** Two baseline manifests (checkboxes, AI) point at `/bgms/56.mp3`; only `1.mp3`–`5.mp3` exist. Suggests the manifests want a track Umair hasn't supplied. Confirm intent and either add the track or repoint the manifests. Low priority.
 
@@ -34,34 +33,75 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 
 ## 3. Per-step log (reverse chronological)
 
-### 2026-05-07 — Phase B — frame driver implementation in progress
+### 2026-05-07 — Phase B — completed and merged
 
-Branch `phase-b-paused-timeline-driver` created from current `main` tip
-`ef8ffdb` (prompt referenced Phase A merge `1367e3b`; `main` has since gained
-Phase A.5 smoke-gate and Phase B prompt commits).
+Merged `phase-b-paused-timeline-driver` into `main` with `--no-ff` (preserves
+phase boundary for bisect; consistent with Phase A merge at `1367e3b`).
+Phase-B branch tip: `a298800`.
 
-**Shipped in working tree so far:**
+**Shipped:**
 
-- `runtime/frame-adapter.js`: GSAP paused timeline adapter and defensive WAAPI
-  adapter.
-- `runtime/frame-driver.js`: `window.__hfTimelines` registry, per-registration
-  `t0`, RAF-first tick loop, hidden/late-RAF `setTimeout` fallback, cleanup
-  and debug leak assertion.
-- `runtime/player.js` and `runtime/chapter-runner.js`: start driver at boot,
-  clear after postIntro/chapter teardown, debug registry-empty assertion.
-- `videos/_shared/kit.js`: public `registerTimeline(tl, { id })` helper.
-- `creating-first-form` pilot: `cff-chapter-1-7` registers one invisible
-  editorial GSAP timeline to prove the API round-trip without changing the
-  visible descriptor scroll.
-- `build-forms-faster-with-wpforms-ai` pilot: `runtime/cinematic-rough-thought-
-  to-draft.js` GSAP sequences register as paused timelines; typed text and
-  narration stay wall-clock.
-- Docs: `docs/frame-driver.md` and `docs/authoring-api.md` registered timeline
-  section.
+- `runtime/frame-adapter.js` (new): `gsapTimelineAdapter`, `waapiAdapter`.
+  Duration is snapshotted at construction; `seek(t)` clamps to it. Document
+  rule added to `docs/frame-driver.md`, `docs/authoring-api.md`,
+  `docs/gsap-rules.md`.
+- `runtime/frame-driver.js` (new): `window.__hfTimelines` registry,
+  per-registration `t0`, RAF-first tick loop with `setTimeout(16)` fallback
+  when `document.visibilityState !== 'visible'` or RAF is >250ms late,
+  `clear()`/`stop()`/`registrySize()`/`assertRegistryEmpty()`.
+- `runtime/player.js` + `runtime/chapter-runner.js`: driver started at scene
+  boot, `clear()` on every chapter and postIntro teardown, `stop()` at scene
+  end, debug-gated (`?debug=1`) registry-empty assertion.
+- `videos/_shared/kit.js`: `registerTimeline(tl, { id })` opt-in helper.
+- Pilot 1 (`videos/creating-first-form/chapters/cff-chapter-1-7.js`): single
+  invisible 9s editorial timeline registered in chapter prep — proves the
+  API round-trip end-to-end without changing visible output. Synthetic
+  rather than wrapping an existing animation because creating-first-form is
+  descriptor-mode and verbs.js is forbidden territory.
+- Pilot 2 (`runtime/cinematic-rough-thought-to-draft.js`): nine GSAP
+  sequences in the AI postIntro converted from auto-tick `gsap.timeline({
+  onComplete: resolve })` to `gsap.timeline({ paused: true })` +
+  `registerTimeline` + duration-based wait. Typed text and narration remain
+  wall-clock. Three.js stays on its own clock per Phase B prompt §1.
 
-**Open implementation note:** the AI postIntro does not make typed text
-seekable in Phase B. That is intentional: typed text is side-effectful DOM
-mutation, while Phase B's stable contract is GSAP/WAAPI editorial motion.
+**Validation:** 0 errors on all four baselines.
+
+**Smoke (`--seconds 30 --allow-resource-404`):** `wpforms-rest-api-overview`
+and `build-forms-faster-with-wpforms-ai` reach `sceneBooted=true` with
+`bootError=""`, `pageErrors=[]`, `consoleErrors=[]`.
+`a-complete-guide-to-the-checkboxes-field` and `creating-first-form` still
+hang at the introCard pre-existing per §2.1 — same behavior as `main` before
+Phase B; no regression.
+
+**Hidden-tab acceptance test (independently measured):** synthetic 10s
+paused timeline registered post-`sceneBooted` on REST API; tab forced
+hidden 3.01s via `visibilitychange` event; timeline advanced 3.0s while
+hidden — drift = 7ms, well under the 100ms ceiling. Driver successfully
+fell back to `setTimeout` and continued seeking. Registry empties to 0
+after `clear()`. Phase B win condition met.
+
+**Visual smoke (Umair):** PASS on `creating-first-form`,
+`build-forms-faster-with-wpforms-ai`, and
+`a-complete-guide-to-the-checkboxes-field` (legacy adapter shim verified —
+unmigrated package runs identically).
+
+**Doc updates this session:**
+
+- `CLAUDE.md`: added `runtime/frame-driver.js` and `runtime/frame-adapter.js`
+  to Protected Areas; added `registerTimeline` callout under Per-Video Files.
+- `tools/skill-context.js`: added kit.js→registerTimeline as a capability
+  kit; added the two new runtime modules to do-not-touch and to the
+  protected-core line in stage4Rules; added `docs/frame-driver.md` to
+  on-demand docs.
+- `docs/authoring-api.md`: duration-snapshot rule added under "Opt-in:
+  registered timelines."
+- `docs/gsap-rules.md`: new "Phase B Patterns" section with five hard rules
+  (paused, no `tl.play()`, build-before-register, wait-by-duration,
+  idempotent callbacks).
+- `docs/frame-driver.md`: duration-snapshot caveat appended to
+  `gsapTimelineAdapter` description.
+- `REFACTOR-PROGRESS.md`: this entry; current state header advanced to
+  Phase C; §2.1 introCard hang carried forward into Phase C scope.
 
 ### 2026-05-07 — Phase A.5 — smoke gate fix (sceneBooted milestone)
 
