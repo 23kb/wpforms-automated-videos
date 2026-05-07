@@ -6,10 +6,10 @@
 
 ## 1. Current state header
 
-- **Active phase:** Phase F (skill packaging + validator extensions + deterministic-logic linter) — prompt drafting
-- **Active branch:** `main` (Phase E.5 merged via `--no-ff` at `6e58fdc`)
+- **Active phase:** Phase F (skill packaging + validator extensions + deterministic-logic linter) — implementation in progress
+- **Active branch:** `phase-f-skills-and-linter`
 - **Last verified-good commit:** Phase E.5 merge commit `6e58fdc` on `main`
-- **Next action:** Phase F codex prompt + kickoff pair to be drafted at `docs/codex-prompts/phase-f-skills-and-linter.md` and `docs/codex-prompts/phase-f-claude-session-kickoff.md`. Pause for Umair scope-alignment before sending to Codex.
+- **Next action:** Review Phase F implementation, deterministic findings, and validation output.
 - **Phase plan reference:** see [REFACTOR-BRIEF.md](REFACTOR-BRIEF.md) §2 for the final phase (F).
 - **Note on Phase E:** Phase E (`phase-e-render-and-preview`, branch tip `c09240b`) was REJECTED at oversight — render + HMR were good, scrubber UI was observation-only and contradicted the mandate. Phase E branch was NOT merged. Phase E.5 cherry-picked the render + HMR foundation and added pause/seek + camera-on-driver + a real working scrubber. The phase-e branch remains in the repo for history but is dead-ended.
 
@@ -20,6 +20,10 @@
 (Append to top. Closed questions move to "Decisions locked" in REFACTOR-BRIEF.md §3.)
 
 _(none currently — all Phase A starting questions answered 2026-05-07)_
+
+Phase F note: no new open architectural questions. `tools/skill-context.js`
+remains the canonical startup dump; `.claude/skills/*` are topic-scoped
+on-demand packs indexed by `docs/skills.md`.
 
 ---
 
@@ -49,6 +53,28 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 ---
 
 ## 3. Per-step log (reverse chronological)
+
+### 2026-05-07 — Phase F — implementation pass
+
+Implemented Phase F on branch `phase-f-skills-and-linter`.
+
+**Shipped in this pass:**
+
+- Five repo-local skills under `.claude/skills/`: `wpforms-video`,
+  `wpforms-postintro`, `wpforms-gsap-rules`, `wpforms-marketing`, and
+  `wpforms-transitions`.
+- `tools/validate-video.js` additive warning-only lint passes:
+  audio-vs-duration, raw `requestAnimationFrame()`, and
+  `registerTimeline()` paused-precondition. Added `--skip-lint <rule>` and
+  `--all`.
+- `tools/lint-determinism.js` with the Phase F exit-code contract.
+- Docs: `docs/skills.md`, `docs/deterministic-logic.md`, and
+  `docs/deterministic-logic-findings.md`.
+- `npm run lint` now composes `validate-video.js --all` and
+  `lint-determinism.js --all`.
+
+**Deterministic findings:** 0 errors, 56 warnings. Existing warnings are logged
+in `docs/deterministic-logic-findings.md` for a separate migration session.
 
 ### 2026-05-07 — Phase E.5 — completed and merged
 
