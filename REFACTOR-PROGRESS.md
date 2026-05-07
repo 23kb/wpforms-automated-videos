@@ -34,6 +34,35 @@ Issues that surfaced during Phase 0–A work and are documented but not blocking
 
 ## 3. Per-step log (reverse chronological)
 
+### 2026-05-07 — Phase B — frame driver implementation in progress
+
+Branch `phase-b-paused-timeline-driver` created from current `main` tip
+`ef8ffdb` (prompt referenced Phase A merge `1367e3b`; `main` has since gained
+Phase A.5 smoke-gate and Phase B prompt commits).
+
+**Shipped in working tree so far:**
+
+- `runtime/frame-adapter.js`: GSAP paused timeline adapter and defensive WAAPI
+  adapter.
+- `runtime/frame-driver.js`: `window.__hfTimelines` registry, per-registration
+  `t0`, RAF-first tick loop, hidden/late-RAF `setTimeout` fallback, cleanup
+  and debug leak assertion.
+- `runtime/player.js` and `runtime/chapter-runner.js`: start driver at boot,
+  clear after postIntro/chapter teardown, debug registry-empty assertion.
+- `videos/_shared/kit.js`: public `registerTimeline(tl, { id })` helper.
+- `creating-first-form` pilot: `cff-chapter-1-7` registers one invisible
+  editorial GSAP timeline to prove the API round-trip without changing the
+  visible descriptor scroll.
+- `build-forms-faster-with-wpforms-ai` pilot: `runtime/cinematic-rough-thought-
+  to-draft.js` GSAP sequences register as paused timelines; typed text and
+  narration stay wall-clock.
+- Docs: `docs/frame-driver.md` and `docs/authoring-api.md` registered timeline
+  section.
+
+**Open implementation note:** the AI postIntro does not make typed text
+seekable in Phase B. That is intentional: typed text is side-effectful DOM
+mutation, while Phase B's stable contract is GSAP/WAAPI editorial motion.
+
 ### 2026-05-07 — Phase A.5 — smoke gate fix (sceneBooted milestone)
 
 Merge commit `ee35378` (fast-forward; trivial micro-fix).
