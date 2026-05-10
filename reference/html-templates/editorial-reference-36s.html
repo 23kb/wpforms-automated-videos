@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Editorial Reference — 36s (rebuild)</title>
+<!--
+  videos/editorial-reference/index.html — Phase 1 rebuild.
+
+  Source of truth: docs/editorial-reference-motion-spec.md (per-beat table + vocabulary).
+
+  Per-beat plan (copied as code; do not drop a beat without spec sign-off):
+
+    #  t      dur  composition          atmosphere                  primitive(s)              transition out
+    1  0.00   0.5  white-empty          white-empty                 caret blink               continues
+    2  0.50   2.2  white-empty          white-empty                 caret-typing              continues
+    3  2.70   1.8  small-element        white-empty                 typed-text-to-input-morph hard-pop
+    4  4.50   3.0  centered-subject     bottom-asymmetric-bloom     phone slide-up + bubbles  anticipation+exit (up)
+    5  7.50   3.0  centered-subject     bottom-symmetric-bloom      char-cascade-reveal       element pop-in
+    6 10.50   4.0  centered-subject     cyan-bar-with-texture       device-frame + Layo       hard layout swap
+    7 14.50   2.2  wide-three-region    side-bloom-purple (right)   3-line stack + card+drag  horizontal slide bridge
+    8 16.70   4.3  full-canvas-content  side-bloom-peach (left)     progressive-row-fill      anticipation+exit
+    9 21.00   2.5  wide-three-region    saturated-blue              publish UI + chat panel   hard layout swap (within)
+   10 23.50   1.0  single-element-zoom  white-empty                 single-element-zoom       hard-pop
+   11 24.50   2.5  small-element        white-empty                 toggle-flick (Physics RAF) hard-pop
+   12 27.00   3.5  centered-subject     white-empty -> outro-blue   focus-pull-reveal         anticipation+exit
+   13 30.50   5.5  centered-subject     outro-blue-gradient         scale-up-outro            end
+
+  Ambition floor (postmortem Proposal B):
+    [x] MorphSVG keyframe — Layo logomark morphs (beat 6 -> beat 13)
+    [x] DrawSVG path-with-morph — input row outline draws in (beat 3)
+    [x] Named CustomEase — 'cinematic-whoosh' (anticipation+exit)
+    [x] Physics2D-equivalent manual physics RAF — toggle-flick ejecta (beat 11)
+    [x] Animated grain via pausableRaf — canvas inside stage
+    [x] Multi-stop gradients (3+) on every gradient
+    [x] Multi-layer radial blur on glows/halos
+-->
+<style>
+  :root {
+    --stage-w: 1280px;
+    --stage-h: 720px;
+    --ink: #0e0e10;
+    --ink-soft: #2a2a2e;
+    --ink-mute: #b8babf;
+    --ink-dim: #cfcfd4;
+    --accent-blue: #2f7bf6;
+    --accent-blue-deep: #1f5fd0;
+    --accent-purple: #7c5cff;
+    --accent-cyan: #6ed1e8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #d4d6dc;
+    font-family: -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif;
+    overflow: hidden;
+    color: var(--ink);
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: var(--stage-w);
+    height: var(--stage-h);
+    transform-origin: center center;
+    background: #fdfdff;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  }
+
+  /* grain canvas — animated at frame rate via pausableRaf, on top of beats but below scrubber */
+  #grain {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+  }
+
+  /* ============================================================
+     Beat layers — each beat owns a full-canvas overlay containing
+     its atmosphere + composition. Hidden until activated.
+     ============================================================ */
+  .beat {
+    position: absolute; inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, filter, transform;
+    overflow: hidden;
+  }
+  .beat.active { visibility: visible; }
+  .atmo {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .comp {
+    position: absolute; inset: 0;
+    z-index: 1;
+  }
+
+  /* ============================================================
+     Atmosphere primitives — bloom shape: multi-stop radial gradient,
+     stacked secondary radial layered via ::after for "multi-layer
+     radial blur".
+     ============================================================ */
+  .bloom {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: multiply;
+    filter: blur(70px) saturate(1.05);
+    will-change: transform, opacity, filter;
+    pointer-events: none;
+  }
+  .bloom::after {
+    content: ""; position: absolute; inset: -10%;
+    border-radius: 50%;
+    background: inherit;
+    filter: blur(28px);
+    opacity: 0.55;
+  }
+
+  /* white-empty — true white, no bloom. Used in beats 1/2/3/10/11/12-start. */
+  .atmo-white { background: #ffffff; }
+
+  /* bottom-asymmetric-bloom — beat 4 */
+  .atmo-asym .b1 {
+    width: 920px; height: 920px; right: -260px; bottom: -340px;
+    background: radial-gradient(circle,
+      #b6dffd 0%, #9ecaef 24%, rgba(180,220,255,0.42) 58%, rgba(180,220,255,0) 80%);
+  }
+  .atmo-asym .b2 {
+    width: 600px; height: 600px; left: -160px; bottom: -240px;
+    background: radial-gradient(circle,
+      #cfe7ff 0%, #b9d8f7 30%, rgba(200,225,255,0.30) 65%, rgba(200,225,255,0) 85%);
+    opacity: 0.7;
+  }
+
+  /* bottom-symmetric-bloom — beat 5 */
+  .atmo-sym .b1 {
+    width: 1100px; height: 720px; left: 50%; bottom: -300px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center,
+      #a4cdf3 0%, #8db8e6 22%, rgba(160,200,235,0.45) 55%, rgba(160,200,235,0) 80%);
+  }
+  .atmo-sym .b2 {
+    width: 720px; height: 520px; left: 50%; bottom: -180px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center,
+      #c8e2f8 0%, #aed1ee 30%, rgba(190,220,240,0.4) 65%, rgba(190,220,240,0) 90%);
+    opacity: 0.7;
+  }
+
+  /* cyan-bar-with-texture — beat 6 */
+  .atmo-cyan-bar {
+    background:
+      linear-gradient(180deg,
+        #f4fbfd 0%, #f4fbfd 38%,
+        #cfe9f2 42%, #b8e0ed 50%, #cfe9f2 58%,
+        #f4fbfd 62%, #f4fbfd 100%);
+  }
+  .atmo-cyan-bar .citymap {
+    position: absolute; inset: 0;
+    opacity: 0.18;
+    background-image:
+      repeating-linear-gradient(15deg, rgba(70,110,140,0.5) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(105deg, rgba(70,110,140,0.5) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(15deg, rgba(70,110,140,0.3) 0 1px, transparent 1px 86px),
+      repeating-linear-gradient(105deg, rgba(70,110,140,0.3) 0 1px, transparent 1px 86px);
+    mix-blend-mode: multiply;
+  }
+
+  /* side-bloom-purple — beat 7 */
+  .atmo-purple { background: linear-gradient(120deg, #ffffff 0%, #fbfaff 50%, #f1ecff 100%); }
+  .atmo-purple .b1 {
+    width: 880px; height: 880px; right: -260px; top: -180px;
+    background: radial-gradient(circle,
+      #c8b8ff 0%, #ad95f5 24%, rgba(180,160,240,0.40) 58%, rgba(180,160,240,0) 82%);
+  }
+  .atmo-purple .b2 {
+    width: 560px; height: 560px; right: -120px; bottom: -160px;
+    background: radial-gradient(circle,
+      #e0d4ff 0%, #c2b0f6 32%, rgba(195,170,240,0.30) 68%, rgba(195,170,240,0) 90%);
+    opacity: 0.65;
+  }
+
+  /* side-bloom-peach — beat 8 */
+  .atmo-peach { background: linear-gradient(110deg, #fff7ef 0%, #fffbf6 55%, #fff8f1 100%); }
+  .atmo-peach .b1 {
+    width: 880px; height: 880px; left: -260px; top: -180px;
+    background: radial-gradient(circle,
+      #ffd6b8 0%, #ffbe92 24%, rgba(255,200,160,0.40) 58%, rgba(255,200,160,0) 82%);
+  }
+  .atmo-peach .b2 {
+    width: 540px; height: 540px; left: -120px; bottom: -160px;
+    background: radial-gradient(circle,
+      #ffe7d2 0%, #ffceaa 30%, rgba(255,210,180,0.30) 65%, rgba(255,210,180,0) 88%);
+    opacity: 0.65;
+  }
+
+  /* saturated-blue — beat 9 */
+  .atmo-saturated {
+    background: linear-gradient(155deg,
+      #2f7bf6 0%, #1f5fd0 30%, #1c54bd 60%, #143f96 100%);
+  }
+  .atmo-saturated .b1 {
+    width: 900px; height: 900px; right: -200px; top: -200px;
+    background: radial-gradient(circle,
+      rgba(150,200,255,0.55) 0%, rgba(120,170,240,0.35) 30%,
+      rgba(120,170,240,0.15) 60%, rgba(120,170,240,0) 85%);
+    mix-blend-mode: screen;
+    filter: blur(50px);
+  }
+
+  /* outro-blue-gradient — beat 13 */
+  .atmo-outro {
+    background: linear-gradient(180deg,
+      #f4f9ff 0%, #d8e7fb 35%, #aac8f1 70%, #8db5e8 100%);
+  }
+  .atmo-outro .b1 {
+    width: 900px; height: 900px; left: 50%; top: 50%;
+    transform: translate(-50%, -40%);
+    background: radial-gradient(circle,
+      rgba(255,255,255,0.7) 0%, rgba(220,235,255,0.4) 30%,
+      rgba(200,220,250,0.15) 60%, rgba(200,220,250,0) 85%);
+    mix-blend-mode: screen; filter: blur(40px);
+  }
+
+  /* ============================================================
+     Beat 1/2/3 — caret + typing + input morph
+     ============================================================ */
+  .typing-stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    z-index: 1;
+  }
+  .typing-line {
+    position: relative;
+    display: inline-flex; align-items: center;
+    font-size: 36px; font-weight: 500;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+    line-height: 1.2;
+    min-height: 48px;
+  }
+  .typing-line .text { white-space: pre; }
+  .typing-line .text span { display: inline-block; opacity: 0; }
+  .caret {
+    display: inline-block;
+    width: 3px; height: 38px;
+    background: var(--accent-blue);
+    margin-left: 2px;
+    border-radius: 1px;
+    transform-origin: center;
+  }
+  /* input-row container materialized at beat 3 */
+  .input-row {
+    position: relative;
+    display: inline-flex; align-items: center;
+    padding: 16px 18px;
+    min-width: 720px;
+    max-width: 860px;
+    background: #ffffff;
+    border-radius: 22px;
+    /* outline drawn via SVG overlay below; CSS border kept transparent */
+  }
+  .input-row svg.frame {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .input-row .plus {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #f3f4f7;
+    color: #6a6c71;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 18px;
+    flex-shrink: 0;
+    margin-right: 14px;
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  .input-row .send {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px;
+    flex-shrink: 0;
+    margin-left: auto;
+    opacity: 0;
+    transform: translateX(30px) scale(0.7);
+  }
+  .input-row .text-host {
+    flex: 1;
+    font-size: 22px; font-weight: 400;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+
+  /* ============================================================
+     Beat 4 — phone (ChatGPT mock)
+     ============================================================ */
+  .phone {
+    position: absolute;
+    width: 320px; height: 640px;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -45%);
+    border-radius: 46px;
+    background: #ffffff;
+    box-shadow:
+      inset 0 0 0 9px #1a1a1c,
+      0 30px 60px rgba(0,0,0,0.10),
+      0 50px 90px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .phone .notch {
+    position: absolute; top: 12px; left: 50%;
+    width: 96px; height: 26px;
+    background: #1a1a1c;
+    border-radius: 18px;
+    transform: translateX(-50%);
+    z-index: 4;
+  }
+  .phone .statusbar {
+    position: absolute; top: 16px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    z-index: 5;
+  }
+  .phone .topbar {
+    position: absolute; top: 56px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px; height: 40px;
+    z-index: 3;
+  }
+  .phone .topbar .title { font-weight: 600; font-size: 15px; }
+  .phone .topbar .left, .phone .topbar .right { display: flex; gap: 12px; opacity: 0.85; font-size: 16px; }
+  .phone .chat {
+    position: absolute; top: 110px; left: 0; right: 0; bottom: 0;
+    padding: 14px 14px;
+  }
+  .bubble {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 13px;
+    max-width: 84%;
+    opacity: 0;
+  }
+  .bubble.user {
+    background: #ececec; color: #111;
+    margin-left: auto; display: block;
+    width: fit-content; margin-right: 0;
+  }
+  .row-right { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+  .bubble.ai { background: transparent; color: #111; padding: 4px 0; }
+
+  /* phone-problem caption */
+  .top-caption {
+    position: absolute; top: 70px; left: 0; right: 0;
+    text-align: center;
+    font-size: 28px; font-weight: 500;
+    color: var(--ink);
+  }
+  .top-caption .word { display: inline-block; opacity: 0; transform: translateY(8px); }
+
+  /* ============================================================
+     Beat 5 — Be the answer.
+     ============================================================ */
+  .be-the-answer {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .be-the-answer h1 {
+    margin: 0;
+    font-size: 96px; font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1.0;
+  }
+  .be-the-answer .ch {
+    display: inline-block; opacity: 0; transform: translateY(10px);
+  }
+
+  /* ============================================================
+     Beat 6 — Layo intro (device frame card + logo)
+     ============================================================ */
+  .layo-stack {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .layo-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 30px;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+  }
+  .layo-mark { width: 30px; height: 30px; }
+  .device-frame-card {
+    width: 360px;
+    background: #fafafa;
+    border: 1px solid #e9e9ec;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 22px 50px rgba(0,0,0,0.07);
+  }
+  .device-frame-card .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: #777;
+    margin-bottom: 10px;
+  }
+  .device-frame-card .meta .left { display: flex; gap: 8px; align-items: center; }
+  .device-frame-card .meta .left b { font-weight: 600; color: #444; }
+  .device-frame-card .meta .left span.dim { color: #aaa; }
+  .map-mock {
+    width: 100%; height: 280px;
+    border-radius: 12px;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(232,80,120,0.65) 3px, transparent 4px),
+      radial-gradient(circle at 55% 30%, rgba(232,80,120,0.65) 3px, transparent 4px),
+      radial-gradient(circle at 70% 55%, rgba(232,80,120,0.65) 3px, transparent 4px),
+      radial-gradient(circle at 40% 65%, rgba(232,80,120,0.65) 3px, transparent 4px),
+      radial-gradient(circle at 22% 58%, rgba(232,80,120,0.65) 3px, transparent 4px),
+      linear-gradient(135deg, #cfeaf5 0%, #e7f2f8 35%, #f7f3ec 60%, #ddeef6 100%);
+    position: relative;
+  }
+  .layo-caption {
+    font-size: 26px; font-weight: 500; color: var(--ink);
+    margin-top: 4px;
+  }
+  .layo-caption .word { display: inline-block; opacity: 0; transform: translateY(6px); }
+
+  /* ============================================================
+     Beat 7 — Build the interface (wide-three-region)
+     ============================================================ */
+  .wide-stack {
+    position: absolute; left: 80px; top: 80px;
+    font-size: 26px; font-weight: 600;
+    line-height: 1.6;
+  }
+  .wide-stack .l { display: block; transition: color .5s; }
+  .wide-stack .l.dim { color: var(--ink-dim); }
+  .wide-stack .l.on  { color: var(--ink); }
+
+  .ai-side-panel {
+    position: absolute; right: 60px; top: 70px;
+    width: 360px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 22px 50px rgba(0,0,0,0.10);
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+  .ai-side-panel .head { font-weight: 600; font-size: 13px; margin-bottom: 8px; color: #333; display: flex; gap: 6px; align-items: center; }
+  .ai-side-panel .head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-purple); }
+  .ai-side-panel .ask { font-size: 14px; color: var(--ink); line-height: 1.4; min-height: 44px; }
+  .ai-side-panel .ask .caret { width: 2px; height: 16px; vertical-align: middle; }
+
+  .interface-canvas {
+    position: absolute; right: 60px; bottom: 80px;
+    width: 360px; height: 280px;
+    background:
+      linear-gradient(135deg, #cfeaf5 0%, #e7f2f8 40%, #f7f3ec 70%, #ddeef6 100%);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+  }
+  .interface-canvas .pin {
+    position: absolute; width: 12px; height: 12px;
+    background: rgba(232,80,120,0.85);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .hotel-card {
+    position: absolute;
+    left: 100px; bottom: 120px;
+    width: 320px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    display: flex; gap: 10px;
+    border: 2px solid var(--accent-blue);
+  }
+  .hotel-card .thumb {
+    width: 70px; height: 56px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #efb8a4 0%, #d97a64 50%, #b04532 100%);
+    flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .hotel-card .thumb::after {
+    content: ""; position: absolute; inset: 30% 22% 22% 25%;
+    background: rgba(255,255,255,0.45);
+    border-radius: 4px;
+  }
+  .hotel-card .info .t { font-weight: 600; font-size: 14px; }
+  .hotel-card .info .p { font-weight: 600; font-size: 13px; margin-top: 2px; }
+  .hotel-card .info .a { color: #888; font-size: 11px; margin-top: 4px; }
+  .card-tag {
+    position: absolute;
+    left: 88px; bottom: 200px;
+    background: var(--accent-blue); color: #fff;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ============================================================
+     Beat 8 — Connect your data (spreadsheet)
+     ============================================================ */
+  .sheet {
+    position: absolute;
+    right: 50px; top: 70px;
+    width: 760px; height: 580px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 22px 60px rgba(0,0,0,0.08);
+    overflow: hidden;
+    font-size: 12px;
+    will-change: transform;
+  }
+  .sheet .head {
+    display: flex; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    color: #333; font-weight: 600;
+    font-size: 13px;
+  }
+  .sheet table { width: 100%; border-collapse: collapse; }
+  .sheet th, .sheet td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid #f1f1f3;
+    font-size: 12px;
+  }
+  .sheet th { font-weight: 600; color: #555; background: #fafafa; font-size: 11px; }
+  .sheet td.num { text-align: right; }
+  .sheet .price { color: #111; font-weight: 600; }
+  .sheet tbody tr { opacity: 0; }
+
+  .quick-pills {
+    position: absolute;
+    left: 80px; bottom: 80px;
+    display: flex; flex-direction: column; gap: 10px;
+    width: 280px;
+  }
+  .quick-pills .pill {
+    background: #fff;
+    border: 1px solid #ececef;
+    border-radius: 22px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #333;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+    opacity: 0;
+  }
+
+  /* ============================================================
+     Beat 9 — Deploy everywhere (browser publish UI)
+     ============================================================ */
+  .browser-mock {
+    position: absolute;
+    left: 80px; top: 90px;
+    width: 720px; height: 480px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.30);
+    overflow: hidden;
+  }
+  .browser-mock .chrome {
+    height: 38px;
+    background: #f3f4f7;
+    border-bottom: 1px solid #e6e7ea;
+    display: flex; align-items: center;
+    padding: 0 14px; gap: 8px;
+  }
+  .browser-mock .chrome .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .browser-mock .chrome .dot.r { background: #ff5f57; }
+  .browser-mock .chrome .dot.y { background: #ffbd2e; }
+  .browser-mock .chrome .dot.g { background: #28c840; }
+  .browser-mock .chrome .url {
+    flex: 1; height: 22px;
+    background: #fff; border-radius: 6px;
+    margin-left: 8px;
+    padding: 0 10px;
+    font-size: 11px; color: #777;
+    display: flex; align-items: center;
+  }
+  .browser-mock .body {
+    padding: 36px 28px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .browser-mock .row { display: flex; gap: 14px; align-items: center; }
+  .share-card {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #ececef;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    color: #444;
+  }
+  .publish-btn {
+    background: var(--accent-blue);
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 22px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(47,123,246,0.35);
+    cursor: pointer;
+    border: 0;
+  }
+
+  .right-panel {
+    position: absolute;
+    right: 60px; top: 90px;
+    width: 320px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 22px 50px rgba(0,0,0,0.18);
+    padding: 14px 16px;
+  }
+  .right-panel .head { font-weight: 600; font-size: 13px; margin-bottom: 8px; display: flex; gap: 6px; align-items: center; }
+  .right-panel .head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-purple); }
+  .right-panel .body { font-size: 13px; color: #444; line-height: 1.4; }
+  .right-panel .think {
+    color: #888; font-size: 11px; font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  /* ============================================================
+     Beat 10 — single-element-zoom on Publish button
+     ============================================================ */
+  .publish-zoom {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+  }
+  .publish-zoom .publish-btn {
+    font-size: 22px;
+    padding: 18px 40px;
+    transform: scale(1.5);
+    box-shadow: 0 16px 40px rgba(47,123,246,0.45);
+  }
+
+  /* ============================================================
+     Beat 11 — toggle rows (Physics2D-equivalent ejecta)
+     ============================================================ */
+  .toggle-stack {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .toggle-row {
+    display: flex; align-items: center;
+    gap: 16px;
+    width: 540px;
+    padding: 16px 22px;
+    background: #fff;
+    border: 1px solid #ececef;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  }
+  .toggle-row .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: #f3f4f7;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  .toggle-row .name { flex: 1; font-weight: 600; font-size: 16px; }
+  .toggle-row .swatch {
+    width: 56px; height: 30px;
+    background: #d8d9de;
+    border-radius: 16px;
+    position: relative;
+    transition: background 0.4s;
+  }
+  .toggle-row .swatch .knob {
+    position: absolute; top: 3px; left: 3px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .toggle-row.on .swatch { background: #34c759; }
+
+  .toggle-caption {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #888;
+    text-align: center;
+  }
+  .toggle-caption a { color: var(--accent-blue); text-decoration: none; }
+
+  .ejecta-canvas {
+    position: absolute; left: 0; top: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* ============================================================
+     Beat 12 — phone return + map
+     ============================================================ */
+  .return-phone {
+    position: absolute;
+    width: 300px; height: 600px;
+    left: 50%; top: 30px;
+    transform: translateX(-50%);
+    border-radius: 44px;
+    background: #ffffff;
+    box-shadow:
+      inset 0 0 0 9px #1a1a1c,
+      0 30px 60px rgba(0,0,0,0.12);
+    overflow: hidden;
+    will-change: transform, filter, opacity;
+  }
+  .return-phone .notch {
+    position: absolute; top: 12px; left: 50%;
+    width: 90px; height: 24px;
+    background: #1a1a1c; border-radius: 16px;
+    transform: translateX(-50%);
+  }
+  .return-phone .topbar {
+    position: absolute; top: 50px; left: 0; right: 0;
+    display: flex; justify-content: center;
+    font-size: 14px; font-weight: 600;
+  }
+  .return-phone .chat {
+    position: absolute; top: 100px; left: 0; right: 0; bottom: 0;
+    padding: 14px;
+  }
+  .nyc-map {
+    position: absolute;
+    left: 80px; right: 80px; bottom: -40px;
+    height: 320px;
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 32% 38%, rgba(232,80,120,0.85) 5px, transparent 6px),
+      radial-gradient(circle at 50% 26%, rgba(232,80,120,0.85) 5px, transparent 6px),
+      radial-gradient(circle at 68% 42%, rgba(232,80,120,0.85) 5px, transparent 6px),
+      radial-gradient(circle at 42% 60%, rgba(232,80,120,0.85) 5px, transparent 6px),
+      radial-gradient(circle at 25% 70%, rgba(232,80,120,0.85) 5px, transparent 6px),
+      radial-gradient(circle at 78% 65%, rgba(232,80,120,0.85) 5px, transparent 6px),
+      linear-gradient(135deg, #cfeaf5 0%, #e7f2f8 30%, #f7f3ec 60%, #ddeef6 100%);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.18);
+    will-change: transform, filter, opacity;
+  }
+
+  /* ============================================================
+     Beat 13 — outro logo
+     ============================================================ */
+  .outro-stack {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .outro-cap {
+    font-size: 38px; font-weight: 500; color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .outro-cap .word { display: inline-block; opacity: 0; transform: translateY(10px); }
+  .outro-logo {
+    display: flex; align-items: center; gap: 14px;
+    font-weight: 700; font-size: 64px;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .outro-logo svg { width: 56px; height: 56px; }
+
+  /* ============================================================
+     Scrubber controls (lifted from sandbox / existing)
+     ============================================================ */
+  .controls {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(20,20,24,0.92);
+    color: #eee;
+    padding: 10px 16px;
+    display: flex; gap: 12px; align-items: center;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    z-index: 1000;
+  }
+  .controls input[type=range] { flex: 1; }
+  .controls button {
+    background: var(--accent-blue); color: #fff;
+    border: 0;
+    padding: 6px 14px; border-radius: 4px;
+    font-weight: 600; cursor: pointer;
+  }
+  .controls .t { min-width: 110px; }
+  .controls .label { color: #999; }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+
+    <!-- ==========================================================
+         BEAT 1 + 2 + 3 — typing into input morph
+         These three share a container so the typed text persists
+         across beat boundaries and the morph feels in-place.
+         ========================================================== -->
+    <div class="beat" data-beat="1-3">
+      <div class="atmo atmo-white"></div>
+      <div class="comp">
+        <div class="typing-stage">
+          <div class="typing-line" id="typing">
+            <span class="text"></span>
+            <span class="caret" id="caret1"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEAT 3 (input morph layer — sits on top of typing-stage at t=2.7) -->
+    <div class="beat" data-beat="3-morph">
+      <div class="atmo atmo-white"></div>
+      <div class="comp">
+        <div class="typing-stage">
+          <div class="input-row" id="inputRow">
+            <span class="plus" id="ir-plus">+</span>
+            <span class="text-host" id="ir-text">Your customers just asked AI to do your job.</span>
+            <span class="send" id="ir-send">↑</span>
+            <svg class="frame" viewBox="0 0 800 64" preserveAspectRatio="none" aria-hidden="true">
+              <rect id="ir-rect" x="1" y="1" width="798" height="62" rx="22" ry="22"
+                    fill="none" stroke="#dcdfe5" stroke-width="1.4" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 4 — phone problem
+         ========================================================== -->
+    <div class="beat" data-beat="4">
+      <div class="atmo atmo-asym">
+        <div class="bloom b1"></div>
+        <div class="bloom b2"></div>
+      </div>
+      <div class="comp">
+        <div class="top-caption" id="cap4">…and you weren't there.</div>
+        <div class="phone" id="phone4">
+          <div class="notch"></div>
+          <div class="statusbar"><span>10:24</span><span>●●●● ▮▮</span></div>
+          <div class="topbar">
+            <div class="left">≡</div>
+            <div class="title">ChatGPT</div>
+            <div class="right">✎ ⋯</div>
+          </div>
+          <div class="chat">
+            <div class="row-right"><div class="bubble user" id="b4-user">Book me a hotel in New York City</div></div>
+            <div class="bubble ai" id="b4-ai">Sorry, I can't help with that.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 5 — Be the answer.
+         ========================================================== -->
+    <div class="beat" data-beat="5">
+      <div class="atmo atmo-sym">
+        <div class="bloom b1"></div>
+        <div class="bloom b2"></div>
+      </div>
+      <div class="comp">
+        <div class="be-the-answer"><h1 id="bta">Be the answer.</h1></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 6 — Layo intro
+         ========================================================== -->
+    <div class="beat" data-beat="6">
+      <div class="atmo atmo-cyan-bar">
+        <div class="citymap"></div>
+      </div>
+      <div class="comp">
+        <div class="layo-stack">
+          <div class="layo-logo" id="logo6">
+            <svg class="layo-mark" viewBox="0 0 32 32" aria-hidden="true">
+              <path id="layo-mark-path"
+                    d="M2 2 L2 30 L14 30 L14 22 L10 22 L10 2 Z M18 14 L30 14 L30 30 L18 30 Z"
+                    fill="#0e0e10" />
+            </svg>
+            <span>Layo</span>
+          </div>
+          <div class="device-frame-card" id="dfc6">
+            <div class="meta">
+              <div class="left">📱 <b>Mobile</b> <span class="dim">353 × 852</span></div>
+              <div>+</div>
+            </div>
+            <div class="map-mock"></div>
+          </div>
+          <div class="layo-caption" id="cap6">Your app, inside AI.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 7 — Build the interface (wide three-region)
+         ========================================================== -->
+    <div class="beat" data-beat="7">
+      <div class="atmo atmo-purple">
+        <div class="bloom b1"></div>
+        <div class="bloom b2"></div>
+      </div>
+      <div class="comp">
+        <div class="wide-stack" id="stack7">
+          <span class="l on">Build the interface.</span>
+          <span class="l dim">Connect your data.</span>
+          <span class="l dim">Deploy everywhere.</span>
+        </div>
+        <div class="ai-side-panel" id="aiPanel7">
+          <div class="head"><span class="dot"></span> Layo AI</div>
+          <div class="ask" id="aiAsk7"><span class="text"></span><span class="caret"></span></div>
+        </div>
+        <div class="interface-canvas" id="ifc7">
+          <div class="pin" style="left: 28%; top: 36%;"></div>
+          <div class="pin" style="left: 54%; top: 28%;"></div>
+          <div class="pin" style="left: 70%; top: 50%;"></div>
+          <div class="pin" style="left: 38%; top: 62%;"></div>
+        </div>
+        <div class="card-tag" id="cardTag7">Card</div>
+        <div class="hotel-card" id="card7">
+          <div class="thumb"></div>
+          <div class="info">
+            <div class="t">Crosby Street Hotel</div>
+            <div class="p">From $960/night</div>
+            <div class="a">79 Crosby St, New York, NY 10…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 8 — Connect your data (spreadsheet)
+         ========================================================== -->
+    <div class="beat" data-beat="8">
+      <div class="atmo atmo-peach">
+        <div class="bloom b1"></div>
+        <div class="bloom b2"></div>
+      </div>
+      <div class="comp">
+        <div class="wide-stack" id="stack8" style="left: 60px; top: 80px;">
+          <span class="l dim">Build the interface.</span>
+          <span class="l on">Connect your data.</span>
+          <span class="l dim">Deploy everywhere.</span>
+        </div>
+        <div class="sheet" id="sheet8">
+          <div class="head">📊 Create a database <span style="color:#999;font-weight:400;margin-left:6px;">› Hotels ▾</span></div>
+          <table>
+            <thead><tr>
+              <th>≡ Title</th><th>≡ Description</th><th>🖼 Image</th><th>＃ Price</th>
+            </tr></thead>
+            <tbody id="rows8">
+              <tr><td>Grand Hotel Plaza</td><td>Luxury hotel in the heart of…</td><td>grand_hotel.jpeg</td><td class="num price">$ 320.00</td></tr>
+              <tr><td>City Center Inn</td><td>Modern boutique hotel steps…</td><td>city_inn.jpeg</td><td class="num price">$ 180.00</td></tr>
+              <tr><td>Riverside Suites</td><td>Spacious rooms overlooking…</td><td>riverside.jpeg</td><td class="num price">$ 245.00</td></tr>
+              <tr><td>Urban Loft Hotel</td><td>Contemporary design hotel…</td><td>urban_loft.jpeg</td><td class="num price">$ 195.00</td></tr>
+              <tr><td>Heritage House</td><td>Historic property with…</td><td>heritage.jpeg</td><td class="num price">$ 275.00</td></tr>
+              <tr><td>Metro Business Hotel</td><td>Convenient location near metro…</td><td>metro_business.jpeg</td><td class="num price">$ 165.00</td></tr>
+              <tr><td>Garden View Resort</td><td>Peaceful retreat with rooftop…</td><td>garden_view.jpeg</td><td class="num price">$ 290.00</td></tr>
+              <tr><td>The Downtown Station</td><td>Stylish hotel connected to…</td><td>downtown_station.jpeg</td><td class="num price">$ 210.00</td></tr>
+              <tr><td>Skyline Tower Hotel</td><td>High-rise hotel with stunning…</td><td>skyline_tower.jpeg</td><td class="num price">$ 340.00</td></tr>
+              <tr><td>Parkside Boutique</td><td>Cozy hotel adjacent to…</td><td>parkside.jpeg</td><td class="num price">$ 225.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="quick-pills" id="pills8">
+          <div class="pill">Add a "rooms available" column</div>
+          <div class="pill">Sort by price ascending</div>
+          <div class="pill">Filter NYC only</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 9 — Deploy everywhere (browser publish UI)
+         ========================================================== -->
+    <div class="beat" data-beat="9">
+      <div class="atmo atmo-saturated">
+        <div class="bloom b1"></div>
+      </div>
+      <div class="comp">
+        <div class="wide-stack" id="stack9" style="color: #fff; left: 60px; top: 60px;">
+          <span class="l" style="color: rgba(255,255,255,0.4)">Build the interface.</span>
+          <span class="l" style="color: rgba(255,255,255,0.4)">Connect your data.</span>
+          <span class="l on" style="color: #fff;">Deploy everywhere.</span>
+        </div>
+        <div class="browser-mock" id="browser9">
+          <div class="chrome">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <div class="url">layo.app/share</div>
+          </div>
+          <div class="body">
+            <div class="row">
+              <div class="share-card">https://layo.app/u/your-app-share-url</div>
+              <button class="publish-btn" id="pub9">Publish</button>
+            </div>
+            <div class="share-card" style="font-size:12px;color:#888;">Visibility: Public · Permissions: View · Updated 1d ago</div>
+          </div>
+        </div>
+        <div class="right-panel" id="aiSide9">
+          <div class="head"><span class="dot"></span> AI Chat</div>
+          <div class="think">Thought for 4s.</div>
+          <div class="body">Your app is ready to go live, want me to publish?</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 10 — single-element-zoom on Publish
+         ========================================================== -->
+    <div class="beat" data-beat="10">
+      <div class="atmo atmo-white"></div>
+      <div class="comp">
+        <div class="publish-zoom">
+          <button class="publish-btn" id="pub10">Publish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 11 — toggle-flick rows
+         ========================================================== -->
+    <div class="beat" data-beat="11">
+      <div class="atmo atmo-white"></div>
+      <div class="comp">
+        <canvas class="ejecta-canvas" id="ejecta11" width="1280" height="720"></canvas>
+        <div class="toggle-stack">
+          <div class="toggle-row" id="row11a">
+            <div class="icon">G</div>
+            <div class="name">ChatGPT</div>
+            <div class="swatch"><div class="knob" id="knob11a"></div></div>
+          </div>
+          <div class="toggle-row" id="row11b">
+            <div class="icon">C</div>
+            <div class="name">Claude</div>
+            <div class="swatch"><div class="knob" id="knob11b"></div></div>
+          </div>
+          <div class="toggle-caption" id="cap11">
+            Last published 1d ago · <a>Docs ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 12 — phone return with hotel reply + map
+         ========================================================== -->
+    <div class="beat" data-beat="12">
+      <div class="atmo atmo-white" id="atmo12"></div>
+      <div class="comp">
+        <div class="return-phone" id="phone12">
+          <div class="notch"></div>
+          <div class="topbar">Layo</div>
+          <div class="chat">
+            <div class="row-right"><div class="bubble user" id="b12-user" style="opacity:1;background:#ececec;color:#111;padding:10px 14px;border-radius:18px;font-size:13px;">Book me a hotel in New York City</div></div>
+            <div class="bubble ai" id="b12-ai" style="background:transparent;color:#111;padding:4px 0;font-size:13px;">Absolutely, here are hotels from Stayspot.</div>
+          </div>
+        </div>
+        <div class="nyc-map" id="map12"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         BEAT 13 — outro
+         ========================================================== -->
+    <div class="beat" data-beat="13">
+      <div class="atmo atmo-outro">
+        <div class="bloom b1"></div>
+      </div>
+      <div class="comp">
+        <div class="outro-stack">
+          <div class="outro-cap" id="outroCap">Your app. Right when they need it.</div>
+          <div class="outro-logo" id="outroLogo">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path id="layo-mark-path-2"
+                    d="M2 2 L2 30 L14 30 L14 22 L10 22 L10 2 Z M18 14 L30 14 L30 30 L18 30 Z"
+                    fill="#0e0e10" />
+            </svg>
+            <span>Layo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- grain overlay (animated) -->
+    <canvas id="grain" width="320" height="180"></canvas>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button id="play">Play</button>
+  <input type="range" id="scrub" min="0" max="36" step="0.01" value="0" />
+  <span class="t" id="time">00.00 / 36.00</span>
+  <span class="label">editorial-reference rebuild</span>
+</div>
+
+<!-- GSAP — vendored (not CDN). Classic <script> tags so the file works under
+     file:// (ES module imports are blocked by CORS on file:// origins). -->
+<script src="../../vendor/gsap/3.15.0/gsap.min.js"></script>
+<script src="../../vendor/gsap/3.15.0/MorphSVGPlugin.min.js"></script>
+<script src="../../vendor/gsap/3.15.0/DrawSVGPlugin.min.js"></script>
+<script src="../../vendor/gsap/3.15.0/CustomEase.min.js"></script>
+<script>
+  // Local pausableRaf (kit.js can't be imported over file://). Same shape as
+  // videos/_shared/kit.js pausableRaf, minus the runtime pause-manager hook —
+  // pause is implicit via the master timeline being paused.
+  function pausableRaf(cb) {
+    let id = null, stopped = false;
+    const tick = (ts) => {
+      if (stopped) return;
+      cb(ts);
+      id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => { stopped = true; if (id != null) cancelAnimationFrame(id); };
+  }
+
+  gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, CustomEase);
+
+  // ─────────────────────────────────────────────────────────────
+  // Named CustomEase — 'cinematic-whoosh'
+  //   Slow start (anticipation hangs), then fast back-half whoosh.
+  //   Used for all anticipation+directional-exit transitions so
+  //   the element telegraphs its move before launching.
+  // ─────────────────────────────────────────────────────────────
+  if (window.CustomEase) {
+    window.CustomEase.create('cinematic-whoosh', 'M0,0 C0.10,0.0 0.20,0.05 0.40,0.20 0.60,0.45 0.80,0.95 1,1');
+    window.CustomEase.create('cinematic-rise',   'M0,0 C0.16,0.04 0.18,0.99 1,1');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Stage scaling
+  // ─────────────────────────────────────────────────────────────
+  function fit() {
+    const stage = document.getElementById('stage');
+    const w = window.innerWidth;
+    const h = window.innerHeight - 50;
+    const scale = Math.min(w / 1280, h / 720) * 0.96;
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ─────────────────────────────────────────────────────────────
+  // Helpers — split words / split chars (keeping spaces visible)
+  // ─────────────────────────────────────────────────────────────
+  function splitWords(el) {
+    const text = el.textContent.trim();
+    el.innerHTML = '';
+    const parts = text.split(/(\s+)/);
+    const words = [];
+    parts.forEach(p => {
+      if (/^\s+$/.test(p)) {
+        el.appendChild(document.createTextNode(p));
+      } else if (p) {
+        const s = document.createElement('span');
+        s.className = 'word';
+        s.textContent = p;
+        el.appendChild(s);
+        words.push(s);
+      }
+    });
+    return words;
+  }
+  function splitChars(el) {
+    const text = el.textContent;
+    el.innerHTML = '';
+    const chars = [];
+    [...text].forEach(c => {
+      const s = document.createElement('span');
+      s.className = 'ch';
+      s.textContent = c === ' ' ? ' ' : c;
+      el.appendChild(s);
+      chars.push(s);
+    });
+    return chars;
+  }
+
+  // pre-split text targets
+  const cap4Words = splitWords(document.getElementById('cap4'));
+  const btaChars = splitChars(document.getElementById('bta'));
+  const cap6Words = splitWords(document.getElementById('cap6'));
+  const outroCapWords = splitWords(document.getElementById('outroCap'));
+
+  // ─────────────────────────────────────────────────────────────
+  // Caret-typing primitive — character-by-character at the caret
+  //   We pre-fill the .text host with span-per-char (opacity:0).
+  //   The timeline reveals chars one at a time via stagger.
+  //   The caret (next sibling of .text) sits on the right edge of
+  //   the typed string and blinks via a registered tween.
+  // ─────────────────────────────────────────────────────────────
+  const TYPED_LINE = 'Your customers just asked AI to do your job.';
+  const typingHost = document.querySelector('#typing .text');
+  const typingChars = (() => {
+    typingHost.textContent = '';
+    return [...TYPED_LINE].map(ch => {
+      const s = document.createElement('span');
+      s.textContent = ch === ' ' ? ' ' : ch;
+      typingHost.appendChild(s);
+      return s;
+    });
+  })();
+  const typingCaret = document.getElementById('caret1');
+
+  // ─────────────────────────────────────────────────────────────
+  // Animated grain canvas — pausableRaf, 8fps stepped
+  // ─────────────────────────────────────────────────────────────
+  (function startGrain() {
+    const c = document.getElementById('grain');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const img = ctx.createImageData(W, H);
+    let lastDraw = 0;
+    pausableRaf((ts) => {
+      if (ts - lastDraw < 125) return; // ~8fps
+      lastDraw = ts;
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = Math.random() * 255 | 0;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    });
+  })();
+
+  // ─────────────────────────────────────────────────────────────
+  // Master timeline
+  // ─────────────────────────────────────────────────────────────
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+
+  // ─── transition vocabulary (named functions on tl) ──────────────
+  // hard-pop: instant swap, new comp pops in (~0.3s)
+  function hardPop(targetIn, targetsOut, t, { dir = 'none' } = {}) {
+    if (targetsOut) {
+      tl.to(targetsOut, { autoAlpha: 0, duration: 0.05 }, t);
+    }
+    const fromVars = dir === 'up' ? { y: 30 } : dir === 'down' ? { y: -30 } : {};
+    tl.fromTo(targetIn,
+      { autoAlpha: 0, ...fromVars, scale: dir === 'none' ? 0.98 : 1 },
+      { autoAlpha: 1, y: 0, scale: 1, duration: 0.32, ease: 'power3.out' },
+      t + 0.02);
+  }
+  // anticipation + directional exit: ~0.15s pre-move, then exit with blur+fade
+  function anticipationExit(target, t, { dir = 'up', dur = 0.55, distance = 80 } = {}) {
+    const preDelta = dir === 'up' ? { y: -8 } : dir === 'down' ? { y: 8 }
+                   : dir === 'left' ? { x: -8 } : { x: 8 };
+    const exitDelta = dir === 'up' ? { y: -distance } : dir === 'down' ? { y: distance }
+                    : dir === 'left' ? { x: -distance } : { x: distance };
+    tl.to(target, { ...preDelta, duration: 0.15, ease: 'power1.in' }, t);
+    tl.to(target, {
+      ...exitDelta,
+      autoAlpha: 0,
+      filter: 'blur(18px)',
+      duration: dur - 0.15,
+      ease: 'cinematic-whoosh',
+    }, t + 0.15);
+  }
+  // element pop-in: small element appears centered (~0.4s), atmosphere shifts to support
+  function elementPopIn(target, t, { dur = 0.42 } = {}) {
+    tl.fromTo(target,
+      { autoAlpha: 0, scale: 0.85 },
+      { autoAlpha: 1, scale: 1, duration: dur, ease: 'back.out(1.6)' }, t);
+  }
+  // hard layout swap: instant cut + new comp's entrance animation
+  function hardLayoutSwap(targetIn, targetsOut, t, { entranceDur = 0.5 } = {}) {
+    if (targetsOut) tl.to(targetsOut, { autoAlpha: 0, duration: 0.05 }, t);
+    tl.fromTo(targetIn,
+      { autoAlpha: 0, scale: 1.02 },
+      { autoAlpha: 1, scale: 1, duration: entranceDur, ease: 'power3.out' },
+      t + 0.05);
+  }
+  // horizontal slide bridge: outgoing slides off, bridge holds, incoming slides on
+  function horizontalSlideBridge(outTarget, bridgeTarget, inTarget, t, { dur = 0.85 } = {}) {
+    tl.to(outTarget, { x: -1280, autoAlpha: 0, duration: dur * 0.55, ease: 'power2.inOut' }, t);
+    if (bridgeTarget) {
+      tl.fromTo(bridgeTarget,
+        { autoAlpha: 0, x: 100 },
+        { autoAlpha: 1, x: 0, duration: 0.25 }, t + dur * 0.25);
+      tl.to(bridgeTarget, { autoAlpha: 0, duration: 0.18 }, t + dur * 0.6);
+    }
+    tl.fromTo(inTarget,
+      { autoAlpha: 0, x: 1280 },
+      { autoAlpha: 1, x: 0, duration: dur * 0.6, ease: 'power3.out' },
+      t + dur * 0.4);
+  }
+
+  // ─── small helpers ────────────────────────────────────────────
+  function activateBeat(sel, t) {
+    tl.set(sel, { visibility: 'visible' }, Math.max(0, t));
+  }
+  function deactivateBeat(sel, t) {
+    tl.set(sel, { visibility: 'hidden', opacity: 0 }, t);
+  }
+
+  // ============================================================
+  // BEAT 1 — caret blink alone (0.0 - 0.5)
+  //   Caret visible at frame 0 (no empty white frame).
+  //   Continuous blink via pausableRaf (atmosphere rule: never frozen).
+  // ============================================================
+  activateBeat('[data-beat="1-3"]', 0);
+  tl.set('[data-beat="1-3"]', { autoAlpha: 1 }, 0);
+  tl.set(typingCaret, { autoAlpha: 1 }, 0);
+  tl.set(typingChars, { opacity: 0 }, 0);
+
+  // caret blink — registered as part of master tl so it scrubs
+  const blinkTl = gsap.timeline({ repeat: -1, repeatDelay: 0 });
+  blinkTl.to(typingCaret, { autoAlpha: 0, duration: 0.40, ease: 'steps(1)' });
+  blinkTl.to(typingCaret, { autoAlpha: 1, duration: 0.40, ease: 'steps(1)' });
+  tl.add(blinkTl, 0);
+
+  // ============================================================
+  // BEAT 2 — caret-typing (0.5 - 2.7)
+  //   Reveal each char on a small stagger; caret rides along
+  //   at the end of the typed text by virtue of being its sibling.
+  // ============================================================
+  // Total of 44 chars over ~2.0s = ~0.045s/char (within spec 0.04-0.06)
+  tl.to(typingChars, {
+    opacity: 1,
+    duration: 0.01,
+    stagger: { each: 2.0 / typingChars.length, from: 'start' },
+    ease: 'none',
+  }, 0.55);
+
+  // ============================================================
+  // BEAT 3 — typed-text-to-input-morph (2.7 - 4.5)
+  //   The naked typed text gains a container around it. Border
+  //   draws via DrawSVG, "+" prefix slides in from left, send-circle
+  //   pops in from right. Text doesn't move significantly.
+  // ============================================================
+  // Hide caret at morph start (it was for typing, not chat input).
+  tl.to(typingCaret, { autoAlpha: 0, duration: 0.1 }, 2.65);
+
+  // Hide naked typing-line, swap in the input-row layer (positioned
+  // identically — same .typing-stage centering) so the text stays put.
+  activateBeat('[data-beat="3-morph"]', 2.66);
+  tl.set('[data-beat="3-morph"]', { autoAlpha: 1 }, 2.7);
+  tl.to('[data-beat="1-3"]', { autoAlpha: 0, duration: 0.18 }, 2.7);
+
+  // text-host text appears immediately (matches what was typed)
+  tl.set('#ir-text', { opacity: 1 }, 2.7);
+
+  // border draws in (DrawSVG)
+  tl.fromTo('#ir-rect',
+    { drawSVG: '0%' },
+    { drawSVG: '100%', duration: 0.55, ease: 'power2.inOut' }, 2.78);
+
+  // "+" prefix slides in from left
+  tl.to('#ir-plus',
+    { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out' }, 3.05);
+  // send-circle pops in
+  tl.to('#ir-send',
+    { opacity: 1, x: 0, scale: 1, duration: 0.45, ease: 'back.out(1.7)' }, 3.20);
+
+  // Hold the morph state ~0.8s before transitioning out
+
+  // ─── transition out of beat 3 → beat 4: hard-pop ─────────────
+  // Beat 3 anticipation (light upward pre-shift) then hard-pop into beat 4.
+  tl.to('[data-beat="3-morph"]', { y: -6, duration: 0.15, ease: 'power1.in' }, 4.30);
+  tl.to('[data-beat="3-morph"]', { autoAlpha: 0, duration: 0.05 }, 4.50);
+  deactivateBeat('[data-beat="3-morph"]', 4.55);
+  deactivateBeat('[data-beat="1-3"]', 4.55);
+
+  // ============================================================
+  // BEAT 4 — phone problem (4.5 - 7.5) — atmosphere: bottom-asymmetric-bloom
+  //   Phone slides UP from off-screen-bottom. Caption pops in
+  //   separately at top. User msg + AI reply appear in sequence.
+  // ============================================================
+  activateBeat('[data-beat="4"]', 4.45);
+  tl.set('[data-beat="4"]', { autoAlpha: 1 }, 4.50);
+
+  // Atmosphere: blooms drift continuously
+  tl.fromTo('[data-beat="4"] .b1',
+    { opacity: 0, scale: 0.95, x: 40, y: 30 },
+    { opacity: 0.55, scale: 1, x: 0, y: 0, duration: 1.2 }, 4.50);
+  tl.fromTo('[data-beat="4"] .b2',
+    { opacity: 0, scale: 0.95 },
+    { opacity: 0.7, scale: 1, duration: 1.4 }, 4.55);
+  tl.to('[data-beat="4"] .b1', { x: -40, y: 20, duration: 3, ease: 'sine.inOut' }, 4.5);
+  tl.to('[data-beat="4"] .b2', { x: 30, y: -20, duration: 3, ease: 'sine.inOut' }, 4.5);
+
+  // Phone slides UP from below the frame — small anticipation delay before fast pop-up.
+  tl.set('#phone4', { y: 800, autoAlpha: 1 }, 4.50);
+  tl.to('#phone4', { y: 900, duration: 0.18, ease: 'power1.in' }, 4.50); // micro-anticipation (settle deeper)
+  tl.to('#phone4', { y: 0, duration: 0.85, ease: 'cinematic-rise' }, 4.68);
+  // After the rise, phone breathes a touch (subtle scale)
+  tl.to('#phone4', { y: -10, duration: 1.4, ease: 'sine.inOut' }, 5.6);
+
+  // Caption pops in at top — separately, not as part of phone
+  tl.set('#cap4', { autoAlpha: 1 }, 5.05);
+  tl.to(cap4Words, {
+    opacity: 1, y: 0, stagger: 0.06, duration: 0.45, ease: 'power3.out',
+  }, 5.10);
+
+  // User msg appears ~5.9s
+  tl.fromTo('#b4-user',
+    { opacity: 0, y: 8 },
+    { opacity: 1, y: 0, duration: 0.35 }, 5.9);
+  // AI reply ~6.7s
+  tl.fromTo('#b4-ai',
+    { opacity: 0, y: 8 },
+    { opacity: 1, y: 0, duration: 0.35 }, 6.7);
+
+  // ─── transition out: anticipation + directional exit (up) ────
+  anticipationExit('#phone4', 7.30, { dir: 'up', dur: 0.55, distance: 200 });
+  anticipationExit('#cap4', 7.30, { dir: 'up', dur: 0.45, distance: 60 });
+  tl.to('[data-beat="4"] .atmo-asym', { autoAlpha: 0, duration: 0.4 }, 7.40);
+  deactivateBeat('[data-beat="4"]', 7.85);
+
+  // ============================================================
+  // BEAT 5 — Be the answer. (7.5 - 10.5) — char-cascade-reveal
+  // ============================================================
+  activateBeat('[data-beat="5"]', 7.45);
+  tl.fromTo('[data-beat="5"]',
+    { autoAlpha: 0, scale: 0.97 },
+    { autoAlpha: 1, scale: 1, duration: 0.55, ease: 'power3.out' }, 7.50);
+
+  // atmosphere
+  tl.fromTo('[data-beat="5"] .b1',
+    { opacity: 0, scale: 0.95 },
+    { opacity: 0.55, scale: 1, duration: 1.0 }, 7.55);
+  tl.fromTo('[data-beat="5"] .b2',
+    { opacity: 0 },
+    { opacity: 0.7, duration: 1.2 }, 7.60);
+  tl.to('[data-beat="5"] .b1', { y: -40, duration: 3, ease: 'sine.inOut' }, 7.6);
+  tl.to('[data-beat="5"] .b2', { y: -20, scale: 1.04, duration: 3, ease: 'sine.inOut' }, 7.6);
+
+  // char-cascade-reveal — letter-by-letter (NOT word stagger)
+  tl.set(btaChars, { opacity: 0, y: 10 }, 7.6);
+  tl.to(btaChars, {
+    opacity: 1, y: 0,
+    duration: 0.35,
+    stagger: 0.045,
+    ease: 'power2.out',
+  }, 7.95);
+
+  // hold ~2.5s (per spec)
+
+  // ─── transition out: element pop-in into beat 6 ──────────────
+  // beat 5 fades while beat 6's element pops in
+  tl.to('[data-beat="5"]', { autoAlpha: 0, duration: 0.35 }, 10.20);
+  deactivateBeat('[data-beat="5"]', 10.55);
+
+  // ============================================================
+  // BEAT 6 — Layo intro (10.5 - 14.5) — cyan-bar-with-texture
+  // ============================================================
+  activateBeat('[data-beat="6"]', 10.45);
+  tl.set('[data-beat="6"]', { autoAlpha: 1 }, 10.45);
+
+  // Atmosphere: cyan bar drifts subtly; citymap parallax
+  tl.fromTo('[data-beat="6"] .atmo-cyan-bar',
+    { backgroundPosition: '0 0' },
+    { backgroundPosition: '0 -40px', duration: 4, ease: 'sine.inOut' }, 10.5);
+  tl.fromTo('[data-beat="6"] .citymap',
+    { x: -20, opacity: 0 },
+    { x: 0, opacity: 0.18, duration: 1.0 }, 10.55);
+  tl.to('[data-beat="6"] .citymap', { x: 30, duration: 4, ease: 'sine.inOut' }, 10.6);
+
+  // Element pop-in: device-frame-card pops centered
+  elementPopIn('#dfc6', 10.6, { dur: 0.55 });
+
+  // Layo logo above pops in slightly after
+  tl.fromTo('#logo6',
+    { opacity: 0, y: -20 },
+    { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 10.85);
+
+  // MorphSVG keyframe — Layo mark morphs from a simple "L" to the
+  // L+block lockup. (Both paths are valid SVG path data.)
+  if (window.MorphSVGPlugin) {
+    tl.fromTo('#layo-mark-path',
+      { morphSVG: 'M2 2 L2 30 L14 30 L14 22 L10 22 L10 2 Z' },
+      { morphSVG: 'M2 2 L2 30 L14 30 L14 22 L10 22 L10 2 Z M18 14 L30 14 L30 30 L18 30 Z',
+        duration: 0.7, ease: 'power2.inOut' }, 11.0);
+  }
+
+  // Caption word-stagger
+  tl.to(cap6Words, {
+    opacity: 1, y: 0, stagger: 0.07, duration: 0.4, ease: 'power3.out',
+  }, 11.3);
+
+  // hold ~2.5s with subtle map-mock pulse
+  tl.to('#dfc6 .map-mock', { scale: 1.015, duration: 2.5, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 11.5);
+
+  // ─── transition out: hard layout swap into beat 7 ────────────
+  // atmosphere swaps with the cut. Per-spec hardLayoutSwap is ~0.05s cut + entrance.
+  tl.to('[data-beat="6"]', { autoAlpha: 0, duration: 0.05 }, 14.45);
+  deactivateBeat('[data-beat="6"]', 14.55);
+
+  // ============================================================
+  // BEAT 7 — Build the interface (14.5 - 16.7) — wide-three-region, side-bloom-purple
+  // ============================================================
+  activateBeat('[data-beat="7"]', 14.45);
+  hardLayoutSwap('[data-beat="7"]', null, 14.50, { entranceDur: 0.45 });
+
+  // atmosphere
+  tl.fromTo('[data-beat="7"] .b1',
+    { opacity: 0, scale: 0.95 },
+    { opacity: 0.55, scale: 1, duration: 1.0 }, 14.55);
+  tl.fromTo('[data-beat="7"] .b2',
+    { opacity: 0 },
+    { opacity: 0.65, duration: 1.2 }, 14.60);
+  tl.to('[data-beat="7"] .b1', { x: -30, y: 20, duration: 2.5, ease: 'sine.inOut' }, 14.6);
+
+  // 3-line stack reveal
+  tl.from('#stack7 .l',
+    { x: -20, opacity: 0, stagger: 0.10, duration: 0.45 }, 14.65);
+
+  // AI side panel + ask types in (caret-typing, short)
+  tl.fromTo('#aiPanel7',
+    { opacity: 0, x: 30 },
+    { opacity: 1, x: 0, duration: 0.5 }, 14.85);
+  const askText = 'Make the room cards clickable…';
+  const askHost = document.querySelector('#aiAsk7 .text');
+  askHost.textContent = '';
+  const askChars = [...askText].map(ch => {
+    const s = document.createElement('span');
+    s.textContent = ch === ' ' ? ' ' : ch;
+    s.style.opacity = '0';
+    askHost.appendChild(s);
+    return s;
+  });
+  tl.to(askChars, {
+    opacity: 1, duration: 0.01,
+    stagger: { each: 0.045, from: 'start' }, ease: 'none',
+  }, 15.10);
+  // small caret blink within the panel
+  const askCaret = document.querySelector('#aiAsk7 .caret');
+  Object.assign(askCaret.style, { width: '2px', height: '16px', verticalAlign: 'middle', display: 'inline-block', background: 'var(--accent-blue)' });
+  const askBlink = gsap.timeline({ repeat: -1 });
+  askBlink.to(askCaret, { autoAlpha: 0, duration: 0.4, ease: 'steps(1)' });
+  askBlink.to(askCaret, { autoAlpha: 1, duration: 0.4, ease: 'steps(1)' });
+  tl.add(askBlink, 14.85);
+
+  // Hotel card slides in + drag nudge
+  tl.fromTo('#card7',
+    { opacity: 0, y: 30 },
+    { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 15.15);
+  tl.fromTo('#cardTag7',
+    { opacity: 0, y: 6 },
+    { opacity: 1, y: 0, duration: 0.3 }, 15.45);
+  // subtle drag motion
+  tl.to('#card7', { x: 18, duration: 0.6, ease: 'power2.inOut', yoyo: true, repeat: 1 }, 15.7);
+
+  tl.fromTo('#ifc7',
+    { opacity: 0, x: 30 },
+    { opacity: 1, x: 0, duration: 0.55 }, 14.95);
+
+  // ─── transition out: horizontal slide bridge into beat 8 ──────
+  // Beat 7 slides out left; bridge map slides through; beat 8 slides in right.
+  // Use the interface-canvas (a map) as the bridge element by cloning its motion.
+  tl.to('#ifc7', { x: 1280, duration: 0.55, ease: 'power2.inOut' }, 16.45);
+  tl.to(['#stack7', '#aiPanel7', '#card7', '#cardTag7'],
+    { x: -1280, autoAlpha: 0, duration: 0.55, ease: 'power2.inOut' }, 16.45);
+  tl.to('[data-beat="7"]', { autoAlpha: 0, duration: 0.05 }, 17.05);
+  deactivateBeat('[data-beat="7"]', 17.10);
+
+  // ============================================================
+  // BEAT 8 — Connect your data (16.7 - 21.0) — full-canvas-content, side-bloom-peach
+  // ============================================================
+  activateBeat('[data-beat="8"]', 16.65);
+  tl.set('[data-beat="8"]', { autoAlpha: 1 }, 16.70);
+
+  // atmosphere swaps in (purple→peach happens via beat-layer swap)
+  tl.fromTo('[data-beat="8"] .b1',
+    { opacity: 0, scale: 0.95, x: -40 },
+    { opacity: 0.55, scale: 1, x: 0, duration: 1.0 }, 16.70);
+  tl.fromTo('[data-beat="8"] .b2',
+    { opacity: 0 },
+    { opacity: 0.6, duration: 1.2 }, 16.80);
+  tl.to('[data-beat="8"] .b1', { x: 30, y: -20, duration: 4, ease: 'sine.inOut' }, 16.8);
+
+  // Bridge state: sheet enters from right
+  tl.fromTo('#sheet8',
+    { x: 600, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 16.85);
+  tl.from('#stack8 .l',
+    { x: -20, opacity: 0, stagger: 0.08, duration: 0.4 }, 16.95);
+
+  // Progressive-row-fill — rows 0.07s stagger top-to-bottom
+  const rows8 = document.querySelectorAll('#rows8 tr');
+  tl.to(rows8, {
+    opacity: 1, duration: 0.25,
+    stagger: 0.07,
+    ease: 'power2.out',
+  }, 17.40);
+  // Whole table slides downward 14px during the fill (~0.07*10 = 0.7s)
+  tl.to('#sheet8', { y: 14, duration: 0.7, ease: 'sine.inOut' }, 17.45);
+
+  // Quick-reply pills appear after rows fill
+  tl.fromTo('#pills8 .pill',
+    { opacity: 0, x: -20 },
+    { opacity: 1, x: 0, stagger: 0.1, duration: 0.4 }, 18.30);
+
+  // Long hold ~3s after fill — atmosphere/bloom continues to drift (already running)
+  // (no additional tweens; the hold is intentional, with grain + bloom motion)
+
+  // ─── transition out: anticipation + directional exit ─────────
+  anticipationExit('#sheet8', 20.60, { dir: 'left', dur: 0.55, distance: 240 });
+  anticipationExit('#stack8', 20.60, { dir: 'left', dur: 0.45, distance: 80 });
+  anticipationExit('#pills8', 20.60, { dir: 'left', dur: 0.45, distance: 80 });
+  tl.to('[data-beat="8"]', { autoAlpha: 0, duration: 0.05 }, 21.00);
+  deactivateBeat('[data-beat="8"]', 21.05);
+
+  // ============================================================
+  // BEAT 9 — Deploy everywhere (21.0 - 23.5) — saturated-blue
+  // ============================================================
+  activateBeat('[data-beat="9"]', 20.95);
+  hardLayoutSwap('[data-beat="9"]', null, 21.0, { entranceDur: 0.45 });
+
+  // saturated bloom drift
+  tl.fromTo('[data-beat="9"] .b1',
+    { opacity: 0, scale: 0.92, x: 40 },
+    { opacity: 0.7, scale: 1, x: 0, duration: 1.2 }, 21.05);
+  tl.to('[data-beat="9"] .b1', { x: -30, scale: 1.05, duration: 2.5, ease: 'sine.inOut' }, 21.2);
+
+  tl.fromTo('#browser9',
+    { opacity: 0, y: 30, scale: 0.96 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'power3.out' }, 21.10);
+  tl.from('#stack9 .l',
+    { x: -20, opacity: 0, stagger: 0.08, duration: 0.4 }, 21.30);
+  tl.fromTo('#aiSide9',
+    { opacity: 0, x: 30 },
+    { opacity: 1, x: 0, duration: 0.55 }, 21.40);
+
+  // Subtle Publish button breathing pulse during this beat to draw the eye
+  tl.to('#pub9', { scale: 1.04, duration: 0.6, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 22.20);
+
+  // ─── transition out: hard layout swap into beat 10 (within-section zoom) ──
+  // Per spec: "hard-pop" out of beat 9 INTO the within-beat zoom. The whole
+  // surrounding UI vanishes; only the Publish button remains, alone on white.
+  tl.to('[data-beat="9"]', { autoAlpha: 0, duration: 0.05 }, 23.40);
+  deactivateBeat('[data-beat="9"]', 23.50);
+
+  // ============================================================
+  // BEAT 10 — single-element-zoom on Publish (23.5 - 24.5) — white-empty
+  // ============================================================
+  activateBeat('[data-beat="10"]', 23.45);
+  tl.set('[data-beat="10"]', { autoAlpha: 1 }, 23.50);
+  tl.fromTo('#pub10',
+    { scale: 0.6, opacity: 0 },
+    { scale: 1.5, opacity: 1, duration: 0.4, ease: 'back.out(1.5)' }, 23.50);
+  // small button breathing during the 1s hold
+  tl.to('#pub10', { scale: 1.55, duration: 0.5, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 23.95);
+  // anticipation before exit
+  tl.to('#pub10', { scale: 1.45, duration: 0.12, ease: 'power1.in' }, 24.40);
+  // hard-pop out (clicked feel — quick disappear)
+  tl.to('[data-beat="10"]', { autoAlpha: 0, duration: 0.08 }, 24.50);
+  deactivateBeat('[data-beat="10"]', 24.55);
+
+  // ============================================================
+  // BEAT 11 — toggle-flick rows (24.5 - 27.0) — white-empty
+  //   Manual physics RAF for ejecta puff (Physics2D-equivalent).
+  // ============================================================
+  activateBeat('[data-beat="11"]', 24.45);
+  tl.fromTo('[data-beat="11"]',
+    { autoAlpha: 0 },
+    { autoAlpha: 1, duration: 0.25 }, 24.50);
+  tl.from('#row11a', { y: 20, opacity: 0, duration: 0.45, ease: 'power3.out' }, 24.55);
+
+  // toggle flick A — knob slides with a small overshoot, swatch turns green
+  tl.to('#knob11a', { x: 26, duration: 0.32, ease: 'back.out(2.4)' }, 25.10);
+  tl.set('#row11a', { className: 'toggle-row on' }, 25.18);
+  // ejecta burst at the toggle — manual physics
+  tl.call(() => burstEjecta(700, 290), null, 25.18);
+
+  tl.from('#row11b',
+    { y: 20, opacity: 0, duration: 0.45, ease: 'power3.out' }, 25.55);
+  tl.to('#knob11b', { x: 26, duration: 0.32, ease: 'back.out(2.4)' }, 26.05);
+  tl.set('#row11b', { className: 'toggle-row on' }, 26.13);
+  tl.call(() => burstEjecta(700, 350), null, 26.13);
+
+  tl.fromTo('#cap11', { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4 }, 26.40);
+
+  // ─── transition out: hard-pop into beat 12 ──────────────────
+  tl.to('[data-beat="11"]', { autoAlpha: 0, duration: 0.08 }, 26.95);
+  deactivateBeat('[data-beat="11"]', 27.05);
+
+  // Manual physics RAF for ejecta — gravity + initial velocity, drawn to ejecta canvas.
+  const ejectaCanvas = document.getElementById('ejecta11');
+  const ejectaCtx = ejectaCanvas.getContext('2d');
+  const ejectaParticles = [];
+  function burstEjecta(x, y) {
+    for (let i = 0; i < 14; i++) {
+      const angle = -Math.PI/2 + (Math.random() - 0.5) * 1.4;
+      const speed = 220 + Math.random() * 180;
+      ejectaParticles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1.0,
+        size: 2 + Math.random() * 3,
+        born: performance.now(),
+      });
+    }
+  }
+  let lastEjectaTs = 0;
+  pausableRaf((ts) => {
+    const dt = lastEjectaTs ? Math.min((ts - lastEjectaTs) / 1000, 0.05) : 0;
+    lastEjectaTs = ts;
+    ejectaCtx.clearRect(0, 0, 1280, 720);
+    if (!ejectaParticles.length) return;
+    const gravity = 1100;
+    for (let i = ejectaParticles.length - 1; i >= 0; i--) {
+      const p = ejectaParticles[i];
+      p.vy += gravity * dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt * 1.2;
+      if (p.life <= 0) { ejectaParticles.splice(i, 1); continue; }
+      ejectaCtx.fillStyle = `rgba(52, 199, 89, ${p.life.toFixed(3)})`;
+      ejectaCtx.beginPath();
+      ejectaCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ejectaCtx.fill();
+    }
+  });
+
+  // ============================================================
+  // BEAT 12 — phone return (27.0 - 30.5) — white-empty → soft outro blue
+  //   focus-pull-reveal on phone + map.
+  // ============================================================
+  activateBeat('[data-beat="12"]', 26.95);
+  tl.set('[data-beat="12"]', { autoAlpha: 1 }, 27.00);
+
+  // atmosphere transitions from white to a soft blue
+  tl.to('#atmo12', {
+    background: 'linear-gradient(180deg, #f6fbff 0%, #e3effb 50%, #cbdef3 100%)',
+    duration: 1.5, ease: 'power1.inOut',
+  }, 27.50);
+
+  // focus-pull-reveal phone: high blur + low opacity → resolved with subtle scale
+  tl.fromTo('#phone12',
+    { autoAlpha: 0, filter: 'blur(20px)', scale: 1.05 },
+    { autoAlpha: 1, filter: 'blur(0px)', scale: 1, duration: 0.85, ease: 'power2.out' }, 27.10);
+
+  // bubbles already populated visually; subtly fade into focus
+  tl.fromTo(['#b12-user', '#b12-ai'],
+    { opacity: 0 }, { opacity: 1, duration: 0.5, stagger: 0.2 }, 27.50);
+
+  // map focus-pulls in too
+  tl.fromTo('#map12',
+    { autoAlpha: 0, filter: 'blur(24px)', y: 80 },
+    { autoAlpha: 1, filter: 'blur(0px)', y: 0, duration: 1.0, ease: 'power2.out' }, 28.10);
+
+  // ─── transition out: anticipation + directional exit (up) ────
+  anticipationExit('#phone12', 30.10, { dir: 'up', dur: 0.55, distance: 260 });
+  anticipationExit('#map12', 30.10, { dir: 'down', dur: 0.55, distance: 200 });
+  tl.to('[data-beat="12"]', { autoAlpha: 0, duration: 0.05 }, 30.50);
+  deactivateBeat('[data-beat="12"]', 30.55);
+
+  // ============================================================
+  // BEAT 13 — outro logo (30.5 - 36.0) — outro-blue-gradient
+  //   word-stagger-reveal on caption, then scale-up-outro on Layo logo (3+s).
+  // ============================================================
+  activateBeat('[data-beat="13"]', 30.45);
+  tl.fromTo('[data-beat="13"]',
+    { autoAlpha: 0 },
+    { autoAlpha: 1, duration: 0.6 }, 30.50);
+  tl.fromTo('[data-beat="13"] .b1',
+    { opacity: 0, scale: 0.95 },
+    { opacity: 0.7, scale: 1, duration: 1.5 }, 30.55);
+  tl.to('[data-beat="13"] .b1', { scale: 1.1, duration: 5, ease: 'sine.inOut' }, 30.6);
+
+  // word-stagger-reveal — caption
+  tl.to(outroCapWords, {
+    opacity: 1, y: 0, stagger: 0.12, duration: 0.5, ease: 'power2.out',
+  }, 30.80);
+  // hold ~1.2s, then fade caption away as logo grows
+  tl.to('#outroCap', {
+    opacity: 0, y: -8, duration: 0.6, ease: 'power1.in',
+  }, 32.40);
+
+  // scale-up-outro: 0.7 → 1.0 over 3+ seconds, slow continuous ease
+  tl.fromTo('#outroLogo',
+    { scale: 0.7, opacity: 0 },
+    { scale: 1.0, opacity: 1, duration: 3.4, ease: 'cinematic-rise' }, 32.20);
+
+  // tail
+  tl.to({}, { duration: 0.2 }, 36.0);
+
+  // ─────────────────────────────────────────────────────────────
+  // Controls wiring
+  // ─────────────────────────────────────────────────────────────
+  const playBtn = document.getElementById('play');
+  const scrub = document.getElementById('scrub');
+  const timeLabel = document.getElementById('time');
+  const TOTAL = 36;
+  scrub.max = TOTAL;
+
+  playBtn.addEventListener('click', () => {
+    if (tl.paused()) {
+      if (tl.time() >= TOTAL - 0.05) tl.time(0);
+      tl.play();
+      playBtn.textContent = 'Pause';
+    } else {
+      tl.pause();
+      playBtn.textContent = 'Play';
+    }
+  });
+
+  let scrubbing = false;
+  scrub.addEventListener('input', () => {
+    scrubbing = true;
+    tl.pause();
+    tl.time(parseFloat(scrub.value));
+    playBtn.textContent = 'Play';
+  });
+  scrub.addEventListener('change', () => { scrubbing = false; });
+
+  function tick() {
+    if (!scrubbing) {
+      const t = Math.min(tl.time(), TOTAL);
+      scrub.value = t.toFixed(2);
+      timeLabel.textContent = `${t.toFixed(2).padStart(5,'0')} / ${TOTAL.toFixed(2)}`;
+      if (t >= TOTAL && !tl.paused()) {
+        tl.pause();
+        playBtn.textContent = 'Play';
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // expose for tinkering
+  window.__tl = tl;
+</script>
+</body>
+</html>

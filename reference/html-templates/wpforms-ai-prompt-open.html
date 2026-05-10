@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>WPForms AI — Prompt Open</title>
+<style>
+  :root {
+    --stage-w: 1280px;
+    --stage-h: 720px;
+    --ink: #0e0e10;
+    --ink-soft: #2a2a2e;
+    --wpf-purple: #7a30e2;        /* matches snapshot's #7a30e2 chat send color */
+    --wpf-purple-deep: #5c24a9;
+    --wpf-orange: #e27730;
+    --chat-bg: #f6f7f7;
+    --chat-input-border: #d1d4d7;
+    --send-idle: #a7aaad;
+    --send-active: #7a30e2;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #d8dbe2;
+    font-family: -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif;
+    overflow: hidden;
+    color: var(--ink);
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: var(--stage-w);
+    height: var(--stage-h);
+    transform-origin: center center;
+    background: #fbfaff;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  }
+
+  /* ==========================================================
+     Atmosphere — purple bloom (WPForms AI brand), drifts.
+     Single bed; no swap (camera dolly handles the visual change).
+     ========================================================== */
+  .atmo {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0;
+    background: linear-gradient(155deg, #fbfaff 0%, #f4eeff 45%, #ece2ff 100%);
+    will-change: opacity;
+  }
+  .bloom {
+    position: absolute; border-radius: 50%;
+    mix-blend-mode: multiply;
+    filter: blur(70px) saturate(1.05);
+    will-change: transform, opacity, filter;
+  }
+  .bloom::after {
+    content: ""; position: absolute; inset: -10%;
+    border-radius: 50%; background: inherit;
+    filter: blur(28px); opacity: 0.55;
+  }
+  .b1 {
+    width: 940px; height: 940px;
+    right: -260px; top: -200px;
+    background: radial-gradient(circle, #c8b8ff 0%, #ad95f5 22%,
+      rgba(180,160,240,0.40) 56%, rgba(180,160,240,0) 82%);
+  }
+  .b2 {
+    width: 720px; height: 720px;
+    left: -180px; bottom: -240px;
+    background: radial-gradient(circle, #e0d4ff 0%, #c2b0f6 30%,
+      rgba(195,170,240,0.30) 65%, rgba(195,170,240,0) 90%);
+    opacity: 0.7;
+  }
+  .b3 {
+    width: 540px; height: 540px;
+    left: 55%; top: 60%;
+    background: radial-gradient(circle, rgba(255,255,255,0.85) 0%,
+      rgba(220,200,255,0.5) 30%, rgba(220,200,255,0) 80%);
+    mix-blend-mode: screen; filter: blur(50px); opacity: 0.6;
+  }
+
+  /* grain */
+  #grain {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 80;
+    opacity: 0.05; mix-blend-mode: overlay;
+  }
+
+  /* ==========================================================
+     Mac frame — appears behind the morph-host during the dolly-back.
+     Initially scale(0.5), opacity 0; animates to scale(1), opacity 1.
+     ========================================================== */
+  .mac-frame {
+    position: absolute;
+    left: 50px; top: 40px;
+    width: 1180px; height: 640px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow:
+      0 40px 80px rgba(0,0,0,0.30),
+      0 14px 36px rgba(0,0,0,0.18);
+    overflow: hidden;
+    transform-origin: center center;
+    z-index: 5;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .mac-chrome {
+    height: 36px;
+    background: #ececef;
+    border-bottom: 1px solid #d8d9dc;
+    display: flex; align-items: center;
+    padding: 0 14px; gap: 8px;
+    position: relative;
+  }
+  .mac-chrome .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .mac-chrome .dot.r { background: #ff5f57; }
+  .mac-chrome .dot.y { background: #febc2e; }
+  .mac-chrome .dot.g { background: #28c840; }
+  .mac-chrome .title {
+    flex: 1; text-align: center;
+    font-size: 12px; color: #6a6f76;
+    font-weight: 500;
+  }
+  .mac-body {
+    position: relative;
+    height: calc(100% - 36px);
+    background: #f0f0f1;
+    overflow: hidden;
+  }
+  /* iframe fills the entire Mac body — snapshot already includes its
+     own chat sidebar (left) and form-preview canvas (right). */
+  .snapshot-iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1900px; height: 1080px;
+    transform: scale(0.62);
+    transform-origin: top left;
+    border: 0;
+    pointer-events: none;
+    background: #f0f0f1;
+  }
+
+  /* ==========================================================
+     The morphing element — single host that progresses through:
+       Button → Input row → Sullie pill → Chat panel
+     ========================================================== */
+  .morph-host {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 680px; height: 120px;
+    border-radius: 60px;
+    background: var(--wpf-purple);
+    box-shadow:
+      0 22px 44px rgba(122,48,226,0.36),
+      0 8px 18px rgba(122,48,226,0.24),
+      inset 0 1px 0 rgba(255,255,255,0.18);
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    overflow: hidden;
+    will-change: width, height, border-radius, background-color, box-shadow, transform, top, left;
+  }
+
+  /* ── Button-mode label ── */
+  .btn-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 18px;
+    color: #fff;
+    font-size: 36px; font-weight: 600;
+    letter-spacing: -0.005em;
+    user-select: none;
+    will-change: opacity, transform;
+  }
+  .btn-label .spark {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+  }
+  .btn-label .spark path { fill: #fff; }
+  .btn-label .word { display: inline-block; opacity: 0; transform: translateY(6px); }
+
+  /* ── Prompt input row ── */
+  .wpforms-ai-chat-message-input {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 260px;
+    display: flex;
+    padding: 78px;
+    background-color: transparent;
+    opacity: 0;
+    will-change: opacity;
+  }
+  .wpforms-ai-chat-message-input textarea {
+    width: 100%; height: 104px; min-height: 104px;
+    padding: 30px 100px 30px 30px;
+    line-height: 40px;
+    font-size: 32px;
+    font-family: inherit;
+    color: #1d2327;
+    background: #ffffff;
+    border: 1px solid var(--chat-input-border);
+    border-radius: 10px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.07);
+    box-sizing: border-box;
+    outline: none; resize: none;
+    overflow-x: hidden;
+    caret-color: transparent;
+  }
+  .wpforms-ai-chat-message-input textarea::placeholder {
+    color: rgba(167, 170, 173, var(--ph-alpha, 1));
+  }
+
+  .wpforms-ai-chat-message-input .wpforms-ai-chat-send,
+  .wpforms-ai-chat-message-input .wpforms-ai-chat-stop {
+    position: absolute;
+    inset-inline-end: 78px; bottom: 78px;
+    height: 60px; width: 60px;
+    border: none; border-radius: 8px;
+    cursor: pointer;
+    padding: 0; margin: 22px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: var(--send-idle);
+  }
+  .wpforms-ai-chat-message-input .wpforms-ai-chat-send {
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='%23ffffff' d='M.989 8 .064 2.68a1.342 1.342 0 0 1 1.85-1.462l13.402 5.744a1.13 1.13 0 0 1 0 2.076L1.913 14.782a1.343 1.343 0 0 1-1.85-1.463L.99 8Zm.603-5.288L2.38 7.25h4.87a.75.75 0 0 1 0 1.5H2.38l-.788 4.538L13.929 8 1.592 2.712Z'/></svg>");
+    background-size: 30px;
+  }
+  .wpforms-ai-chat-message-input .wpforms-ai-chat-stop {
+    background-color: var(--wpf-purple);
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><rect x='2' y='2' width='10' height='10' rx='1.5' fill='%23ffffff'/></svg>");
+    background-size: 28px;
+    opacity: 0;
+  }
+  /* Send-button internal spinner — shown for 400ms after click */
+  .send-spinner {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .send-spinner svg {
+    width: 34px; height: 34px;
+    animation: spinRot 0.7s linear infinite;
+  }
+  @keyframes spinRot {
+    from { transform: rotate(0deg); } to { transform: rotate(360deg); }
+  }
+
+  /* Painted typed text host */
+  .text-host {
+    position: absolute;
+    left: 108px;
+    bottom: 110px;
+    right: 200px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 32px;
+    color: #1d2327;
+    pointer-events: none;
+    white-space: pre;
+    display: flex; align-items: center;
+    z-index: 4;
+  }
+  .text-host .typed { display: inline-block; }
+  .text-host .typed span { opacity: 0; }
+  .text-host .caret {
+    display: inline-block;
+    width: 4px; height: 36px;
+    background: #1d2327;
+    margin-left: 2px;
+    border-radius: 1px;
+    opacity: 0;
+  }
+
+  /* ── Sullie pill — "Doing Sullie Magic ..." ── */
+  .sullie-pill {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 22px;
+    padding: 0 44px;
+    color: #1d2327;
+    font-size: 34px; font-weight: 600;
+    letter-spacing: -0.005em;
+    opacity: 0;
+    will-change: opacity;
+  }
+  .sullie-pill img.sullie-logo {
+    width: 60px; height: 60px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  .sullie-pill .working-dots {
+    display: inline-flex; gap: 3px;
+    width: 38px;
+    color: #1d2327;
+    font-weight: 700;
+  }
+  .sullie-pill .working-dots span {
+    opacity: 0;
+    will-change: opacity;
+  }
+
+  /* ── Final chat-panel HTML (revealed via crossfade after morph) ── */
+  .wpforms-ai-chat {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #ffffff;
+    opacity: 0;
+    will-change: opacity;
+  }
+  .wpforms-ai-chat .wpforms-ai-chat-message-list {
+    flex: 1;
+    overflow: hidden;
+    padding: 28px 28px 14px 28px;
+    display: flex; flex-direction: column;
+  }
+  .wpforms-ai-chat-message-item.item-primary {
+    margin-bottom: 4px;
+  }
+  .wpforms-ai-chat-welcome-screen .wpforms-ai-chat-header h3.wpforms-ai-chat-header-title {
+    font-weight: 600; font-size: 20px; line-height: 26px;
+    margin: 0 0 8px;
+    color: #1d2327;
+    letter-spacing: -0.005em;
+  }
+  .wpforms-ai-chat-welcome-screen .wpforms-ai-chat-header h3.wpforms-ai-chat-header-title:after {
+    content: ''; display: inline-block; vertical-align: top;
+    width: 14px; height: 14px;
+    margin-left: 3px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='%237a30e2' d='M8 0 L9.4 6.6 L16 8 L9.4 9.4 L8 16 L6.6 9.4 L0 8 L6.6 6.6 Z'/></svg>");
+    background-size: 14px 14px;
+    opacity: 0.9;
+  }
+  .wpforms-ai-chat-welcome-screen .wpforms-ai-chat-header-description {
+    color: #6a6f76;
+    font-size: 13px;
+    line-height: 19px;
+    display: block;
+  }
+  .wpforms-ai-chat-welcome-screen .wpforms-ai-chat-header-description a {
+    color: #a7aaad; text-decoration: none;
+  }
+  .wpforms-ai-chat .wpforms-ai-chat-divider {
+    border-top: 1px solid #dcdcde;
+    margin: 22px 0 18px;
+  }
+  .wpforms-ai-chat .wpforms-chat-item-question {
+    width: fit-content;
+    max-width: 270px;
+    margin-inline-start: auto; margin-bottom: 16px;
+    display: flex;
+    padding: 10px 16px;
+    color: #ffffff;
+    background-color: var(--wpf-purple);
+    border-radius: 22px;
+    border-start-end-radius: 0;
+    font-weight: 500; font-size: 14px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+  }
+  .wpforms-ai-chat .wpforms-chat-item-answer-waiting {
+    display: flex; align-items: center;
+    padding: 6px 0;
+  }
+  .wpforms-ai-chat .wpforms-chat-item-spinner {
+    color: var(--wpf-purple);
+  }
+  /* answer-waiting row: Sullie logo on the left, animated 3-dot SVG on the right */
+  .wpforms-ai-chat .answer-spinner-row {
+    display: flex; align-items: center;
+    gap: 10px;
+  }
+  .wpforms-ai-chat .answer-sullie-logo {
+    width: 28px; height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  /* The chat-input row inside the final chat reuses the same structure
+     but is a sibling of the message-list (not absolute-positioned). */
+  .wpforms-ai-chat > .wpforms-ai-chat-message-input {
+    position: relative;
+    inset: auto;
+    flex-shrink: 0;
+    height: 110px;
+    padding: 24px;
+    background-color: #f6f7f7;
+    opacity: 1;
+  }
+  .wpforms-hidden { display: none !important; }
+
+  /* ==========================================================
+     Cursor — Mac-styled pointer; tip at viewBox (0,0).
+     ========================================================== */
+  .cursor {
+    position: absolute;
+    left: 0; top: 0;
+    width: 22px; height: 30px;
+    pointer-events: none;
+    z-index: 60;
+    will-change: transform, opacity;
+    opacity: 0;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.28));
+  }
+  .cursor svg { width: 100%; height: 100%; display: block; }
+  .click-ring {
+    position: absolute;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(122,48,226,0.55);
+    pointer-events: none;
+    z-index: 55;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+    will-change: transform, opacity;
+    left: 0; top: 0;
+  }
+
+  /* ==========================================================
+     Scrubber controls
+     ========================================================== */
+  .controls {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(20,20,24,0.92);
+    color: #eee;
+    padding: 10px 16px;
+    display: flex; gap: 12px; align-items: center;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    z-index: 1000;
+  }
+  .controls input[type=range] { flex: 1; }
+  .controls button {
+    background: var(--wpf-purple); color: #fff;
+    border: 0;
+    padding: 6px 14px; border-radius: 4px;
+    font-weight: 600; cursor: pointer;
+  }
+  .controls .t { min-width: 110px; }
+  .controls .label { color: #999; }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+
+    <!-- Atmosphere — purple bloom (single bed) -->
+    <div class="atmo" id="atmo">
+      <div class="bloom b1"></div>
+      <div class="bloom b2"></div>
+      <div class="bloom b3"></div>
+    </div>
+
+    <!-- Mac frame with builder UI (initially hidden, scaled down) -->
+    <div class="mac-frame" id="macFrame">
+      <div class="mac-chrome">
+        <span class="dot r"></span>
+        <span class="dot y"></span>
+        <span class="dot g"></span>
+        <span class="title">Form Builder · sulliesbakery.com</span>
+      </div>
+      <div class="mac-body">
+        <!-- iframe fills the full Mac body — snapshot already includes
+             its own left chat sidebar AND right form-preview canvas. -->
+        <iframe class="snapshot-iframe"
+                id="snapshotIframe"
+                src="../../snapshots/wpforms-ai-builder-empty/index.html"
+                loading="lazy"
+                sandbox="allow-same-origin"
+                scrolling="no"></iframe>
+      </div>
+    </div>
+
+    <!-- The morphing element — Button → Input → Sullie pill → Chat panel -->
+    <div class="morph-host" id="cta">
+
+      <!-- (1) Button-mode label -->
+      <div class="btn-label" id="btnLabel">
+        <svg class="spark" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 L13.6 9.4 L21 11 L13.6 12.6 L12 20 L10.4 12.6 L3 11 L10.4 9.4 Z" />
+        </svg>
+        <span class="word">Generate</span>
+        <span class="word">with</span>
+        <span class="word">WPForms</span>
+        <span class="word">AI</span>
+      </div>
+
+      <!-- (2) Prompt input row -->
+      <div class="wpforms-ai-chat-message-input" id="promptBox">
+        <textarea
+          id="promptTextarea"
+          placeholder="What would you like to create?"
+          data-undo-redo-element-key="textarea-19e10b4da83-3fd81"
+        ></textarea>
+        <button type="button" class="wpforms-ai-chat-send" id="sendBtn">
+          <span class="send-spinner" id="sendSpinner">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="#ffffff" stroke-width="2.4"
+                      stroke-dasharray="40 60" stroke-linecap="round" />
+            </svg>
+          </span>
+        </button>
+        <button type="button" class="wpforms-ai-chat-stop" id="stopBtn"></button>
+      </div>
+
+      <!-- (2b) Painted typed text host — sits on top of the textarea -->
+      <div class="text-host" id="textHost">
+        <span class="typed" id="typed"></span><span class="caret" id="caret"></span>
+      </div>
+
+      <!-- (3) Sullie pill — answer-waiting working state -->
+      <!-- Uses the user-provided real class names (wpforms-chat-item-answer-waiting +
+           wpforms-chat-item-spinner + wpforms-ai-chat-spinner-dots) but reskinned
+           per the brief: sullie logo on left, "Doing Sullie Magic" text, animated
+           working dots on the right. -->
+      <div class="sullie-pill wpforms-chat-item-answer-waiting" id="sulliePill">
+        <div class="wpforms-chat-item-spinner sullie-row" style="display:flex;align-items:center;gap:12px;">
+          <img class="sullie-logo" src="../../assets/sullie.png" alt="Sullie" />
+          <span class="sullie-text">Doing Sullie Magic</span>
+          <span class="working-dots" id="workingDots"><span>.</span><span>.</span><span>.</span></span>
+        </div>
+      </div>
+
+      <!-- (4) Final chat panel — full WPForms AI chat HTML, exact structure. -->
+      <div class="wpforms-ai-chat" id="chatFinal">
+        <div class="wpforms-ai-chat-message-list wpforms-scrollbar-compact">
+          <div class="wpforms-ai-chat-message-item item-primary">
+            <div class="wpforms-ai-chat-welcome-screen">
+              <div class="wpforms-ai-chat-header">
+                <h3 class="wpforms-ai-chat-header-title">Generate a Form</h3>
+                <span class="wpforms-ai-chat-header-description">Describe the form you would like to create or use one of the example prompts below to get started.
+                  <a href="#" target="_blank" rel="noopener noreferrer">Learn More About WPForms AI</a>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="wpforms-ai-chat-divider"></div>
+          <div class="wpforms-chat-item wpforms-chat-item-question">Create a weighted quiz on the topic of "How prepared are you to start a business?" with 10 questions and 3 answers each. Collect the user's name and email address. Create 3 outcomes set to Weighted Quiz type for greater than 74%, less than 75% and greater than 49%, and less than 50.</div>
+          <div class="wpforms-chat-item-answer-waiting">
+            <div class="wpforms-chat-item-spinner answer-spinner-row">
+              <img class="answer-sullie-logo" src="../../assets/sullie.png" alt="Sullie" />
+              <svg class="wpforms-ai-chat-spinner-dots" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <style>.spinner_S1WN{animation:spinner_MGfb .8s linear infinite;animation-delay:-.8s; fill: currentColor;}.spinner_Km9P{animation-delay:-.65s}.spinner_JApP{animation-delay:-.5s}@keyframes spinner_MGfb{93.75%,100%{opacity:.2}}</style>
+                <circle class="spinner_S1WN" cx="4" cy="12" r="3"></circle>
+                <circle class="spinner_S1WN spinner_Km9P" cx="12" cy="12" r="3"></circle>
+                <circle class="spinner_S1WN spinner_JApP" cx="20" cy="12" r="3"></circle>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="wpforms-ai-chat-message-input">
+          <textarea placeholder="..." data-undo-redo-element-key="textarea-19e10b4da83-3fd81" style="height: 0px;" disabled="true"></textarea>
+          <button type="button" class="wpforms-ai-chat-send wpforms-hidden"></button>
+          <button type="button" class="wpforms-ai-chat-stop"></button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Click ring (one-shot) -->
+    <div class="click-ring" id="clickRing"></div>
+
+    <!-- Cursor -->
+    <div class="cursor" id="cursor">
+      <svg viewBox="0 0 22 30" aria-hidden="true">
+        <path d="M0 0 L0 22 L5.4 17 L8.4 24.5 L11.6 23.2 L8.6 15.8 L15.4 15.8 Z"
+              fill="#1d1d1f" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+      </svg>
+    </div>
+
+    <!-- grain -->
+    <canvas id="grain" width="320" height="180"></canvas>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button id="play">Play</button>
+  <input type="range" id="scrub" min="0" max="12" step="0.01" value="0" />
+  <span class="t" id="time">0.00 / 12.00</span>
+  <span class="label">wpforms-ai-prompt-open</span>
+</div>
+
+<!-- GSAP — vendored for file:// support -->
+<script src="../../vendor/gsap/3.15.0/gsap.min.js"></script>
+<script src="../../vendor/gsap/3.15.0/CustomEase.min.js"></script>
+<script>
+  function pausableRaf(cb) {
+    let id = null, stopped = false;
+    const tick = (ts) => {
+      if (stopped) return;
+      cb(ts);
+      id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => { stopped = true; if (id != null) cancelAnimationFrame(id); };
+  }
+
+  gsap.registerPlugin(CustomEase);
+  CustomEase.create('cinematic-whoosh', 'M0,0 C0.10,0.0 0.20,0.05 0.40,0.20 0.60,0.45 0.80,0.95 1,1');
+  CustomEase.create('cinematic-rise',   'M0,0 C0.16,0.04 0.18,0.99 1,1');
+  CustomEase.create('cursor-arrival',   'M0,0 C0.10,0.05 0.30,0.95 1,1');
+  // dolly-back ease — slow start, fast settle (camera feel)
+  CustomEase.create('dolly-back',       'M0,0 C0.16,0.20 0.20,0.95 1,1');
+
+  // Stage scaling
+  function fit() {
+    const stage = document.getElementById('stage');
+    const w = window.innerWidth;
+    const h = window.innerHeight - 50;
+    const scale = Math.min(w / 1280, h / 720) * 0.96;
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ─────────────────────────────────────────────────────────────
+  // Snapshot iframe — inject the chat panel HTML at its real place
+  //   The iframe loads the wpforms-ai-builder-empty snapshot which
+  //   has its own .wpforms-ai-chat-message-list (welcome screen).
+  //   Replace its innerHTML with the user's submitted state HTML
+  //   (welcome header + divider + question bubble + answer-waiting
+  //   spinner) so the snapshot's natural chat panel reads as
+  //   "user submitted, AI is thinking".
+  // ─────────────────────────────────────────────────────────────
+  (function injectChatHTML() {
+    const iframe = document.getElementById('snapshotIframe');
+    if (!iframe) return;
+    const inject = () => {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) return;
+        const list = doc.querySelector('.wpforms-ai-chat-message-list');
+        if (!list) return;
+        list.innerHTML = `
+          <div class="wpforms-ai-chat-message-item item-primary">
+            <div class="wpforms-ai-chat-welcome-screen">
+              <div class="wpforms-ai-chat-header">
+                <h3 class="wpforms-ai-chat-header-title">Generate a Form</h3>
+                <span class="wpforms-ai-chat-header-description">Describe the form you would like to create or use one of the example prompts below to get started.
+                  <a href="#" target="_blank" rel="noopener noreferrer">Learn More About WPForms AI</a>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="wpforms-ai-chat-divider"></div>
+          <div class="wpforms-chat-item wpforms-chat-item-question">Create a weighted quiz on the topic of "How prepared are you to start a business?" with 10 questions and 3 answers each. Collect the user's name and email address. Create 3 outcomes set to Weighted Quiz type for greater than 74%, less than 75% and greater than 49%, and less than 50.</div>
+          <div class="wpforms-chat-item-answer-waiting">
+            <div class="wpforms-chat-item-spinner">
+              <svg class="wpforms-ai-chat-spinner-dots" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <style>.spinner_S1WN{animation:spinner_MGfb .8s linear infinite;animation-delay:-.8s; fill: currentColor;}.spinner_Km9P{animation-delay:-.65s}.spinner_JApP{animation-delay:-.5s}@keyframes spinner_MGfb{93.75%,100%{opacity:.2}}</style>
+                <circle class="spinner_S1WN" cx="4" cy="12" r="3"></circle>
+                <circle class="spinner_S1WN spinner_Km9P" cx="12" cy="12" r="3"></circle>
+                <circle class="spinner_S1WN spinner_JApP" cx="20" cy="12" r="3"></circle>
+              </svg>
+            </div>
+          </div>
+        `;
+      } catch (e) {
+        // cross-origin or access error — fail silently; chatFinal overlay still works
+      }
+    };
+    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+      inject();
+    } else {
+      iframe.addEventListener('load', inject);
+    }
+  })();
+
+  // Animated grain canvas — pausableRaf, 8fps
+  (function startGrain() {
+    const c = document.getElementById('grain');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const img = ctx.createImageData(W, H);
+    let lastDraw = 0;
+    pausableRaf((ts) => {
+      if (ts - lastDraw < 125) return;
+      lastDraw = ts;
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = Math.random() * 255 | 0;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    });
+  })();
+
+  // Pre-split typed string into char spans
+  const TYPED = 'customer feedback form';
+  const typedHost = document.getElementById('typed');
+  const typedChars = [...TYPED].map(ch => {
+    const s = document.createElement('span');
+    s.textContent = ch === ' ' ? ' ' : ch;
+    typedHost.appendChild(s);
+    return s;
+  });
+
+  // Working-dots loop element refs
+  const workingDots = [...document.getElementById('workingDots').children];
+
+  // Master timeline
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+
+  // ─────────────────────────────────────────────────────────────
+  // Initial state
+  // ─────────────────────────────────────────────────────────────
+  gsap.set('#cta', { autoAlpha: 0, scale: 0.88 });
+  gsap.set('.btn-label .word', { opacity: 0, y: 6 });
+  gsap.set('#promptBox', { opacity: 0 });
+  gsap.set('#textHost', { opacity: 0 });
+  gsap.set('#caret', { opacity: 0 });
+  gsap.set(typedChars, { opacity: 0 });
+  gsap.set('#cursor', { autoAlpha: 0, x: 1380, y: 620 });
+  gsap.set('#clickRing', { opacity: 0, scale: 0.4 });
+  gsap.set('#stopBtn', { opacity: 0 });
+  gsap.set('#sendSpinner', { opacity: 0 });
+  gsap.set('#sulliePill', { opacity: 0 });
+  gsap.set(workingDots, { opacity: 0 });
+  gsap.set('#chatFinal', { opacity: 0 });
+  gsap.set('#macFrame', { opacity: 0, scale: 0.5 });
+
+  // ── atmosphere drift (loops, registered into tl) ──
+  const atmoLoop = gsap.timeline({ repeat: -1, yoyo: true });
+  atmoLoop.to('.b1', { x: -40, y: 30, scale: 1.04, duration: 5, ease: 'sine.inOut' }, 0);
+  atmoLoop.to('.b2', { x: 30, y: -20, scale: 1.05, duration: 6, ease: 'sine.inOut' }, 0);
+  atmoLoop.to('.b3', { x: -20, y: -10, scale: 1.06, duration: 4, ease: 'sine.inOut' }, 0);
+  tl.add(atmoLoop, 0);
+
+  // ── working-dots ticker (loops, used during Sullie hold) ──
+  // Pattern: ".  ", ".. ", "...", "   ", repeat at 0.4s/step
+  const dotsLoop = gsap.timeline({ repeat: -1 });
+  // step 1: just dot 1
+  dotsLoop.set(workingDots[0], { opacity: 1 }, 0);
+  dotsLoop.set(workingDots[1], { opacity: 0 }, 0);
+  dotsLoop.set(workingDots[2], { opacity: 0 }, 0);
+  // step 2: dots 1+2
+  dotsLoop.set(workingDots[1], { opacity: 1 }, 0.40);
+  // step 3: all three
+  dotsLoop.set(workingDots[2], { opacity: 1 }, 0.80);
+  // step 4: clear
+  dotsLoop.set(workingDots, { opacity: 0 }, 1.20);
+  dotsLoop.to({}, { duration: 0.40 }, 1.20); // hold blank
+  tl.add(dotsLoop, 0);
+
+  // ============================================================
+  // BEAT 1 — button arrival (0.0 - 1.4)
+  // ============================================================
+  tl.to('#cta', { autoAlpha: 1, scale: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.20);
+  tl.to('.btn-label .word', {
+    opacity: 1, y: 0,
+    duration: 0.45, stagger: 0.06, ease: 'power3.out',
+  }, 0.40);
+  tl.to('#cta', { y: -3, duration: 1.1, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 1.0);
+
+  // ============================================================
+  // BEAT 2 — cursor flies in + clicks button (1.4 - 3.0)
+  // ============================================================
+  tl.to('#cursor', { autoAlpha: 1, duration: 0.18 }, 1.45);
+  tl.to('#cursor', {
+    keyframes: [
+      { x: 1100, y: 540, duration: 0.40 },
+      { x:  830, y: 440, duration: 0.45 },
+      { x:  640, y: 360, duration: 0.40 },
+    ],
+    ease: 'cursor-arrival',
+  }, 1.55);
+  // press
+  tl.to('#cursor', { scale: 0.86, duration: 0.10, ease: 'power2.in' }, 2.78);
+  tl.to('#cursor', { scale: 1.00, duration: 0.18, ease: 'back.out(2)' }, 2.88);
+  // click ring
+  tl.set('#clickRing', { left: 640, top: 360 }, 2.78);
+  tl.fromTo('#clickRing',
+    { opacity: 0.85, scale: 0.4 },
+    { opacity: 0, scale: 1.6, duration: 0.55, ease: 'power2.out' }, 2.80);
+  // button press
+  tl.to('#cta', { scale: 0.96, duration: 0.10, ease: 'power2.in' }, 2.78);
+  tl.to('#cta', { scale: 1.00, duration: 0.18, ease: 'power2.out' }, 2.88);
+  tl.to('#cta', { backgroundColor: '#5c24a9', duration: 0.10 }, 2.78);
+
+  // ============================================================
+  // BEAT 3 — morph: button → input row (3.0 - 4.4)
+  // ============================================================
+  tl.to('#cursor', { x: 540, y: 480, duration: 0.55, ease: 'power2.inOut' }, 3.00);
+  tl.to('#cursor', { autoAlpha: 0, duration: 0.30 }, 3.45);
+
+  tl.to('.btn-label', {
+    opacity: 0, scale: 0.96, filter: 'blur(4px)',
+    duration: 0.30, ease: 'power2.in',
+  }, 3.00);
+
+  tl.to('#cta', {
+    width: 1180, height: 260,
+    borderRadius: 14,
+    backgroundColor: '#f6f7f7',
+    boxShadow: '0 26px 52px rgba(60,40,120,0.20), 0 8px 18px rgba(60,40,120,0.12)',
+    duration: 0.85,
+    ease: 'power3.inOut',
+  }, 3.05);
+
+  tl.to('#promptBox', { opacity: 1, duration: 0.40, ease: 'power2.out' }, 3.55);
+  tl.fromTo('#promptBox textarea',
+    { opacity: 0, y: 6, scale: 0.985 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.40, ease: 'power3.out' }, 3.55);
+  tl.fromTo('#sendBtn',
+    { opacity: 0, scale: 0.7 },
+    { opacity: 1, scale: 1, duration: 0.40, ease: 'back.out(1.6)' }, 3.70);
+
+  // ============================================================
+  // BEAT 4 — caret + typing "customer feedback form" (4.4 - 6.4)
+  // ============================================================
+  tl.to('#textHost', { opacity: 1, duration: 0.20 }, 4.30);
+  tl.to('#caret', { opacity: 1, duration: 0.10 }, 4.35);
+
+  const blinkTl = gsap.timeline({ repeat: -1 });
+  blinkTl.to('#caret', { opacity: 0, duration: 0.40, ease: 'steps(1)' }, 0);
+  blinkTl.to('#caret', { opacity: 1, duration: 0.40, ease: 'steps(1)' }, 0.40);
+  tl.add(blinkTl, 4.45);
+
+  tl.to(typedChars, {
+    opacity: 1,
+    duration: 0.01,
+    stagger: { each: 0.072, from: 'start' },
+    ease: 'none',
+  }, 4.60);
+
+  gsap.set('#promptBox textarea', { '--ph-alpha': 1 });
+  tl.to('#promptBox textarea', {
+    '--ph-alpha': 0, duration: 0.20, ease: 'power1.out',
+  }, 4.60);
+
+  // ============================================================
+  // BEAT 5 — send activates purple (6.4 - 7.0)
+  // ============================================================
+  const typingDoneAt = 4.60 + (typedChars.length * 0.072); // ≈ 6.18
+  tl.to('#sendBtn', {
+    backgroundColor: '#7a30e2',
+    duration: 0.40, ease: 'power2.out',
+  }, typingDoneAt + 0.05);
+  tl.fromTo('#sendBtn',
+    { scale: 1 },
+    { scale: 1.12, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 1 },
+    typingDoneAt + 0.05);
+
+  // ============================================================
+  // BEAT 6 — cursor returns + clicks send (6.5 - 7.6)
+  //   send-button stage coords: box (640, 360), 1180×260
+  //   send center: box right (1230) - 78 - 22 - 30 = 1100; y=360
+  // ============================================================
+  tl.set('#cursor', { x: 1380, y: 140 }, 6.50);
+  tl.to('#cursor', { autoAlpha: 1, duration: 0.18 }, 6.50);
+  tl.to('#cursor', {
+    keyframes: [
+      { x: 1280, y: 220, duration: 0.30 },
+      { x: 1180, y: 300, duration: 0.30 },
+      { x: 1100, y: 360, duration: 0.30 },
+    ],
+    ease: 'cursor-arrival',
+  }, 6.55);
+  tl.to('#cursor', { scale: 0.86, duration: 0.10, ease: 'power2.in' }, 7.45);
+  tl.to('#cursor', { scale: 1.00, duration: 0.18, ease: 'back.out(2)' }, 7.55);
+  tl.set('#clickRing', { left: 1100, top: 360 }, 7.45);
+  tl.fromTo('#clickRing',
+    { opacity: 0.85, scale: 0.4 },
+    { opacity: 0, scale: 1.6, duration: 0.55, ease: 'power2.out' }, 7.47);
+  // send press
+  tl.to('#sendBtn', { scale: 0.88, duration: 0.10, ease: 'power2.in' }, 7.45);
+  tl.to('#sendBtn', { scale: 1.00, duration: 0.18, ease: 'back.out(2)' }, 7.55);
+
+  // ============================================================
+  // BEAT 7 — send button shows 400ms internal spinner (7.50 - 7.90)
+  // ============================================================
+  tl.to('#sendBtn', { backgroundImage: 'none', duration: 0.05 }, 7.50);
+  tl.to('#sendSpinner', { opacity: 1, duration: 0.10 }, 7.50);
+  // cursor drifts up-left to clear the morph area
+  tl.to('#cursor', { x: 380, y: 200, duration: 0.45, ease: 'power2.inOut' }, 7.55);
+  tl.to('#cursor', { autoAlpha: 0, duration: 0.30 }, 7.80);
+
+  // ============================================================
+  // BEAT 8 — input row morphs into Sullie pill (7.90 - 8.30)
+  //   Pill visible at 8.30. Geometry: 680 × 120, white pill.
+  // ============================================================
+  // textarea + send + spinner fade out
+  tl.to('#promptBox', { opacity: 0, duration: 0.20, ease: 'power2.in' }, 7.90);
+  tl.to('#textHost', { opacity: 0, duration: 0.20 }, 7.90);
+  // box morph: 1180×260 → 680×120, white pill
+  tl.to('#cta', {
+    width: 680, height: 120,
+    borderRadius: 60,
+    backgroundColor: '#ffffff',
+    boxShadow:
+      '0 26px 60px rgba(40,30,80,0.22), 0 8px 20px rgba(40,30,80,0.14)',
+    duration: 0.40,
+    ease: 'power3.inOut',
+  }, 7.90);
+  // sullie content fades in — visible by 8.30
+  tl.fromTo('#sulliePill',
+    { opacity: 0, scale: 0.94 },
+    { opacity: 1, scale: 1, duration: 0.30, ease: 'back.out(1.4)' }, 8.05);
+
+  // ============================================================
+  // BEAT 9 — Pill SHRINKS into a circle AND TRAVELS to slot —
+  //          both happen in parallel. (8.30 brief hold → 8.50 start →
+  //          9.50 circle has arrived at slot)
+  // ============================================================
+  // brief hold breath (8.30 - 8.50)
+  tl.to('#cta', { y: -2, duration: 0.20, ease: 'sine.out' }, 8.30);
+  tl.to('#cta', { y:  0, duration: 0.20, ease: 'sine.in'  }, 8.50);
+
+  // Convert top/left from % to px so position can be tweened.
+  tl.set('#cta', { top: 360, left: 640 }, 8.50);
+
+  // Combined: shrink + translate, all in one motion.
+  // Box: 680×120 horizontal pill → 120×120 round circle.
+  // Position: stage center (640, 360) → chat-slot center (240, 378).
+  tl.to('#cta', {
+    width: 120, height: 120,
+    borderRadius: 60,
+    top: 378, left: 240,
+    duration: 1.00,
+    ease: 'power3.inOut',
+  }, 8.50);
+
+  // text + dots fade out, then drop from layout so logo can center.
+  tl.to('.sullie-text', { opacity: 0, duration: 0.30, ease: 'power2.in' }, 8.50);
+  tl.to('#workingDots', { opacity: 0, duration: 0.30, ease: 'power2.in' }, 8.50);
+  tl.set('.sullie-text', { display: 'none' }, 8.85);
+  tl.set('#workingDots', { display: 'none' }, 8.85);
+  // collapse the inner row's gap so the (now-only) logo sits centered
+  tl.set('.sullie-row', { gap: 0 }, 8.85);
+  // collapse the outer .sullie-pill padding/gap too
+  tl.to('.sullie-pill', { gap: 0, padding: 0, duration: 0.30, ease: 'power2.in' }, 8.50);
+  // logo grows slightly to fill the circle
+  tl.to('.sullie-logo', { scale: 1.20, duration: 0.40, ease: 'power2.out' }, 8.55);
+
+  // ============================================================
+  // BEAT 10 — Mac frame dolly (parallel with pill motion).
+  //           (8.30 → 10.30 — form fully framed at 10.30)
+  // ============================================================
+  gsap.set('#macFrame', { filter: 'brightness(0.55) saturate(0.85)' });
+  tl.to('#macFrame', {
+    opacity: 1, scale: 1,
+    filter: 'brightness(1) saturate(1)',
+    duration: 2.00, ease: 'dolly-back',
+  }, 8.30);
+
+  // Right side is the snapshot iframe (empty AI builder) — no field stagger;
+  // the iframe content is static (matches "AI is loading" state on the left).
+
+  // ============================================================
+  // BEAT 11 — Circle (now at slot at 9.50) morphs into the chat panel.
+  //           Reveal completes by 10.20 — BEFORE the Mac frame finishes
+  //           its dolly at 10.30, so when the form is fully in view,
+  //           the chat panel HTML is already in place.
+  // ============================================================
+  tl.to('#cta', {
+    width: 380, height: 604,
+    borderRadius: 0,
+    backgroundColor: '#ffffff',
+    boxShadow: '0 8px 24px rgba(40,30,80,0.18)',
+    duration: 0.65,
+    ease: 'power3.inOut',
+  }, 9.55);
+  tl.to('#sulliePill', { opacity: 0, duration: 0.30, ease: 'power2.in' }, 9.55);
+  tl.to('#chatFinal', {
+    opacity: 1,
+    duration: 0.50, ease: 'power2.out',
+  }, 9.80);
+
+  // ============================================================
+  // END HOLD (10.30 - 12.0) — chat panel in slot, form fully framed,
+  // built-in 3-circle spinner SVG animates via CSS keyframes.
+  // ============================================================
+
+  // ─────────────────────────────────────────────────────────────
+  // Scrubber wiring
+  // ─────────────────────────────────────────────────────────────
+  const TOTAL = 12.0;
+  const scrub = document.getElementById('scrub');
+  const playBtn = document.getElementById('play');
+  const timeEl = document.getElementById('time');
+
+  let playing = false;
+  function setTime(t) {
+    tl.time(t);
+    scrub.value = String(t);
+    timeEl.textContent = `${t.toFixed(2)} / ${TOTAL.toFixed(2)}`;
+  }
+
+  scrub.addEventListener('input', () => {
+    playing = false;
+    playBtn.textContent = 'Play';
+    setTime(parseFloat(scrub.value));
+  });
+
+  playBtn.addEventListener('click', () => {
+    if (playing) {
+      tl.pause();
+      playing = false;
+      playBtn.textContent = 'Play';
+    } else {
+      if (tl.time() >= TOTAL) tl.time(0);
+      tl.play();
+      playing = true;
+      playBtn.textContent = 'Pause';
+    }
+  });
+
+  tl.eventCallback('onUpdate', () => {
+    const t = tl.time();
+    if (t > TOTAL) {
+      tl.pause();
+      playing = false;
+      playBtn.textContent = 'Play';
+      tl.time(TOTAL);
+    }
+    if (playing) {
+      scrub.value = String(t);
+      timeEl.textContent = `${t.toFixed(2)} / ${TOTAL.toFixed(2)}`;
+    }
+  });
+
+  setTime(0);
+</script>
+</body>
+</html>

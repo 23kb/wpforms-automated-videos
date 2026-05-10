@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Replica study — first 18s</title>
+<style>
+  :root {
+    --stage-w: 1280px;
+    --stage-h: 720px;
+    --ink: #111;
+    --ink-soft: #2a2a2a;
+    --bg-warm: #fff7ef;
+    --bg-cool: #f6fbff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #ddd;
+    font-family: -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: var(--stage-w);
+    height: var(--stage-h);
+    transform-origin: center center;
+    background: #fdfdff;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  }
+
+  /* ---------- atmospheric gradient bed ---------- */
+  .atmo {
+    position: absolute; inset: 0; pointer-events: none;
+    z-index: 0;
+  }
+  .atmo .bloom {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    mix-blend-mode: multiply;
+    opacity: 0.0;
+    will-change: transform, opacity;
+  }
+  .atmo .b-cool-1 {
+    width: 700px; height: 700px;
+    left: -180px; bottom: -240px;
+    background: radial-gradient(circle, #9ecff0 0%, rgba(180,220,255,0) 70%);
+  }
+  .atmo .b-cool-2 {
+    width: 800px; height: 800px;
+    right: -240px; bottom: -260px;
+    background: radial-gradient(circle, #b6dffd 0%, rgba(200,230,255,0) 70%);
+  }
+  .atmo .b-warm-1 {
+    width: 720px; height: 720px;
+    left: -200px; top: -200px;
+    background: radial-gradient(circle, #ffe2c8 0%, rgba(255,220,180,0) 70%);
+  }
+  .atmo .b-purple-1 {
+    width: 760px; height: 760px;
+    right: -200px; top: -180px;
+    background: radial-gradient(circle, #d6c8ff 0%, rgba(220,210,255,0) 70%);
+  }
+
+  /* ---------- shared scene base ---------- */
+  .scene {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    will-change: opacity, filter;
+    z-index: 1;
+  }
+  .scene.active { z-index: 2; }
+
+  /* ---------- typography ---------- */
+  .headline {
+    font-weight: 600;
+    font-size: 32px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+  .headline .word { display: inline-block; opacity: 0; transform: translateY(6px); }
+  .pill { display:inline-block; }
+
+  /* ---------- SCENE 1: opening line + phone draw ---------- */
+  .scene-1 .top-line {
+    position: absolute; top: 80px; left: 0; right: 0;
+    text-align: center;
+  }
+  .scene-1 .top-line .line { display: inline-block; }
+
+  /* ---------- shared phone frame ---------- */
+  .phone {
+    position: relative;
+    width: 360px; height: 720px;
+    border-radius: 52px;
+    background: #fff;
+    box-shadow: inset 0 0 0 10px #1a1a1c, 0 30px 60px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+  .phone .notch {
+    position: absolute; top: 14px; left: 50%;
+    width: 110px; height: 30px;
+    background: #1a1a1c;
+    border-radius: 20px;
+    transform: translateX(-50%);
+    z-index: 4;
+  }
+  .phone .statusbar {
+    position: absolute; top: 18px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    padding: 0 26px;
+    font-size: 14px; font-weight: 600;
+    z-index: 5;
+  }
+  .phone .statusbar .right { letter-spacing: 1px; }
+  .phone .topbar {
+    position: absolute; top: 56px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+    height: 44px;
+    z-index: 3;
+  }
+  .phone .topbar .title { font-weight: 600; font-size: 16px; }
+  .phone .topbar .left, .phone .topbar .right { display: flex; gap: 14px; align-items: center; opacity: 0.85; }
+  .phone .icon {
+    width: 18px; height: 14px; display: inline-block;
+    background: currentColor;
+    -webkit-mask-size: contain; mask-size: contain;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  }
+  .phone .chat {
+    position: absolute; top: 110px; left: 0; right: 0; bottom: 0;
+    padding: 18px 16px;
+  }
+  .bubble {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    max-width: 80%;
+    opacity: 0; transform: translateY(8px);
+  }
+  .bubble.user {
+    background: #ececec;
+    color: #111;
+    margin-left: auto;
+    display: block;
+    width: fit-content;
+    margin-right: 0;
+  }
+  .row-right { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+  .bubble.ai {
+    background: transparent;
+    color: #111;
+    padding: 4px 0;
+  }
+
+  /* phone draw clip */
+  .phone.draw {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  /* ---------- SCENE 2: phone problem caption ---------- */
+  .caption {
+    position: absolute; top: 76px; left: 0; right: 0;
+    text-align: center;
+    font-size: 26px; font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ---------- SCENE 3: Be the answer ---------- */
+  .scene-3 {
+    flex-direction: column;
+  }
+  .scene-3 h1 {
+    font-size: 64px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  /* ---------- SCENE 4: Layo intro ---------- */
+  .layo-logo {
+    position: absolute; top: 70px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center;
+    font-weight: 700; font-size: 30px;
+    letter-spacing: -0.01em;
+  }
+  .layo-mark {
+    width: 28px; height: 28px;
+    position: relative;
+  }
+  .layo-mark::before, .layo-mark::after {
+    content: ""; position: absolute; background: #111;
+    border-radius: 2px;
+  }
+  .layo-mark::before { left: 0; bottom: 0; width: 8px; height: 28px; }
+  .layo-mark::after  { left: 12px; bottom: 0; width: 16px; height: 12px; }
+  .device-frame-card {
+    width: 400px;
+    background: #fafafa;
+    border: 1px solid #e9e9ec;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+  }
+  .device-frame-card .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: #777;
+    margin-bottom: 12px;
+  }
+  .device-frame-card .meta .left { display: flex; gap: 8px; align-items: center; }
+  .map-mock {
+    width: 100%; height: 360px;
+    border-radius: 12px;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(232,80,120,0.55) 3px, transparent 4px),
+      radial-gradient(circle at 55% 30%, rgba(232,80,120,0.55) 3px, transparent 4px),
+      radial-gradient(circle at 70% 55%, rgba(232,80,120,0.55) 3px, transparent 4px),
+      radial-gradient(circle at 40% 65%, rgba(232,80,120,0.55) 3px, transparent 4px),
+      radial-gradient(circle at 22% 58%, rgba(232,80,120,0.55) 3px, transparent 4px),
+      linear-gradient(135deg, #cfeaf5 0%, #e7f2f8 35%, #f7f3ec 60%, #ddeef6 100%);
+    background-size: auto, auto, auto, auto, auto, 100% 100%;
+    position: relative;
+  }
+  .scene-4 .caption {
+    top: auto; bottom: 90px;
+    font-size: 30px; font-weight: 600;
+  }
+
+  /* ---------- SCENE 5: Build the interface ---------- */
+  .scene-5 .left-stack {
+    position: absolute; left: 80px; top: 80px;
+    font-size: 26px; font-weight: 600;
+    line-height: 1.6;
+  }
+  .scene-5 .left-stack .l {
+    display: block;
+    color: var(--ink);
+    transition: color 0.6s;
+  }
+  .scene-5 .left-stack .l.dim { color: #cfcfd4; }
+  .scene-5 .canvas {
+    position: absolute; right: 60px; top: 60px;
+    width: 560px; height: 380px;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+  }
+  .scene-5 .canvas .map-mock { height: 100%; border-radius: 0; }
+  .scene-5 .hotel-card {
+    position: absolute;
+    left: 70px; bottom: 60px;
+    width: 360px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    display: flex; gap: 10px;
+    border: 2px solid transparent;
+  }
+  .scene-5 .hotel-card.selected { border-color: #2f7bf6; }
+  .scene-5 .hotel-card .thumb {
+    width: 76px; height: 64px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #efb8a4 0%, #d97a64 60%, #b04532 100%);
+    flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .scene-5 .hotel-card .thumb::after {
+    content: ""; position: absolute; inset: 30% 20% 20% 25%;
+    background: rgba(255,255,255,0.45);
+    border-radius: 4px;
+  }
+  .scene-5 .hotel-card .info .t { font-weight: 600; font-size: 14px; }
+  .scene-5 .hotel-card .info .p { font-weight: 600; font-size: 13px; margin-top: 2px; }
+  .scene-5 .hotel-card .info .a { color: #888; font-size: 11px; margin-top: 4px; }
+  .scene-5 .card-tag {
+    position: absolute;
+    left: 60px; bottom: 200px;
+    background: #2f7bf6; color: white;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ---------- SCENE 6: Connect your data ---------- */
+  .scene-6 .left-stack {
+    position: absolute; left: 80px; top: 80px;
+    font-size: 26px; font-weight: 600;
+    line-height: 1.6;
+  }
+  .scene-6 .left-stack .l { display: block; color: #cfcfd4; }
+  .scene-6 .left-stack .l.on { color: var(--ink); }
+  .scene-6 .sheet {
+    position: absolute;
+    right: 50px; top: 70px;
+    width: 720px; height: 580px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .scene-6 .sheet .head {
+    display: flex; gap: 14px; padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    color: #333; font-weight: 600;
+  }
+  .scene-6 .sheet table { width: 100%; border-collapse: collapse; }
+  .scene-6 .sheet th, .scene-6 .sheet td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid #f1f1f3;
+  }
+  .scene-6 .sheet th { font-weight: 600; color: #555; background: #fafafa; font-size: 11px; }
+  .scene-6 .sheet td.num { text-align: right; }
+  .scene-6 .sheet .price { color: #111; font-weight: 600; }
+
+  /* ---------- scrubber ---------- */
+  .controls {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(20,20,24,0.92);
+    color: #eee;
+    padding: 10px 16px;
+    display: flex; gap: 12px; align-items: center;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    z-index: 100;
+  }
+  .controls input[type=range] { flex: 1; }
+  .controls button {
+    background: #2f7bf6; color: white; border: 0;
+    padding: 6px 14px; border-radius: 4px;
+    font-weight: 600; cursor: pointer;
+  }
+  .controls .t { min-width: 80px; }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+
+    <!-- atmosphere -->
+    <div class="atmo">
+      <div class="bloom b-cool-1"></div>
+      <div class="bloom b-cool-2"></div>
+      <div class="bloom b-purple-1"></div>
+      <div class="bloom b-warm-1"></div>
+    </div>
+
+    <!-- SCENE 1 — opening line -->
+    <div class="scene scene-1" data-scene="1">
+      <div class="top-line">
+        <div class="headline" id="hl1">Your customers just asked AI to do your job.</div>
+      </div>
+      <div class="phone draw" id="phone1">
+        <div class="notch"></div>
+        <div class="statusbar"><span>10:24</span><span class="right">●●●●  ▮▮</span></div>
+        <div class="topbar">
+          <div class="left"><span style="font-size:18px">≡</span></div>
+          <div class="title">ChatGPT</div>
+          <div class="right"><span>✎</span><span>···</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 2 — phone problem -->
+    <div class="scene scene-2" data-scene="2">
+      <div class="caption" id="cap2">…and you weren't there.</div>
+      <div class="phone" id="phone2">
+        <div class="notch"></div>
+        <div class="statusbar"><span>10:24</span><span class="right">●●●●  ▮▮</span></div>
+        <div class="topbar">
+          <div class="left"><span style="font-size:18px">≡</span></div>
+          <div class="title">ChatGPT</div>
+          <div class="right"><span>✎</span><span>···</span></div>
+        </div>
+        <div class="chat">
+          <div class="row-right"><div class="bubble user" id="b2-user">Book me a hotel in New York City</div></div>
+          <div class="bubble ai" id="b2-ai">Sorry, I can't help with that.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3 — Be the answer. -->
+    <div class="scene scene-3" data-scene="3">
+      <h1 id="hl3">Be the answer.</h1>
+    </div>
+
+    <!-- SCENE 4 — Layo / Your app, inside AI -->
+    <div class="scene scene-4" data-scene="4">
+      <div class="layo-logo">
+        <div class="layo-mark"></div>
+        <span>Layo</span>
+      </div>
+      <div class="device-frame-card">
+        <div class="meta">
+          <div class="left">📱 Mobile <span style="color:#aaa">353 × 852</span></div>
+          <div>+</div>
+        </div>
+        <div class="map-mock"></div>
+      </div>
+      <div class="caption" id="cap4">Your app, inside AI.</div>
+    </div>
+
+    <!-- SCENE 5 — Build the interface -->
+    <div class="scene scene-5" data-scene="5">
+      <div class="left-stack" id="stack5">
+        <span class="l">Build the interface.</span>
+        <span class="l dim">Connect your data.</span>
+        <span class="l dim">Deploy everywhere.</span>
+      </div>
+      <div class="canvas">
+        <div class="map-mock"></div>
+      </div>
+      <div class="card-tag" id="cardtag">Card</div>
+      <div class="hotel-card selected" id="hotelcard">
+        <div class="thumb"></div>
+        <div class="info">
+          <div class="t">Crosby Street Hotel</div>
+          <div class="p">From $960/night</div>
+          <div class="a">79 Crosby St, New York, NY 10…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 6 — Connect your data (start of) -->
+    <div class="scene scene-6" data-scene="6">
+      <div class="left-stack">
+        <span class="l">Build the interface.</span>
+        <span class="l on">Connect your data.</span>
+        <span class="l">Deploy everywhere.</span>
+      </div>
+      <div class="sheet">
+        <div class="head">📊 Create a database <span style="color:#999;font-weight:400">› Hotels ▾</span></div>
+        <table>
+          <thead><tr>
+            <th>≡ Title</th><th>≡ Description</th><th>🖼 Image</th><th>＃ Price</th>
+          </tr></thead>
+          <tbody id="rows6">
+            <tr><td>Grand Hotel Plaza</td><td>Luxury hotel in the heart of…</td><td>grand_hotel.jpeg</td><td class="num price">$ 320.00</td></tr>
+            <tr><td>City Center Inn</td><td>Modern boutique hotel steps…</td><td>city_inn.jpeg</td><td class="num price">$ 180.00</td></tr>
+            <tr><td>Riverside Suites</td><td>Spacious rooms overlooking…</td><td>riverside.jpeg</td><td class="num price">$ 245.00</td></tr>
+            <tr><td>Urban Loft Hotel</td><td>Contemporary design hotel…</td><td>urban_loft.jpeg</td><td class="num price">$ 195.00</td></tr>
+            <tr><td>Heritage House</td><td>Historic property with…</td><td>heritage.jpeg</td><td class="num price">$ 275.00</td></tr>
+            <tr><td>Metro Business Hotel</td><td>Convenient location near metro…</td><td>metro_business.jpeg</td><td class="num price">$ 165.00</td></tr>
+            <tr><td>Garden View Resort</td><td>Peaceful retreat with rooftop…</td><td>garden_view.jpeg</td><td class="num price">$ 290.00</td></tr>
+            <tr><td>The Downtown Station</td><td>Stylish hotel connected to…</td><td>downtown_station.jpeg</td><td class="num price">$ 210.00</td></tr>
+            <tr><td>Skyline Tower Hotel</td><td>High-rise hotel with stunning…</td><td>skyline_tower.jpeg</td><td class="num price">$ 340.00</td></tr>
+            <tr><td>Parkside Boutique</td><td>Cozy hotel adjacent to…</td><td>parkside.jpeg</td><td class="num price">$ 225.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button id="play">Play</button>
+  <input type="range" id="scrub" min="0" max="18" step="0.01" value="0" />
+  <span class="t" id="time">00.00 / 18.00</span>
+</div>
+
+<script src="../vendor/gsap/3.15.0/gsap.min.js"></script>
+<script>
+  // ---------- helpers ----------
+  function splitWords(el) {
+    const text = el.textContent.trim();
+    el.innerHTML = '';
+    text.split(/\s+/).forEach((w, i) => {
+      const s = document.createElement('span');
+      s.className = 'word';
+      s.textContent = w;
+      el.appendChild(s);
+      if (i < text.split(/\s+/).length - 1) el.appendChild(document.createTextNode(' '));
+    });
+    return el.querySelectorAll('.word');
+  }
+
+  // pre-split all type-on lines
+  const w_hl1 = splitWords(document.getElementById('hl1'));
+  const w_cap2 = splitWords(document.getElementById('cap2'));
+  const w_hl3 = splitWords(document.getElementById('hl3'));
+  const w_cap4 = splitWords(document.getElementById('cap4'));
+
+  // ---------- responsive scaling of the 1280x720 stage ----------
+  function fit() {
+    const stage = document.getElementById('stage');
+    const w = window.innerWidth;
+    const h = window.innerHeight - 50; // controls bar
+    const scale = Math.min(w / 1280, h / 720) * 0.96;
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ---------- master timeline ----------
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+
+  // helper: blur dissolve between two scenes
+  function blurOut(target, t, dur=0.7) {
+    tl.to(target, { autoAlpha: 0, filter: 'blur(16px)', duration: dur, ease: 'power2.in' }, t);
+  }
+  function blurIn(target, t, dur=0.7) {
+    tl.fromTo(target, { autoAlpha: 0, filter: 'blur(16px)' },
+                      { autoAlpha: 1, filter: 'blur(0px)', duration: dur, ease: 'power2.out' }, t);
+  }
+
+  // --- atmosphere bed (always-on, slow drift) ---
+  tl.to('.b-cool-1', { opacity: 0.55, duration: 1.2 }, 0)
+    .to('.b-cool-2', { opacity: 0.50, duration: 1.4 }, 0.2)
+    .to('.b-cool-1', { x: 80, y: -40, duration: 18, ease: 'none' }, 0)
+    .to('.b-cool-2', { x: -80, y: -20, duration: 18, ease: 'none' }, 0);
+
+  // ============================================================
+  // SCENE 1 (0 - 4.5s): opening type-on + phone draw-in
+  // ============================================================
+  tl.set('.scene-1', { autoAlpha: 1 }, 0);
+  tl.from(w_hl1, {
+    opacity: 0, y: 8, stagger: 0.10, duration: 0.45,
+  }, 0.4);
+
+  // phone draws in from top
+  tl.fromTo('#phone1',
+    { clipPath: 'inset(0 0 100% 0)', y: 30 },
+    { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.9, ease: 'power3.out' },
+    3.6
+  );
+
+  // ============================================================
+  // SCENE 1 -> 2 dissolve (4.5 - 5.0s)
+  //   Phone stays — only the headline trades for caption + chat fills
+  // ============================================================
+  blurOut('#hl1', 4.4, 0.5);
+  // crossfade scene-1 phone into scene-2 phone (hold same position)
+  tl.set('.scene-2', { autoAlpha: 1 }, 4.5);
+  tl.fromTo('#phone2',
+    { autoAlpha: 0, filter: 'blur(8px)' },
+    { autoAlpha: 1, filter: 'blur(0px)', duration: 0.5 },
+    4.5);
+  blurOut('#phone1', 4.5, 0.4);
+
+  // caption types in
+  tl.from(w_cap2, { opacity: 0, y: 6, stagger: 0.07, duration: 0.4 }, 4.7);
+
+  // user message appears
+  tl.fromTo('#b2-user',
+    { autoAlpha: 0, y: 8 },
+    { autoAlpha: 1, y: 0, duration: 0.35 },
+    5.5);
+
+  // AI reply appears (a beat after, like a real reply)
+  tl.fromTo('#b2-ai',
+    { autoAlpha: 0, y: 8 },
+    { autoAlpha: 1, y: 0, duration: 0.35 },
+    6.6);
+
+  // ============================================================
+  // SCENE 2 -> 3 dissolve (7.4 - 7.9s)
+  // ============================================================
+  blurOut('.scene-2', 7.3, 0.6);
+
+  // ============================================================
+  // SCENE 3 (7.8 - 10.3s): Be the answer.
+  // ============================================================
+  blurIn('.scene-3', 7.8, 0.6);
+  tl.from(w_hl3, { opacity: 0, y: 10, stagger: 0.18, duration: 0.5 }, 8.0);
+
+  // ============================================================
+  // SCENE 3 -> 4 dissolve (10.3 - 10.9s)
+  // ============================================================
+  blurOut('.scene-3', 10.3, 0.6);
+
+  // ============================================================
+  // SCENE 4 (10.9 - 14.0s): Layo / Your app, inside AI
+  //   Color temperature shift: cool fades, purple bloom rises
+  // ============================================================
+  blurIn('.scene-4', 10.9, 0.6);
+  tl.to('.b-purple-1', { opacity: 0.45, duration: 1.5 }, 10.7);
+  tl.from('.scene-4 .layo-logo', { y: -10, opacity: 0, duration: 0.6 }, 11.0);
+  tl.from('.scene-4 .device-frame-card',
+    { y: 30, opacity: 0, scale: 0.97, duration: 0.7, ease: 'power3.out' }, 11.2);
+  tl.from(w_cap4, { opacity: 0, y: 6, stagger: 0.08, duration: 0.4 }, 11.6);
+
+  // ============================================================
+  // SCENE 4 -> 5 dissolve (13.9 - 14.5s)
+  // ============================================================
+  blurOut('.scene-4', 13.9, 0.55);
+
+  // ============================================================
+  // SCENE 5 (14.4 - 17.4s): Build the interface.
+  // ============================================================
+  blurIn('.scene-5', 14.4, 0.55);
+  tl.from('.scene-5 .canvas',
+    { x: 40, opacity: 0, duration: 0.7, ease: 'power3.out' }, 14.5);
+  tl.from('.scene-5 .left-stack .l',
+    { x: -20, opacity: 0, stagger: 0.12, duration: 0.5 }, 14.6);
+
+  // hotel card slides up & in, "Card" tag flicks on
+  tl.from('#hotelcard',
+    { y: 40, opacity: 0, duration: 0.55, ease: 'power3.out' }, 15.2);
+  tl.from('#cardtag',
+    { opacity: 0, y: 6, duration: 0.35 }, 15.5);
+
+  // little selection nudge — feels like a designer is dragging it
+  tl.to('#hotelcard',
+    { x: 30, duration: 1.0, ease: 'power2.inOut', yoyo: true, repeat: 1 }, 16.0);
+
+  // ============================================================
+  // SCENE 5 -> 6 dissolve (17.3 - 18.0s)
+  //   Color temperature shift: cool/purple drop, warm rises
+  // ============================================================
+  blurOut('.scene-5', 17.3, 0.6);
+  tl.to('.b-purple-1', { opacity: 0, duration: 0.8 }, 17.2);
+  tl.to('.b-cool-1',   { opacity: 0.15, duration: 1.0 }, 17.2);
+  tl.to('.b-cool-2',   { opacity: 0.10, duration: 1.0 }, 17.2);
+  tl.to('.b-warm-1',   { opacity: 0.55, duration: 1.2 }, 17.2);
+
+  // ============================================================
+  // SCENE 6 (17.9 - 18.0s tease): Connect your data
+  // ============================================================
+  blurIn('.scene-6', 17.9, 0.6);
+  tl.from('.scene-6 .sheet',
+    { x: 60, opacity: 0, duration: 0.7, ease: 'power3.out' }, 17.95);
+
+  // pad to exactly 18s
+  tl.to({}, { duration: 0.01 }, 18);
+
+  // ---------- controls wiring ----------
+  const playBtn = document.getElementById('play');
+  const scrub = document.getElementById('scrub');
+  const timeLabel = document.getElementById('time');
+
+  playBtn.addEventListener('click', () => {
+    if (tl.paused()) {
+      if (tl.time() >= tl.duration() - 0.01) tl.time(0);
+      tl.play();
+      playBtn.textContent = 'Pause';
+    } else {
+      tl.pause();
+      playBtn.textContent = 'Play';
+    }
+  });
+
+  let scrubbing = false;
+  scrub.addEventListener('input', () => {
+    scrubbing = true;
+    tl.pause();
+    tl.time(parseFloat(scrub.value));
+    playBtn.textContent = 'Play';
+  });
+  scrub.addEventListener('change', () => { scrubbing = false; });
+
+  function tick() {
+    if (!scrubbing) {
+      const t = tl.time();
+      scrub.value = t.toFixed(2);
+      timeLabel.textContent = `${t.toFixed(2).padStart(5,'0')} / 18.00`;
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // expose for tinkering
+  window.__tl = tl;
+</script>
+</body>
+</html>
