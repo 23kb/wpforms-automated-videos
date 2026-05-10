@@ -1,0 +1,50 @@
+/* WPForms Brand Tokens — canonical source of truth.
+ *
+ * Sourced from the live plugin at
+ *   C:\Users\PC\Local Sites\newsite\app\public\wp-content\plugins\wpforms
+ * via docs/wpforms-source-inventory-2026-05-10.md.
+ *
+ * Use in any video that needs WPForms-correct branding.
+ *   <link rel="stylesheet" href="/videos/_shared/wpforms-brand/tokens.css">
+ *
+ * Do NOT redeclare these elsewhere (no --wpf-purple, no Anthropic palette imports,
+ * no custom font stacks). The inline-purple-as-primary mistake from
+ * videos/wpforms-ai-zlyvs/ and videos/wpforms-ai-announcement/ is exactly what
+ * this file prevents.
+ */
+:root {
+  /* Brand orange — primary accent, the WPForms identity color.
+   * Confirmed via .wpforms-btn-orange in admin.min.css and icon-wpforms.svg fill. */
+  --wpf-orange: #E27730;
+  --wpf-orange-hover: #CD6622;
+
+  /* Secondary blue — used in admin chrome, AI rating star color, etc. */
+  --wpf-blue: #066AAB;
+  --wpf-blue-light: #0399ED;
+
+  /* AI feature accent — purple is the correct color for AI-feature elements
+   * (chat send button #7a30e2, AI status indicators, "Powered by AI" tags).
+   * NEVER use as a primary brand color. The bug in wpforms-ai-announcement was
+   * using --wpf-purple as primary; the win in wpforms-ai-prompt-open uses it
+   * correctly for the AI chat send button only. */
+  --wpf-ai-purple: #7A30E2;
+  --wpf-ai-purple-deep: #5C24A9;
+
+  /* Neutrals */
+  --wpf-bg-warm: #F4F1EC;
+  --wpf-bg-cream: #FAF6EE;
+  --wpf-ink: #14161C;
+  --wpf-ink-soft: #2A2A2E;
+  --wpf-ink-mute: #5B5F6E;
+
+  /* Typography — OS system stack. WPForms does NOT use a custom webfont.
+   * Don't import Inter, don't import Roboto. Use the system stack. */
+  --wpf-font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Spinner timing — the canonical AI thinking spinner uses 0.8s linear infinite.
+   * If you build your own loading indicator, match this cadence. */
+  --wpf-spinner-duration: 0.8s;
+}
+
+/* If a video needs a default body font without redeclaring on every selector */
+.wpf-system-font { font-family: var(--wpf-font-stack); }
