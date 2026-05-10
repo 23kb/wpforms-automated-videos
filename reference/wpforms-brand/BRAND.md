@@ -50,6 +50,21 @@ Then use vars: `var(--wpf-orange)`, `var(--wpf-blue)`, `var(--wpf-bg-warm)`, etc
 
 - Plugin source uses OS system font stack only (`var(--wpf-font-stack)`). Editorial videos that want a more "designed" feel may add a webfont (e.g. Inter as in `wpforms-ai-prompt-open.html:24`); fine when it serves the editorial composition. Keep the system stack as fallback.
 
+### UI accent icons (envelope, card, clipboard, person, document, open-mail)
+
+Six small SVG icons live at the repo root: `assets/wpforms-icon-1.svg` through `assets/wpforms-icon-6.svg`. These are real WPForms UI accents (mail envelope, credit-card row, clipboard, open envelope, person, document) — useful as beautification glyphs in editorial composition, marker pills, lower-thirds, or anywhere a small WPForms-flavored shape adds visual texture without competing with primary content.
+
+| File | Shape | Size | Use case |
+|---|---|---|---|
+| `assets/wpforms-icon-1.svg` | Envelope (closed) | 20×17 | Email/notification context |
+| `assets/wpforms-icon-2.svg` | Card / credit row | 20×14 | Payment / billing context |
+| `assets/wpforms-icon-3.svg` | Clipboard (portrait) | 16×21 | Form / survey context |
+| `assets/wpforms-icon-4.svg` | Envelope (open) | 20×21 | Mail-opened / inbox context |
+| `assets/wpforms-icon-5.svg` | Person | 20×18 | User / signup / lead context |
+| `assets/wpforms-icon-6.svg` | Document | 24×24 | Document / template context |
+
+All use `fill="#ffffff"` — recolor via parent container or override fill at use site. Don't invent new WPForms-style icons; reuse these.
+
 ### Real form templates (when a video needs to show the template gallery)
 
 Plugin templates are CDN-fetched, not bundled. API:
