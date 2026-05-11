@@ -113,6 +113,126 @@
     box-shadow: 0 12px 28px rgba(20, 22, 28, 0.22);
   }
 
+  /* Intro card — no mac frame around this; lives directly on stage */
+  .intro-card {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 50;
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+  .intro-card .eyebrow {
+    font: 500 13px/1 var(--wpf-font-stack);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--wpf-orange);
+    margin-bottom: 14px;
+  }
+  .intro-card .title {
+    font: 600 52px/1.1 var(--wpf-font-stack);
+    letter-spacing: -0.018em;
+    color: var(--wpf-ink);
+    margin-bottom: 14px;
+  }
+  .intro-card .sub {
+    font: 400 19px/1.4 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* PostIntro — animated concept beat. No mac frame. The morph chain
+     previews what the tutorial teaches: an Email field gains a Required
+     toggle, then an orange asterisk pops in next to the label. */
+  .postintro-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 36px;
+  }
+  /* The demo "Email" field */
+  .pi-field {
+    position: relative;
+    width: 420px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 22px 26px;
+    box-shadow: 0 14px 32px rgba(20, 22, 28, 0.10), 0 0 0 1px #e6e9ed;
+    will-change: transform, box-shadow;
+  }
+  .pi-field .label {
+    font: 600 14px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    margin-bottom: 10px;
+    display: flex; align-items: center;
+  }
+  .pi-field .label .text {
+    display: inline-block;
+  }
+  .pi-field .label .asterisk {
+    display: inline-block;
+    color: var(--wpf-orange);
+    font-weight: 700;
+    font-size: 18px;
+    margin-left: 6px;
+    transform: scale(0);
+    transform-origin: center;
+    will-change: transform, opacity;
+    opacity: 0;
+  }
+  .pi-field .input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #d1d4d7;
+    border-radius: 6px;
+    background: #fbfafa;
+  }
+  /* The demo Required toggle */
+  .pi-toggle-row {
+    display: flex; align-items: center; gap: 14px;
+    width: 420px;
+    padding: 12px 26px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(20, 22, 28, 0.06), 0 0 0 1px #e6e9ed;
+    will-change: transform;
+  }
+  .pi-toggle-row .lbl {
+    font: 500 14px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    flex: 1;
+  }
+  .pi-toggle {
+    width: 44px; height: 24px;
+    background: #d1d4d7;
+    border-radius: 999px;
+    position: relative;
+    transition: background 0.35s ease;
+  }
+  .pi-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.20);
+    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .pi-toggle.on {
+    background: var(--wpf-orange);
+  }
+  .pi-toggle.on::after {
+    transform: translateX(20px);
+  }
+
   /* Final brand sign-off */
   .signoff {
     position: absolute;
@@ -150,6 +270,28 @@
       </div>
     </div>
 
+    <!-- Intro card (no mac frame) -->
+    <div class="intro-card" id="introCard">
+      <div class="eyebrow">WPForms Tutorial</div>
+      <div class="title">Make a Field <span style="color: var(--wpf-orange);">Required</span>.</div>
+      <div class="sub">Mark form fields as mandatory so visitors can't skip them.</div>
+    </div>
+
+    <!-- PostIntro concept beat (no mac frame) -->
+    <div class="postintro-stage" id="postIntroStage">
+      <div class="pi-field" id="piField">
+        <div class="label">
+          <span class="text">Email Address</span>
+          <span class="asterisk" id="piAsterisk">*</span>
+        </div>
+        <div class="input"></div>
+      </div>
+      <div class="pi-toggle-row" id="piToggleRow">
+        <span class="lbl">Required</span>
+        <div class="pi-toggle" id="piToggle"></div>
+      </div>
+    </div>
+
     <div class="chapter-card" id="chapterCard">
       <div class="ch-num" id="chNum">Chapter 1</div>
       <div class="ch-title" id="chTitle">Find the field setting</div>
@@ -178,6 +320,12 @@ const chNum = document.getElementById('chNum');
 const chTitle = document.getElementById('chTitle');
 const narration = document.getElementById('narration');
 const signoff = document.getElementById('signoff');
+const introCard = document.getElementById('introCard');
+const postIntroStage = document.getElementById('postIntroStage');
+const piField = document.getElementById('piField');
+const piToggleRow = document.getElementById('piToggleRow');
+const piToggle = document.getElementById('piToggle');
+const piAsterisk = document.getElementById('piAsterisk');
 
 // fitStage removed for sharp text (no compositor flatten)
 
@@ -206,7 +354,64 @@ function wait(s) { return new Promise(r => setTimeout(r, s * 1000)); }
 // MASTER TIMELINE
 async function play() {
   // ────────────────────────────────────────────────────────
-  // SETUP — mac frame in
+  // INTRO (~3s) — title card, no mac frame
+  // ────────────────────────────────────────────────────────
+  gsap.set(introCard, { opacity: 0, y: 14 });
+  gsap.to(introCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
+  await wait(2.4);
+  gsap.to(introCard, { opacity: 0, y: -8, duration: 0.45, ease: 'power2.in' });
+  await wait(0.55);
+
+  // ────────────────────────────────────────────────────────
+  // POSTINTRO (~10s) — animated concept beat, no mac frame
+  // An "Email Address" field appears, a Required toggle slides in, the
+  // toggle flips on, and the orange asterisk pops in next to the label —
+  // previewing exactly what the tutorial teaches.
+  // ────────────────────────────────────────────────────────
+  // Pre-state: field and toggle hidden, asterisk scaled to 0
+  gsap.set(piField, { opacity: 0, y: 18, scale: 0.96 });
+  gsap.set(piToggleRow, { opacity: 0, y: 18 });
+  gsap.set(piAsterisk, { opacity: 0, scale: 0 });
+  // Stage in
+  gsap.to(postIntroStage, { opacity: 1, duration: 0.3 });
+  // Phase 1: field arrives
+  gsap.to(piField, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power3.out' });
+  await wait(1.4);
+  // Phase 2: toggle row slides in
+  gsap.to(piToggleRow, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' });
+  await wait(1.3);
+  // Phase 3: toggle flips on (CSS transition handles the slider + bg color)
+  piToggle.classList.add('on');
+  await wait(0.5);
+  // Phase 4: asterisk pops in with bounce
+  gsap.to(piAsterisk, {
+    opacity: 1,
+    scale: 1,
+    duration: 0.55,
+    ease: 'back.out(2.2)',
+  });
+  // Subtle field "acknowledgment" — slight scale-up + shadow lift
+  gsap.to(piField, {
+    scale: 1.025,
+    boxShadow: '0 20px 44px rgba(226, 119, 48, 0.18), 0 0 0 1px rgba(226, 119, 48, 0.35)',
+    duration: 0.55,
+    ease: 'power3.out',
+  });
+  await wait(2.0);
+  // Settle back to neutral lift
+  gsap.to(piField, {
+    scale: 1,
+    boxShadow: '0 14px 32px rgba(20, 22, 28, 0.10), 0 0 0 1px #e6e9ed',
+    duration: 0.5,
+    ease: 'power2.inOut',
+  });
+  await wait(0.4);
+  // Phase 5: postIntro exits
+  gsap.to(postIntroStage, { opacity: 0, duration: 0.5, ease: 'power2.in' });
+  await wait(0.5);
+
+  // ────────────────────────────────────────────────────────
+  // TUTORIAL SETUP — mac frame in
   // ────────────────────────────────────────────────────────
   gsap.to(macFrame, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' });
   await wait(0.6);
