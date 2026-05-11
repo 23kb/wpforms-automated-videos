@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Connect Klaviyo — WPForms</title>
+<title>Klaviyo Addon — WPForms Tutorial</title>
 <link rel="stylesheet" href="/reference/wpforms-brand/tokens.css" />
 <style>
   * { box-sizing: border-box; }
@@ -27,10 +27,8 @@
     overflow: hidden;
     box-shadow: 0 30px 80px rgba(0,0,0,0.18);
     flex: 0 0 auto;
-    /* No CSS transform on stage — see notifications-promise/index.html for rationale */
+    /* No transform on stage — sharp text at native render */
   }
-
-  /* Editorial atmosphere — warm cream with subtle orange bloom (subdued; product UI takes focus) */
   .atmo {
     position: absolute; inset: 0;
     pointer-events: none; z-index: 0;
@@ -42,9 +40,9 @@
     filter: blur(70px) saturate(1.0);
   }
   .bloom-orange {
-    width: 720px; height: 720px;
-    right: -200px; top: -180px;
-    background: radial-gradient(circle, rgba(226,119,48,0.18) 0%, rgba(226,119,48,0.06) 40%, rgba(226,119,48,0) 80%);
+    width: 640px; height: 640px;
+    right: -180px; top: -160px;
+    background: radial-gradient(circle, rgba(226,119,48,0.16) 0%, rgba(226,119,48,0.05) 42%, rgba(226,119,48,0) 80%);
   }
 
   /* Mac frame */
@@ -54,15 +52,11 @@
     width: 1180px; height: 640px;
     background: #ffffff;
     border-radius: 14px;
-    box-shadow:
-      0 40px 80px rgba(0,0,0,0.20),
-      0 14px 36px rgba(0,0,0,0.12);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.20), 0 14px 36px rgba(0,0,0,0.12);
     overflow: hidden;
     z-index: 5;
     opacity: 0;
-    transform: scale(0.96);
-    transform-origin: center center;
-    will-change: transform, opacity;
+    will-change: opacity;
   }
   .mac-chrome {
     height: 36px;
@@ -93,15 +87,11 @@
     background: #fbfaf7;
     overflow: hidden;
   }
-
-  /* Stage for iframe slot (IframeManager will mount here) */
   .iframe-stage {
-    position: absolute;
-    inset: 0;
-    background: var(--wpf-bg-cream);
+    position: absolute; inset: 0;
   }
 
-  /* Editorial intro/outro card — sits over the stage, fades in/out */
+  /* Editorial intro/outro */
   .editorial-card {
     position: absolute;
     left: 50%; top: 50%;
@@ -122,21 +112,20 @@
   .editorial-card .sub {
     font: 400 18px/1.4 var(--wpf-font-stack);
     color: var(--wpf-ink-mute);
-    max-width: 560px;
+    max-width: 620px;
     margin: 0 auto;
   }
 
-  /* Caption pill — appears during product demo to label what's happening */
+  /* Caption pill */
   .caption-pill {
     position: absolute;
-    left: 50%; top: 18px;
+    left: 50%; top: 16px;
     transform: translateX(-50%);
     background: rgba(20, 22, 28, 0.92);
     color: #fff;
     padding: 8px 18px;
     border-radius: 999px;
     font: 500 13px/1 var(--wpf-font-stack);
-    letter-spacing: 0.01em;
     opacity: 0;
     z-index: 40;
     pointer-events: none;
@@ -149,30 +138,315 @@
     margin-right: 6px;
   }
 
-  /* Connected badge — celebratory overlay after API key accepted */
-  .connected-badge {
+  /* Klaviyo dashboard cutaway — no snapshot, stylized mockup */
+  .klaviyo-cutaway {
+    position: absolute;
+    inset: 0;
+    background: #ffffff;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    font: 400 14px/1.4 var(--wpf-font-stack);
+    color: #1b1b1f;
+    will-change: opacity;
+  }
+  /* Klaviyo header */
+  .kl-header {
+    position: absolute;
+    left: 0; right: 0; top: 0; height: 56px;
+    background: #f5f5f7;
+    border-bottom: 1px solid #e6e6e9;
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 16px;
+  }
+  .kl-header .logo {
+    width: 32px; height: 32px;
+    background: #1a1a1f;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .kl-header .search {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #d5d5d8;
+    border-radius: 8px;
+    height: 32px;
+    padding: 0 12px;
+    display: flex; align-items: center;
+    font-size: 13px;
+    color: #8e8e93;
+    max-width: 280px;
+  }
+  /* Klaviyo sidebar */
+  .kl-sidebar {
+    position: absolute;
+    left: 0; top: 56px; bottom: 0; width: 220px;
+    background: #fafafb;
+    border-right: 1px solid #e6e6e9;
+    padding: 16px 0;
+  }
+  .kl-sidebar .item {
+    padding: 8px 24px;
+    font-size: 13px;
+    color: #3a3a3f;
+    display: flex; align-items: center; gap: 10px;
+    cursor: default;
+  }
+  .kl-sidebar .item .ico {
+    width: 16px; height: 16px;
+    background: #c5c5cb;
+    border-radius: 3px;
+  }
+  .kl-sidebar .item.active {
+    background: #ebebef;
+    color: #1a1a1f;
+    font-weight: 500;
+  }
+  .kl-sidebar .item.account {
+    margin-top: auto;
+    border-top: 1px solid #e6e6e9;
+    padding-top: 12px;
+    background: #fff;
+  }
+  /* Klaviyo content area */
+  .kl-content {
+    position: absolute;
+    left: 220px; right: 0; top: 56px; bottom: 0;
+    padding: 32px;
+    overflow: hidden;
+  }
+  .kl-content h2 {
+    font: 600 24px/1.2 var(--wpf-font-stack);
+    margin: 0 0 18px;
+    color: #14161c;
+  }
+  .kl-card {
+    background: #fff;
+    border: 1px solid #e6e6e9;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .kl-card .card-title {
+    font: 600 15px/1.2 var(--wpf-font-stack);
+    margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kl-btn-primary {
+    background: #1a1a1f;
+    color: #fff;
+    border: 0;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font: 500 13px/1 var(--wpf-font-stack);
+    cursor: default;
+  }
+  .kl-btn-primary.create-key {
+    background: #2563eb;
+  }
+  /* Account menu popover */
+  .kl-account-menu {
+    position: absolute;
+    left: 12px; bottom: 90px;
+    width: 220px;
+    background: #fff;
+    border: 1px solid #e6e6e9;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+    padding: 8px 0;
+    opacity: 0;
+    transform: translateY(8px);
+    will-change: opacity, transform;
+    z-index: 25;
+  }
+  .kl-account-menu .menu-item {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #3a3a3f;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kl-account-menu .menu-item.settings {
+    color: #1a1a1f;
+    font-weight: 500;
+    background: #f5f5f7;
+  }
+  /* API key reveal */
+  .kl-key-reveal {
     position: absolute;
     left: 50%; top: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    background: #ffffff;
-    color: var(--wpf-blue);
-    padding: 16px 28px;
+    transform: translate(-50%, -50%);
+    width: 540px;
+    background: #fff;
+    border: 1px solid #e6e6e9;
     border-radius: 12px;
-    font: 600 18px/1 var(--wpf-font-stack);
-    box-shadow: 0 0 0 1px rgba(6, 106, 171, 0.15), 0 16px 40px rgba(6, 106, 171, 0.20);
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
     opacity: 0;
-    z-index: 35;
-    pointer-events: none;
-    display: flex; align-items: center; gap: 10px;
-    will-change: transform, opacity;
+    z-index: 26;
+    will-change: opacity;
   }
-  .connected-badge .check {
-    width: 22px; height: 22px;
-    background: var(--wpf-blue);
+  .kl-key-reveal h3 {
+    font: 600 17px/1.2 var(--wpf-font-stack);
+    margin: 0 0 6px;
+  }
+  .kl-key-reveal .note {
+    background: #fff8e1;
+    border: 1px solid #f5e1a4;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 14px 0;
+    font: 400 12px/1.4 var(--wpf-font-stack);
+    color: #7a5a00;
+  }
+  .kl-key-reveal .key-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #f5f5f7;
+    border: 1px solid #e6e6e9;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font: 400 13px/1.2 ui-monospace, 'SF Mono', Menlo, monospace;
+    color: #14161c;
+  }
+  .kl-key-reveal .key-row .key {
+    flex: 1;
+    letter-spacing: 0.02em;
+  }
+  .kl-key-reveal .copy-icon {
+    width: 24px; height: 24px;
+    background: #e6e6e9;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: #3a3a3f;
+    font-size: 12px;
+  }
+
+  /* Connection nickname popup mockup */
+  .nickname-popup {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.30);
+    opacity: 0;
+    z-index: 32;
+    will-change: opacity, transform;
+  }
+  .nickname-popup .info-icon {
+    width: 56px; height: 56px;
+    background: #0399ED;
     border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
     color: #fff;
+    font-size: 32px;
+    font-weight: 700;
+  }
+  .nickname-popup .label {
+    font: 600 16px/1.2 var(--wpf-font-stack);
+    margin-bottom: 12px;
+  }
+  .nickname-popup .input {
+    width: 100%;
+    border: 1px solid #d5d5d8;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font: 400 14px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .nickname-popup .buttons {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .nickname-popup button {
+    border: 0;
+    padding: 8px 24px;
+    border-radius: 6px;
+    font: 500 13px/1 var(--wpf-font-stack);
+    cursor: default;
+  }
+  .nickname-popup .ok { background: #0399ED; color: #fff; }
+  .nickname-popup .cancel { background: #e6e6e9; color: #3a3a3f; }
+
+  /* Connection settings panel mockup */
+  .conn-panel {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 560px;
+    background: #fff;
+    border: 1px solid #e6e9ed;
+    border-radius: 8px;
+    padding: 20px 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.16);
+    opacity: 0;
+    z-index: 32;
+    will-change: opacity, transform;
+  }
+  .conn-panel .panel-header {
+    font: 600 15px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e6e9ed;
+    margin-bottom: 18px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .conn-panel .panel-header .trash {
+    color: #d63637;
     font-size: 14px;
+  }
+  .conn-panel .field {
+    margin-bottom: 14px;
+  }
+  .conn-panel .field-label {
+    font: 600 12px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    margin-bottom: 6px;
+  }
+  .conn-panel .field-label .req { color: #d63637; }
+  .conn-panel .field-input {
+    width: 100%;
+    border: 1px solid #d5d5d8;
+    border-radius: 6px;
+    padding: 8px 12px;
+    background: #fff;
+    font: 400 13px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .conn-panel .field-input .caret {
+    color: var(--wpf-ink-mute);
+    font-size: 10px;
+  }
+  .conn-panel .toggle-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+  }
+  .conn-panel .toggle-switch {
+    width: 36px; height: 20px;
+    background: #0399ED;
+    border-radius: 999px;
+    position: relative;
+  }
+  .conn-panel .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .conn-panel .toggle-row .label {
+    font: 500 13px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
   }
 </style>
 </head>
@@ -191,27 +465,107 @@
       </div>
       <div class="mac-body">
         <div class="iframe-stage" id="iframeStage"></div>
+
+        <!-- Klaviyo dashboard cutaway (no snapshot — stylized) -->
+        <div class="klaviyo-cutaway" id="klCutaway">
+          <div class="kl-header">
+            <div class="logo">K</div>
+            <div class="search">Search ⌘+k</div>
+          </div>
+          <div class="kl-sidebar" id="klSidebar">
+            <div class="item"><span class="ico"></span>Home</div>
+            <div class="item"><span class="ico"></span>Campaigns</div>
+            <div class="item"><span class="ico"></span>Flows</div>
+            <div class="item"><span class="ico"></span>Audience</div>
+            <div class="item"><span class="ico"></span>Content</div>
+            <div class="item"><span class="ico"></span>Analytics</div>
+            <div class="item account" id="klAccountItem">
+              <span class="ico" style="background:#1a1a1f; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border-radius:50%;">S</span>
+              Sullie's Flowers
+            </div>
+          </div>
+          <div class="kl-content" id="klContent">
+            <h2 id="klContentTitle">Welcome, Sullie</h2>
+            <div class="kl-card" id="klPrimaryCard">
+              <div class="card-title">
+                <span>Conversion metric</span>
+              </div>
+              <div style="font-size:13px; color:#5b5f6e;">Placed Order — Apr 8, 2026 to May 8, 2026</div>
+            </div>
+          </div>
+          <!-- Account menu popover -->
+          <div class="kl-account-menu" id="klAccountMenu">
+            <div class="menu-item">What's new?</div>
+            <div class="menu-item">Billing</div>
+            <div class="menu-item settings">⚙ Settings</div>
+            <div class="menu-item">Log out</div>
+          </div>
+          <!-- API key reveal -->
+          <div class="kl-key-reveal" id="klKeyReveal">
+            <h3>Private API Key Confirmation</h3>
+            <div style="font-size:12px; color:#5b5f6e;">WPForms key &middot; <span style="background:#dceefc; color:#0d4674; padding:2px 6px; border-radius:3px; font-size:10px;">Full Access Key</span></div>
+            <div class="note">⚠ This is the only time this private API key will be visible. Please copy it now.</div>
+            <div class="key-row">
+              <span class="key" id="klKeyText">pk_W•••••••••••••••••••••••</span>
+              <span class="copy-icon">⧉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connection nickname popup (form builder) -->
+        <div class="nickname-popup" id="nicknamePopup">
+          <div class="info-icon">i</div>
+          <div class="label">Enter a connection nickname</div>
+          <div class="input" id="nicknameInputDisplay">Klaviyo Connection</div>
+          <div class="buttons">
+            <button class="ok">OK</button>
+            <button class="cancel">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Connection settings panel mockup -->
+        <div class="conn-panel" id="connPanel">
+          <div class="panel-header">
+            <span>Klaviyo Connection</span>
+            <span class="trash">🗑</span>
+          </div>
+          <div class="field">
+            <div class="field-label">Select Account <span class="req">*</span></div>
+            <div class="field-input"><span>Klaviyo key</span><span class="caret">▾</span></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Action To Perform <span class="req">*</span></div>
+            <div class="field-input"><span>Create / Update Profile</span><span class="caret">▾</span></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Email <span class="req">*</span></div>
+            <div class="field-input"><span>Email</span><span class="caret">▾</span></div>
+          </div>
+          <div class="field">
+            <div class="field-label">List</div>
+            <div class="field-input"><span>Email List</span><span class="caret">▾</span></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-switch"></div>
+            <div class="label">Subscribe to Email Marketing</div>
+          </div>
+        </div>
+
         <div class="caption-pill" id="captionPill">
           <span class="step" id="captionStep">Step 1</span>
           <span id="captionText">Settings → Integrations</span>
         </div>
-        <div class="connected-badge" id="connectedBadge">
-          <span class="check">✓</span>
-          <span>Klaviyo connected</span>
-        </div>
       </div>
     </div>
 
-    <!-- Editorial intro -->
     <div class="editorial-card" id="introCard">
-      <h1>Connect Klaviyo. <span class="accent">2 minutes.</span></h1>
+      <h1>Connect Klaviyo <span class="accent">to WPForms.</span></h1>
       <div class="sub">Every form submission, straight to your Klaviyo audience.</div>
     </div>
 
-    <!-- Editorial outro -->
     <div class="editorial-card" id="outroCard">
-      <h1>Done.</h1>
-      <div class="sub">Every form → Klaviyo profile. <span style="color: var(--wpf-orange); font-weight: 600;">Just works.</span></div>
+      <h1>Connected.</h1>
+      <div class="sub">Every form submission → Klaviyo profile. <span style="color: var(--wpf-orange); font-weight: 600;">Just works.</span></div>
     </div>
   </div>
 </div>
@@ -219,7 +573,7 @@
 <script src="/vendor/gsap/3.15.0/gsap.min.js"></script>
 <script type="module">
 import { Cursor, mountSullieBug } from '/videos/_shared/motion-primitives.js';
-import { IframeManager, WPFormsInteractions } from '/videos/_shared/wpforms-interactions.js';
+import { IframeManager } from '/videos/_shared/wpforms-interactions.js';
 
 const stage = document.getElementById('stage');
 const macFrame = document.getElementById('macFrame');
@@ -229,153 +583,237 @@ const outroCard = document.getElementById('outroCard');
 const captionPill = document.getElementById('captionPill');
 const captionStep = document.getElementById('captionStep');
 const captionText = document.getElementById('captionText');
-const connectedBadge = document.getElementById('connectedBadge');
 const urlBar = document.getElementById('urlBar');
+const klCutaway = document.getElementById('klCutaway');
+const klAccountItem = document.getElementById('klAccountItem');
+const klAccountMenu = document.getElementById('klAccountMenu');
+const klContentTitle = document.getElementById('klContentTitle');
+const klPrimaryCard = document.getElementById('klPrimaryCard');
+const klKeyReveal = document.getElementById('klKeyReveal');
+const nicknamePopup = document.getElementById('nicknamePopup');
+const connPanel = document.getElementById('connPanel');
 
-// fitStage removed for sharp text (no compositor flatten)
-
-// IframeManager mounts inside iframeStage at native 1180x604 (the mac-body inner)
-// But IframeManager defaults to 1280x720 — override viewport
 const ifm = new IframeManager(iframeStage, {
   viewport: { width: 1180, height: 604 },
   iframeSize: { width: 1180, height: 604 },
 });
-
-// Cursor mounts on the mac-body (the visible product area)
 const cursor = new Cursor(iframeStage, { initialX: 1100, initialY: 60, size: 26, zIndex: 50 });
 
-// Helper: set caption pill text + show
 function setCaption(step, text) {
   captionStep.textContent = step;
   captionText.textContent = text;
   gsap.to(captionPill, { opacity: 1, duration: 0.4, ease: 'power2.out' });
 }
 function hideCaption() {
-  gsap.to(captionPill, { opacity: 0, duration: 0.3, ease: 'power2.in' });
+  return gsap.to(captionPill, { opacity: 0, duration: 0.3, ease: 'power2.in' });
+}
+function wait(s) { return new Promise(r => setTimeout(r, s * 1000)); }
+function showElement(el, props = { duration: 0.45, ease: 'power2.out' }) {
+  return gsap.to(el, { opacity: 1, ...props });
+}
+function hideElement(el, props = { duration: 0.3, ease: 'power2.in' }) {
+  return gsap.to(el, { opacity: 0, ...props });
 }
 
-const tl = gsap.timeline({ paused: true });
+async function play() {
+  // ───────────────────────────────────────────────
+  // BEAT 1 — Editorial intro (0 - 3.5s)
+  // ───────────────────────────────────────────────
+  gsap.set(introCard, { opacity: 0, y: 12 });
+  gsap.to(introCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
+  await wait(2.5);
+  gsap.to(introCard, { opacity: 0, y: -8, duration: 0.5, ease: 'power2.in' });
+  await wait(0.5);
 
-// ───────────────────────────────────────────────────────
-// BEAT 1 — Intro card (0 - 3.5s)
-// ───────────────────────────────────────────────────────
-gsap.set(introCard, { opacity: 0, y: 12 });
-tl.to(introCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.3);
-tl.to(introCard, { opacity: 0, y: -8, duration: 0.5, ease: 'power2.in' }, 2.8);
-
-// ───────────────────────────────────────────────────────
-// BEAT 2 — Mac frame + iframe stage materializes with Klaviyo settings page
-// (3 - 7s)
-// ───────────────────────────────────────────────────────
-tl.to(macFrame, { opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out' }, 2.6);
-tl.add(() => {
+  // ───────────────────────────────────────────────
+  // CHAPTER 1 — WPForms → Settings → Integrations → Klaviyo (4s - 13s)
+  // ───────────────────────────────────────────────
+  gsap.to(macFrame, { opacity: 1, duration: 0.7, ease: 'power3.out' });
   urlBar.textContent = 'sulliesbakery.com/wp-admin → Settings → Integrations';
-  ifm.load('admin-settings-integrations-klaviyo-form');
-}, 2.8);
-tl.add(() => { setCaption('Step 1', 'Settings → Integrations → Klaviyo'); }, 3.5);
+  await ifm.load('admin-settings-integrations-klaviyo-form');
+  await wait(0.5);
+  setCaption('Step 1', 'WPForms → Settings → Integrations');
+  await wait(1.5);
+  setCaption('Step 2', 'Click Klaviyo → Add New Account');
+  await wait(1.0);
 
-// ───────────────────────────────────────────────────────
-// BEAT 3 — Type API key + click Connect (7 - 13s)
-// ───────────────────────────────────────────────────────
-tl.add(async () => {
-  // Wait for iframe load + give a beat for the user to see the screen
-  await new Promise(r => setTimeout(r, 600));
+  // Move cursor toward Klaviyo connection form (already visible in this snapshot)
+  await wait(1.0);
+  await hideCaption();
+
+  // ───────────────────────────────────────────────
+  // CHAPTER 2 — Klaviyo dashboard cutaway: generate API key (13s - 30s)
+  // ───────────────────────────────────────────────
+  // Crossfade to Klaviyo dashboard mockup (no snapshot exists)
+  await showElement(klCutaway, { duration: 0.5, ease: 'power2.out' });
+  urlBar.textContent = 'klaviyo.com/dashboard → Settings → API keys';
+  setCaption('Step 3', 'Generate your Klaviyo API key');
+  await wait(1.2);
+
+  // 2a — Show account name click (bottom-left)
+  klAccountItem.style.background = '#e6e6e9';
+  await wait(0.3);
+  gsap.to(klAccountMenu, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' });
+  await wait(1.5);
+
+  // 2b — Navigate to API Keys page (shift content)
+  gsap.to(klAccountMenu, { opacity: 0, duration: 0.25 });
+  klContentTitle.textContent = 'API Keys';
+  klPrimaryCard.innerHTML = `
+    <div class="card-title">
+      <span>Private API Keys</span>
+      <button class="kl-btn-primary create-key">+ Create Private API Key</button>
+    </div>
+    <div style="font-size:12px; color:#5b5f6e; padding:8px 0;">No private API keys yet — create one to integrate.</div>
+  `;
+  // Update sidebar active state
+  document.querySelectorAll('#klSidebar .item').forEach(i => i.classList.remove('active'));
+  await wait(1.2);
+  setCaption('Step 4', 'Click Create Private API Key');
+  await wait(1.2);
+
+  // 2c — Reveal API key
+  await showElement(klKeyReveal, { duration: 0.45, ease: 'back.out(1.2)' });
+  setCaption('Step 5', 'Name: "WPForms key" → Full Access → Create');
+  await wait(2.5);
+
+  // ───────────────────────────────────────────────
+  // CHAPTER 3 — Back to WPForms, paste key + connect (30s - 42s)
+  // ───────────────────────────────────────────────
+  await hideElement(klKeyReveal);
+  await hideElement(klCutaway, { duration: 0.5 });
+  await hideCaption();
+  urlBar.textContent = 'sulliesbakery.com/wp-admin → Settings → Integrations';
+  setCaption('Step 6', 'Paste the API key in WPForms');
+  await wait(0.5);
+
+  // Type fake key into API key field
   const apiInput = ifm.query('input[name="api_key"]');
-  if (!apiInput) return;
-  const pt = ifm.elementToStageCoords(apiInput);
-  await cursor.glide(pt, { duration: 0.65 });
-  await cursor.click({ ripple: true });
-  // Focus the input
-  apiInput.focus();
-  // Type the fake API key letter-by-letter
-  const fakeKey = 'pk_a1b2c3d4e5f6g7h8i9j0';
-  for (let i = 0; i < fakeKey.length; i++) {
-    apiInput.value = fakeKey.slice(0, i + 1);
-    apiInput.dispatchEvent(new apiInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
-    await new Promise(r => setTimeout(r, 35));
+  if (apiInput) {
+    const pt = ifm.elementToStageCoords(apiInput);
+    await cursor.glide(pt, { duration: 0.6 });
+    await cursor.click({ ripple: true });
+    apiInput.focus();
+    const fakeKey = 'pk_W' + 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4';
+    for (let i = 0; i < fakeKey.length; i++) {
+      apiInput.value = fakeKey.slice(0, i + 1);
+      apiInput.dispatchEvent(new apiInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 30));
+    }
   }
-}, 6.8);
+  await wait(0.4);
 
-tl.add(() => { setCaption('Step 2', 'Paste your Klaviyo API key'); }, 7.5);
-
-// Click Connect button after typing settles
-tl.add(async () => {
-  await new Promise(r => setTimeout(r, 800));
+  // Type nickname
+  const nicknameInput = ifm.query('input[name="account_name"]');
+  if (nicknameInput) {
+    const pt = ifm.elementToStageCoords(nicknameInput);
+    await cursor.glide(pt, { duration: 0.5 });
+    await cursor.click({ ripple: true });
+    nicknameInput.focus();
+    const nickname = 'Klaviyo key';
+    for (let i = 0; i < nickname.length; i++) {
+      nicknameInput.value = nickname.slice(0, i + 1);
+      nicknameInput.dispatchEvent(new nicknameInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 50));
+    }
+  }
+  await wait(0.4);
+  setCaption('Step 7', 'Click Connect to Klaviyo');
+  // Click Connect
   const connectBtn = ifm.query('button[data-provider="klaviyo"].wpforms-settings-provider-connect');
-  if (!connectBtn) return;
-  const pt = ifm.elementToStageCoords(connectBtn);
-  await cursor.glide(pt, { duration: 0.6 });
-  await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
-}, 9.5);
+  if (connectBtn) {
+    const pt = ifm.elementToStageCoords(connectBtn);
+    await cursor.glide(pt, { duration: 0.55 });
+    await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
+  }
+  await wait(0.8);
 
-tl.add(() => { setCaption('Step 3', 'Click Connect to Klaviyo'); }, 10.3);
+  // Swap to connected state
+  await ifm.swap('admin-settings-integrations-klaviyo-open', { duration: 0.45 });
+  await wait(1.0);
+  setCaption('Step 8', 'Klaviyo connected ✓');
+  await wait(1.5);
+  await hideCaption();
 
-// Show "Connected" badge (celebratory)
-tl.add(() => { hideCaption(); }, 11.4);
-tl.fromTo(connectedBadge,
-  { opacity: 0, scale: 0.9 },
-  { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' },
-  11.6
-);
-tl.to(connectedBadge, { opacity: 0, scale: 0.95, duration: 0.4, ease: 'power2.in' }, 13.5);
-
-// ───────────────────────────────────────────────────────
-// BEAT 4 — Swap to connected state (13 - 16s)
-// ───────────────────────────────────────────────────────
-tl.add(() => {
-  ifm.swap('admin-settings-integrations-klaviyo-open', { duration: 0.45 });
-}, 13.4);
-tl.add(() => { setCaption('Step 4', 'Klaviyo connection saved'); }, 14.2);
-
-// ───────────────────────────────────────────────────────
-// BEAT 5 — Transition to form builder (16 - 21s)
-// ───────────────────────────────────────────────────────
-tl.add(() => { hideCaption(); }, 16.0);
-tl.add(() => {
+  // ───────────────────────────────────────────────
+  // CHAPTER 4 — Form Builder → Marketing → Klaviyo (44s - 55s)
+  // ───────────────────────────────────────────────
   urlBar.textContent = 'sulliesbakery.com/wp-admin → Forms → Contact Us → Marketing';
-  ifm.swap('builder-providers', { duration: 0.45 });
-}, 16.3);
-tl.add(() => { setCaption('Step 5', 'Open the form builder → Marketing tab'); }, 16.8);
+  await ifm.swap('builder-providers', { duration: 0.5 });
+  await wait(0.6);
+  setCaption('Step 9', 'Open form builder → Marketing → Klaviyo');
+  await wait(1.2);
 
-// Click Klaviyo sidebar item
-tl.add(async () => {
-  await new Promise(r => setTimeout(r, 700));
   const klaviyoTab = ifm.query('.wpforms-panel-sidebar-section-klaviyo');
-  if (!klaviyoTab) return;
-  const pt = ifm.elementToStageCoords(klaviyoTab);
-  await cursor.glide(pt, { duration: 0.6 });
-  await cursor.click({ ripple: true });
-}, 18.5);
+  if (klaviyoTab) {
+    const pt = ifm.elementToStageCoords(klaviyoTab);
+    await cursor.glide(pt, { duration: 0.6 });
+    await cursor.click({ ripple: true });
+  }
+  await ifm.swap('builder-providers-klaviyo', { duration: 0.4 });
+  await wait(0.8);
+  setCaption('Step 10', 'Click Add New Connection');
+  await wait(1.0);
 
-// Swap to Klaviyo-selected variant
-tl.add(() => { ifm.swap('builder-providers-klaviyo', { duration: 0.4 }); }, 19.6);
-tl.add(() => { setCaption('Step 6', 'Klaviyo provider ready to map'); }, 20.2);
+  // Click Add New Connection button
+  const addBtn = ifm.query('.js-wpforms-builder-provider-connection-add');
+  if (addBtn) {
+    const pt = ifm.elementToStageCoords(addBtn);
+    await cursor.glide(pt, { duration: 0.55 });
+    await cursor.click({ ripple: true });
+  }
+  await wait(0.4);
 
-tl.add(() => { hideCaption(); }, 22.0);
+  // ───────────────────────────────────────────────
+  // CHAPTER 5 — Connection nickname + settings panel (55s - 68s)
+  // ───────────────────────────────────────────────
+  // Show nickname popup mockup (no snapshot exists)
+  gsap.fromTo(nicknamePopup,
+    { opacity: 0, scale: 0.95 },
+    { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(1.2)' }
+  );
+  await wait(1.5);
+  setCaption('Step 11', 'Name the connection → OK');
+  await wait(1.5);
+  gsap.to(nicknamePopup, { opacity: 0, duration: 0.3, ease: 'power2.in' });
+  await wait(0.3);
 
-// ───────────────────────────────────────────────────────
-// BEAT 6 — Editorial outro (22 - 27s)
-// ───────────────────────────────────────────────────────
-tl.to(macFrame, { opacity: 0, scale: 0.97, duration: 0.7, ease: 'power3.in' }, 22.2);
+  // Show Connection settings panel mockup
+  gsap.fromTo(connPanel,
+    { opacity: 0, scale: 0.96 },
+    { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
+  );
+  await wait(1.0);
+  setCaption('Step 12', 'Choose Action → Create / Update Profile');
+  await wait(1.5);
+  setCaption('Step 13', 'Map Email → form Email field');
+  await wait(1.5);
+  setCaption('Step 14', 'Pick a list, toggle on email marketing');
+  await wait(2.0);
+  await hideCaption();
+  gsap.to(connPanel, { opacity: 0, duration: 0.4, ease: 'power2.in' });
+  await wait(0.4);
 
-gsap.set(outroCard, { opacity: 0, y: 12 });
-tl.to(outroCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 22.5);
-
-tl.add(() => {
+  // ───────────────────────────────────────────────
+  // BEAT 6 — Editorial outro (68s - 73s)
+  // ───────────────────────────────────────────────
+  gsap.to(macFrame, { opacity: 0, duration: 0.7, ease: 'power3.in' });
+  await wait(0.5);
+  gsap.fromTo(outroCard, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
   mountSullieBug({
     src: '/reference/wpforms-brand/assets/sullie-master.svg',
     position: 'bottom-right',
   });
-}, 23.0);
+  await wait(2.5);
+}
 
-tl.to({}, { duration: 1.5 }, 25.5);
-
-// Auto-play
-tl.play();
-
-window._tl = tl;
+window._play = play;
 window._ifm = ifm;
 window._cursor = cursor;
+
+play().catch(err => {
+  console.error('[klaviyo pilot error]', err);
+});
 </script>
 </body>
 </html>
