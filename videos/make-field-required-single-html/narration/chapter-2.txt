@@ -1,0 +1,1 @@
+Scroll down to find the Required toggle. Switch it on. A red asterisk appears next to the field label, marking it as mandatory.

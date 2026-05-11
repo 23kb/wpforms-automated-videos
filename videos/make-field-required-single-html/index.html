@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Make a Field Required — WPForms Tutorial</title>
+<link rel="stylesheet" href="/reference/wpforms-brand/tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #d8dbe2;
+    font-family: var(--wpf-font-stack);
+    overflow: hidden;
+    color: var(--wpf-ink);
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: 1280px; height: 720px;
+    transform-origin: center center;
+    background: var(--wpf-bg-cream);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  }
+  .atmo {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0;
+    background: linear-gradient(155deg, #fbf7f0 0%, #f7ede0 60%, #f1e2cc 100%);
+  }
+
+  /* Mac frame */
+  .mac-frame {
+    position: absolute;
+    left: 50px; top: 40px;
+    width: 1180px; height: 640px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.20), 0 14px 36px rgba(0,0,0,0.12);
+    overflow: hidden;
+    z-index: 5;
+    opacity: 0;
+    transform: scale(0.96);
+    transform-origin: center center;
+    will-change: transform, opacity;
+  }
+  .mac-chrome {
+    height: 36px;
+    background: #ececef;
+    border-bottom: 1px solid #d8d9dc;
+    display: flex; align-items: center;
+    padding: 0 14px; gap: 8px;
+  }
+  .mac-chrome .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .mac-chrome .dot.r { background: #ff5f57; }
+  .mac-chrome .dot.y { background: #febc2e; }
+  .mac-chrome .dot.g { background: #28c840; }
+  .mac-body {
+    position: relative;
+    height: calc(640px - 36px);
+    background: #fbfaf7;
+    overflow: hidden;
+  }
+  .iframe-stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Chapter title card — between chapters */
+  .chapter-card {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 30;
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+  .chapter-card .ch-num {
+    font: 500 13px/1 var(--wpf-font-stack);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--wpf-orange);
+    margin-bottom: 12px;
+  }
+  .chapter-card .ch-title {
+    font: 600 38px/1.1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    letter-spacing: -0.01em;
+  }
+
+  /* Narration caption (bottom of stage) */
+  .narration {
+    position: absolute;
+    left: 50%; bottom: 36px;
+    transform: translateX(-50%);
+    max-width: 880px;
+    padding: 12px 22px;
+    background: rgba(20, 22, 28, 0.92);
+    color: #fff;
+    font: 400 14px/1.45 var(--wpf-font-stack);
+    border-radius: 10px;
+    text-align: center;
+    z-index: 40;
+    opacity: 0;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 12px 28px rgba(20, 22, 28, 0.22);
+  }
+
+  /* Final brand sign-off */
+  .signoff {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 35;
+    opacity: 0;
+  }
+  .signoff .tag {
+    font: 600 36px/1.1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+  }
+  .signoff .tag .accent { color: var(--wpf-orange); }
+  .signoff .sub {
+    margin-top: 14px;
+    font: 400 16px/1.4 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+  }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="atmo"></div>
+
+    <div class="mac-frame" id="macFrame">
+      <div class="mac-chrome">
+        <span class="dot r"></span>
+        <span class="dot y"></span>
+        <span class="dot g"></span>
+      </div>
+      <div class="mac-body" id="macBody">
+        <div class="iframe-stage" id="iframeStage"></div>
+      </div>
+    </div>
+
+    <div class="chapter-card" id="chapterCard">
+      <div class="ch-num" id="chNum">Chapter 1</div>
+      <div class="ch-title" id="chTitle">Find the field setting</div>
+    </div>
+
+    <div class="narration" id="narration"></div>
+
+    <div class="signoff" id="signoff">
+      <div class="tag">Required. <span class="accent">Done.</span></div>
+      <div class="sub">Every visitor will see the orange asterisk.</div>
+    </div>
+  </div>
+</div>
+
+<script src="/vendor/gsap/3.15.0/gsap.min.js"></script>
+<script type="module">
+import { Cursor, popOut, markerSweep, mountSullieBug } from '/videos/_shared/motion-primitives.js';
+import { IframeManager } from '/videos/_shared/wpforms-interactions.js';
+
+const stage = document.getElementById('stage');
+const macFrame = document.getElementById('macFrame');
+const macBody = document.getElementById('macBody');
+const iframeStage = document.getElementById('iframeStage');
+const chapterCard = document.getElementById('chapterCard');
+const chNum = document.getElementById('chNum');
+const chTitle = document.getElementById('chTitle');
+const narration = document.getElementById('narration');
+const signoff = document.getElementById('signoff');
+
+function fitStage() {
+  const sx = window.innerWidth / 1280;
+  const sy = window.innerHeight / 720;
+  stage.style.transform = `scale(${Math.min(sx, sy) * 0.96})`;
+}
+fitStage();
+window.addEventListener('resize', fitStage);
+
+const ifm = new IframeManager(iframeStage, {
+  viewport: { width: 1180, height: 604 },
+  iframeSize: { width: 1180, height: 604 },
+});
+const cursor = new Cursor(iframeStage, { initialX: 1100, initialY: 60, size: 26, zIndex: 50 });
+
+// Helpers
+function showChapter(num, title) {
+  chNum.textContent = `Chapter ${num}`;
+  chTitle.textContent = title;
+  gsap.fromTo(chapterCard, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
+  return gsap.to(chapterCard, { opacity: 0, y: -8, duration: 0.4, ease: 'power2.in', delay: 1.4 });
+}
+function showNarration(text) {
+  narration.textContent = text;
+  gsap.fromTo(narration, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' });
+}
+function hideNarration() {
+  return gsap.to(narration, { opacity: 0, duration: 0.3, ease: 'power2.in' });
+}
+function wait(s) { return new Promise(r => setTimeout(r, s * 1000)); }
+
+// MASTER TIMELINE
+async function play() {
+  // ────────────────────────────────────────────────────────
+  // SETUP — mac frame in
+  // ────────────────────────────────────────────────────────
+  gsap.to(macFrame, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' });
+  await wait(0.6);
+  await ifm.load('builder-fields');
+  await wait(0.2);
+
+  // ────────────────────────────────────────────────────────
+  // CHAPTER 1 — Find the field setting (~12s)
+  // ────────────────────────────────────────────────────────
+  showChapter(1, 'Find the field setting');
+  await wait(2.0);
+
+  showNarration('Open your form in the WPForms builder. Click the Email field to reveal its options.');
+  await wait(1.0);
+
+  // Glide cursor to email field (field-49 in builder-fields)
+  const emailField = ifm.query('#wpforms-field-49');
+  if (emailField) {
+    const pt = ifm.elementToStageCoords(emailField);
+    await cursor.glide(pt, { duration: 0.8, via: { x: pt.x + 80, y: pt.y - 60 } });
+    await wait(0.2);
+    await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
+  }
+
+  await wait(0.6);
+  // Swap to builder-field-options-email (field options panel visible)
+  await ifm.swap('builder-field-options-email', { duration: 0.45 });
+  await wait(1.2);
+  await hideNarration();
+  await wait(0.4);
+
+  // ────────────────────────────────────────────────────────
+  // CHAPTER 2 — Toggle Required (~18s)
+  // ────────────────────────────────────────────────────────
+  showChapter(2, 'Toggle Required');
+  await wait(2.0);
+
+  showNarration('Scroll down to find the Required toggle. Switch it on.');
+  await wait(0.8);
+
+  // Find the required toggle row — pattern: #wpforms-field-option-row-{ID}-required
+  // In builder-field-options-email, the email field ID may differ. Try common IDs.
+  const requiredRow = ifm.query('#wpforms-field-option-row-49-required, [id^="wpforms-field-option-row-"][id$="-required"]');
+  if (requiredRow) {
+    // Smooth scroll the option panel into view first
+    await ifm.smoothScrollIntoView(requiredRow, { duration: 0.7, block: 'center' });
+    await wait(0.4);
+
+    const pt = ifm.elementToStageCoords(requiredRow);
+    await cursor.glide(pt, { duration: 0.6 });
+    await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
+    await wait(0.4);
+
+    // Visual confirmation: toggle the toggle's class inside the iframe DOM
+    const toggleCtrl = requiredRow.querySelector('.wpforms-toggle-control');
+    if (toggleCtrl) {
+      toggleCtrl.classList.add('wpforms-toggle-control-checked');
+    }
+    const toggleInput = requiredRow.querySelector('input[type="checkbox"]');
+    if (toggleInput) {
+      toggleInput.checked = true;
+      toggleInput.dispatchEvent(new toggleInput.ownerDocument.defaultView.Event('change', { bubbles: true }));
+    }
+  }
+
+  await wait(1.0);
+
+  // markerSweep on the narration to emphasize "Required"
+  showNarration('A red asterisk now marks the field as mandatory.');
+  await wait(0.6);
+
+  // popOut the asterisk emphasis — find a label with required class in the iframe
+  // Note: builder-fields snapshot has field-49 already with "required" class so the asterisk is already there
+  // For the tutorial flow, we mimic the moment with a popOut on a label element near the required toggle
+  await wait(2.0);
+  await hideNarration();
+  await wait(0.4);
+
+  // ────────────────────────────────────────────────────────
+  // CHAPTER 3 — Verify on live form (~12s)
+  // ────────────────────────────────────────────────────────
+  showChapter(3, 'Verify on the live form');
+  await wait(2.0);
+
+  showNarration('Now visitors must fill it in before submitting.');
+  await wait(0.5);
+
+  // Swap to frontend snapshot
+  await ifm.swap('frontend-published-form', { duration: 0.55 });
+  await wait(1.5);
+
+  // Camera focus on the email field with the asterisk (frontend snapshot)
+  // Try common frontend selectors
+  const frontendEmail = ifm.query('.wpforms-field-email, .wpforms-field.wpforms-field-email input[type="email"]');
+  if (frontendEmail) {
+    const pt = ifm.elementToStageCoords(frontendEmail);
+    await cursor.glide(pt, { duration: 0.7 });
+    // Light pause to highlight the asterisk visually
+  }
+
+  await wait(1.5);
+  await hideNarration();
+  await wait(0.4);
+
+  // ────────────────────────────────────────────────────────
+  // SIGN-OFF
+  // ────────────────────────────────────────────────────────
+  gsap.to(macFrame, { opacity: 0, scale: 0.97, duration: 0.7, ease: 'power3.in' });
+  await wait(0.5);
+
+  gsap.fromTo(signoff, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
+
+  mountSullieBug({
+    src: '/reference/wpforms-brand/assets/sullie-master.svg',
+    position: 'bottom-right',
+  });
+
+  await wait(2.5);
+}
+
+window._play = play;
+window._ifm = ifm;
+window._cursor = cursor;
+
+play().catch(err => {
+  console.error('[tutorial pilot error]', err);
+  narration.textContent = 'Playback error — see console';
+  narration.style.opacity = '1';
+});
+</script>
+</body>
+</html>

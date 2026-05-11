@@ -1,0 +1,1 @@
+Open your form in the WPForms builder. Click the Email field on the canvas to reveal its Field Options panel.

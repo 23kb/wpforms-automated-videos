@@ -1,0 +1,1 @@
+Now visitors must fill in the Email field before they can submit. Required fields are marked with an orange asterisk on the live form.
