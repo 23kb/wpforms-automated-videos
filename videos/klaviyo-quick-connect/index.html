@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Connect Klaviyo — WPForms</title>
+<link rel="stylesheet" href="/reference/wpforms-brand/tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #d8dbe2;
+    font-family: var(--wpf-font-stack);
+    overflow: hidden;
+    color: var(--wpf-ink);
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: 1280px; height: 720px;
+    transform-origin: center center;
+    background: var(--wpf-bg-cream);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  }
+
+  /* Editorial atmosphere — warm cream with subtle orange bloom (subdued; product UI takes focus) */
+  .atmo {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0;
+    background: linear-gradient(155deg, #fbf7f0 0%, #f7ede0 50%, #f1e2cc 100%);
+  }
+  .bloom {
+    position: absolute; border-radius: 50%;
+    mix-blend-mode: multiply;
+    filter: blur(70px) saturate(1.0);
+  }
+  .bloom-orange {
+    width: 720px; height: 720px;
+    right: -200px; top: -180px;
+    background: radial-gradient(circle, rgba(226,119,48,0.18) 0%, rgba(226,119,48,0.06) 40%, rgba(226,119,48,0) 80%);
+  }
+
+  /* Mac frame */
+  .mac-frame {
+    position: absolute;
+    left: 50px; top: 40px;
+    width: 1180px; height: 640px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow:
+      0 40px 80px rgba(0,0,0,0.20),
+      0 14px 36px rgba(0,0,0,0.12);
+    overflow: hidden;
+    z-index: 5;
+    opacity: 0;
+    transform: scale(0.96);
+    transform-origin: center center;
+    will-change: transform, opacity;
+  }
+  .mac-chrome {
+    height: 36px;
+    background: #ececef;
+    border-bottom: 1px solid #d8d9dc;
+    display: flex; align-items: center;
+    padding: 0 14px; gap: 8px;
+  }
+  .mac-chrome .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .mac-chrome .dot.r { background: #ff5f57; }
+  .mac-chrome .dot.y { background: #febc2e; }
+  .mac-chrome .dot.g { background: #28c840; }
+  .mac-chrome .url-bar {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #d8d9dc;
+    border-radius: 6px;
+    height: 24px;
+    margin: 0 14px;
+    padding: 0 12px;
+    display: flex; align-items: center;
+    font: 400 11px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+  }
+  .mac-body {
+    position: relative;
+    height: calc(640px - 36px);
+    background: #fbfaf7;
+    overflow: hidden;
+  }
+
+  /* Stage for iframe slot (IframeManager will mount here) */
+  .iframe-stage {
+    position: absolute;
+    inset: 0;
+    background: var(--wpf-bg-cream);
+  }
+
+  /* Editorial intro/outro card — sits over the stage, fades in/out */
+  .editorial-card {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .editorial-card h1 {
+    font: 600 44px/1.1 var(--wpf-font-stack);
+    margin: 0 0 12px;
+    letter-spacing: -0.015em;
+    color: var(--wpf-ink);
+  }
+  .editorial-card h1 .accent { color: var(--wpf-orange); }
+  .editorial-card .sub {
+    font: 400 18px/1.4 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* Caption pill — appears during product demo to label what's happening */
+  .caption-pill {
+    position: absolute;
+    left: 50%; top: 18px;
+    transform: translateX(-50%);
+    background: rgba(20, 22, 28, 0.92);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font: 500 13px/1 var(--wpf-font-stack);
+    letter-spacing: 0.01em;
+    opacity: 0;
+    z-index: 40;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 20px rgba(20, 22, 28, 0.25);
+  }
+  .caption-pill .step {
+    color: var(--wpf-orange);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  /* Connected badge — celebratory overlay after API key accepted */
+  .connected-badge {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: #ffffff;
+    color: var(--wpf-blue);
+    padding: 16px 28px;
+    border-radius: 12px;
+    font: 600 18px/1 var(--wpf-font-stack);
+    box-shadow: 0 0 0 1px rgba(6, 106, 171, 0.15), 0 16px 40px rgba(6, 106, 171, 0.20);
+    opacity: 0;
+    z-index: 35;
+    pointer-events: none;
+    display: flex; align-items: center; gap: 10px;
+    will-change: transform, opacity;
+  }
+  .connected-badge .check {
+    width: 22px; height: 22px;
+    background: var(--wpf-blue);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="atmo"></div>
+    <div class="bloom bloom-orange"></div>
+
+    <div class="mac-frame" id="macFrame">
+      <div class="mac-chrome">
+        <span class="dot r"></span>
+        <span class="dot y"></span>
+        <span class="dot g"></span>
+        <div class="url-bar" id="urlBar">wpforms.com/admin</div>
+      </div>
+      <div class="mac-body">
+        <div class="iframe-stage" id="iframeStage"></div>
+        <div class="caption-pill" id="captionPill">
+          <span class="step" id="captionStep">Step 1</span>
+          <span id="captionText">Settings → Integrations</span>
+        </div>
+        <div class="connected-badge" id="connectedBadge">
+          <span class="check">✓</span>
+          <span>Klaviyo connected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editorial intro -->
+    <div class="editorial-card" id="introCard">
+      <h1>Connect Klaviyo. <span class="accent">2 minutes.</span></h1>
+      <div class="sub">Every form submission, straight to your Klaviyo audience.</div>
+    </div>
+
+    <!-- Editorial outro -->
+    <div class="editorial-card" id="outroCard">
+      <h1>Done.</h1>
+      <div class="sub">Every form → Klaviyo profile. <span style="color: var(--wpf-orange); font-weight: 600;">Just works.</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="/vendor/gsap/3.15.0/gsap.min.js"></script>
+<script type="module">
+import { Cursor, mountSullieBug } from '/videos/_shared/motion-primitives.js';
+import { IframeManager, WPFormsInteractions } from '/videos/_shared/wpforms-interactions.js';
+
+const stage = document.getElementById('stage');
+const macFrame = document.getElementById('macFrame');
+const iframeStage = document.getElementById('iframeStage');
+const introCard = document.getElementById('introCard');
+const outroCard = document.getElementById('outroCard');
+const captionPill = document.getElementById('captionPill');
+const captionStep = document.getElementById('captionStep');
+const captionText = document.getElementById('captionText');
+const connectedBadge = document.getElementById('connectedBadge');
+const urlBar = document.getElementById('urlBar');
+
+function fitStage() {
+  const sx = window.innerWidth / 1280;
+  const sy = window.innerHeight / 720;
+  stage.style.transform = `scale(${Math.min(sx, sy) * 0.96})`;
+}
+fitStage();
+window.addEventListener('resize', fitStage);
+
+// IframeManager mounts inside iframeStage at native 1180x604 (the mac-body inner)
+// But IframeManager defaults to 1280x720 — override viewport
+const ifm = new IframeManager(iframeStage, {
+  viewport: { width: 1180, height: 604 },
+  iframeSize: { width: 1180, height: 604 },
+});
+
+// Cursor mounts on the mac-body (the visible product area)
+const cursor = new Cursor(iframeStage, { initialX: 1100, initialY: 60, size: 26, zIndex: 50 });
+
+// Helper: set caption pill text + show
+function setCaption(step, text) {
+  captionStep.textContent = step;
+  captionText.textContent = text;
+  gsap.to(captionPill, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+}
+function hideCaption() {
+  gsap.to(captionPill, { opacity: 0, duration: 0.3, ease: 'power2.in' });
+}
+
+const tl = gsap.timeline({ paused: true });
+
+// ───────────────────────────────────────────────────────
+// BEAT 1 — Intro card (0 - 3.5s)
+// ───────────────────────────────────────────────────────
+gsap.set(introCard, { opacity: 0, y: 12 });
+tl.to(introCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.3);
+tl.to(introCard, { opacity: 0, y: -8, duration: 0.5, ease: 'power2.in' }, 2.8);
+
+// ───────────────────────────────────────────────────────
+// BEAT 2 — Mac frame + iframe stage materializes with Klaviyo settings page
+// (3 - 7s)
+// ───────────────────────────────────────────────────────
+tl.to(macFrame, { opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out' }, 2.6);
+tl.add(() => {
+  urlBar.textContent = 'sulliesbakery.com/wp-admin → Settings → Integrations';
+  ifm.load('admin-settings-integrations-klaviyo-form');
+}, 2.8);
+tl.add(() => { setCaption('Step 1', 'Settings → Integrations → Klaviyo'); }, 3.5);
+
+// ───────────────────────────────────────────────────────
+// BEAT 3 — Type API key + click Connect (7 - 13s)
+// ───────────────────────────────────────────────────────
+tl.add(async () => {
+  // Wait for iframe load + give a beat for the user to see the screen
+  await new Promise(r => setTimeout(r, 600));
+  const apiInput = ifm.query('input[name="api_key"]');
+  if (!apiInput) return;
+  const pt = ifm.elementToStageCoords(apiInput);
+  await cursor.glide(pt, { duration: 0.65 });
+  await cursor.click({ ripple: true });
+  // Focus the input
+  apiInput.focus();
+  // Type the fake API key letter-by-letter
+  const fakeKey = 'pk_a1b2c3d4e5f6g7h8i9j0';
+  for (let i = 0; i < fakeKey.length; i++) {
+    apiInput.value = fakeKey.slice(0, i + 1);
+    apiInput.dispatchEvent(new apiInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 35));
+  }
+}, 6.8);
+
+tl.add(() => { setCaption('Step 2', 'Paste your Klaviyo API key'); }, 7.5);
+
+// Click Connect button after typing settles
+tl.add(async () => {
+  await new Promise(r => setTimeout(r, 800));
+  const connectBtn = ifm.query('button[data-provider="klaviyo"].wpforms-settings-provider-connect');
+  if (!connectBtn) return;
+  const pt = ifm.elementToStageCoords(connectBtn);
+  await cursor.glide(pt, { duration: 0.6 });
+  await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
+}, 9.5);
+
+tl.add(() => { setCaption('Step 3', 'Click Connect to Klaviyo'); }, 10.3);
+
+// Show "Connected" badge (celebratory)
+tl.add(() => { hideCaption(); }, 11.4);
+tl.fromTo(connectedBadge,
+  { opacity: 0, scale: 0.9 },
+  { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' },
+  11.6
+);
+tl.to(connectedBadge, { opacity: 0, scale: 0.95, duration: 0.4, ease: 'power2.in' }, 13.5);
+
+// ───────────────────────────────────────────────────────
+// BEAT 4 — Swap to connected state (13 - 16s)
+// ───────────────────────────────────────────────────────
+tl.add(() => {
+  ifm.swap('admin-settings-integrations-klaviyo-open', { duration: 0.45 });
+}, 13.4);
+tl.add(() => { setCaption('Step 4', 'Klaviyo connection saved'); }, 14.2);
+
+// ───────────────────────────────────────────────────────
+// BEAT 5 — Transition to form builder (16 - 21s)
+// ───────────────────────────────────────────────────────
+tl.add(() => { hideCaption(); }, 16.0);
+tl.add(() => {
+  urlBar.textContent = 'sulliesbakery.com/wp-admin → Forms → Contact Us → Marketing';
+  ifm.swap('builder-providers', { duration: 0.45 });
+}, 16.3);
+tl.add(() => { setCaption('Step 5', 'Open the form builder → Marketing tab'); }, 16.8);
+
+// Click Klaviyo sidebar item
+tl.add(async () => {
+  await new Promise(r => setTimeout(r, 700));
+  const klaviyoTab = ifm.query('.wpforms-panel-sidebar-section-klaviyo');
+  if (!klaviyoTab) return;
+  const pt = ifm.elementToStageCoords(klaviyoTab);
+  await cursor.glide(pt, { duration: 0.6 });
+  await cursor.click({ ripple: true });
+}, 18.5);
+
+// Swap to Klaviyo-selected variant
+tl.add(() => { ifm.swap('builder-providers-klaviyo', { duration: 0.4 }); }, 19.6);
+tl.add(() => { setCaption('Step 6', 'Klaviyo provider ready to map'); }, 20.2);
+
+tl.add(() => { hideCaption(); }, 22.0);
+
+// ───────────────────────────────────────────────────────
+// BEAT 6 — Editorial outro (22 - 27s)
+// ───────────────────────────────────────────────────────
+tl.to(macFrame, { opacity: 0, scale: 0.97, duration: 0.7, ease: 'power3.in' }, 22.2);
+
+gsap.set(outroCard, { opacity: 0, y: 12 });
+tl.to(outroCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 22.5);
+
+tl.add(() => {
+  mountSullieBug({
+    src: '/reference/wpforms-brand/assets/sullie-master.svg',
+    position: 'bottom-right',
+  });
+}, 23.0);
+
+tl.to({}, { duration: 1.5 }, 25.5);
+
+// Auto-play
+tl.play();
+
+window._tl = tl;
+window._ifm = ifm;
+window._cursor = cursor;
+</script>
+</body>
+</html>
