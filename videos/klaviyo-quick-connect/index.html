@@ -15,16 +15,19 @@
   }
   .stage-wrap {
     position: relative;
-    width: 100vw; height: 100vh;
+    width: 100vw; min-height: 100vh;
     display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    overflow: auto;
   }
   .stage {
     position: relative;
     width: 1280px; height: 720px;
-    transform-origin: center center;
     background: var(--wpf-bg-cream);
     overflow: hidden;
     box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+    flex: 0 0 auto;
+    /* No CSS transform on stage — see notifications-promise/index.html for rationale */
   }
 
   /* Editorial atmosphere — warm cream with subtle orange bloom (subdued; product UI takes focus) */
@@ -229,13 +232,7 @@ const captionText = document.getElementById('captionText');
 const connectedBadge = document.getElementById('connectedBadge');
 const urlBar = document.getElementById('urlBar');
 
-function fitStage() {
-  const sx = window.innerWidth / 1280;
-  const sy = window.innerHeight / 720;
-  stage.style.transform = `scale(${Math.min(sx, sy) * 0.96})`;
-}
-fitStage();
-window.addEventListener('resize', fitStage);
+// fitStage removed for sharp text (no compositor flatten)
 
 // IframeManager mounts inside iframeStage at native 1180x604 (the mac-body inner)
 // But IframeManager defaults to 1280x720 — override viewport

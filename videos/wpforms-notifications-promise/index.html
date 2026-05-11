@@ -15,16 +15,22 @@
   }
   .stage-wrap {
     position: relative;
-    width: 100vw; height: 100vh;
+    width: 100vw; min-height: 100vh;
     display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    overflow: auto;
   }
   .stage {
     position: relative;
     width: 1280px; height: 720px;
-    transform-origin: center center;
     background: var(--wpf-bg-cream);
     overflow: hidden;
     box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+    flex: 0 0 auto;
+    /* No CSS transform on the stage — transforms create a compositor layer
+       that gets GPU-resampled, killing subpixel AA on text. Render at native
+       1280×720 always; viewport overflow scrolls. MP4 capture is at native
+       resolution. Browser-level zoom (Ctrl+) is sharp because it re-rasterizes. */
   }
 
   /* Warm atmosphere — cream + orange tones, no purple */
@@ -297,13 +303,9 @@ const brandTag = document.getElementById('brandTag');
 const notifRows = Array.from(document.querySelectorAll('.notif-row'));
 
 // Fit stage to viewport
-function fitStage() {
-  const sx = window.innerWidth / 1280;
-  const sy = window.innerHeight / 720;
-  stage.style.transform = `scale(${Math.min(sx, sy) * 0.96})`;
-}
-fitStage();
-window.addEventListener('resize', fitStage);
+// fitStage removed — stage renders at native 1280×720 for sharp text.
+// No CSS transform on the stage element (transforms create a compositor
+// layer that GPU-resamples, killing subpixel AA).
 
 // Cursor parked off-stage top-right
 const cursor = new Cursor(macBody, { initialX: 1100, initialY: 60, size: 26, zIndex: 50 });

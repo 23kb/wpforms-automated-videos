@@ -15,16 +15,19 @@
   }
   .stage-wrap {
     position: relative;
-    width: 100vw; height: 100vh;
+    width: 100vw; min-height: 100vh;
     display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    overflow: auto;
   }
   .stage {
     position: relative;
     width: 1280px; height: 720px;
-    transform-origin: center center;
     background: var(--wpf-bg-cream);
     overflow: hidden;
     box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+    flex: 0 0 auto;
+    /* No CSS transform on stage — see notifications-promise/index.html for rationale */
   }
   .atmo {
     position: absolute; inset: 0;
@@ -176,13 +179,7 @@ const chTitle = document.getElementById('chTitle');
 const narration = document.getElementById('narration');
 const signoff = document.getElementById('signoff');
 
-function fitStage() {
-  const sx = window.innerWidth / 1280;
-  const sy = window.innerHeight / 720;
-  stage.style.transform = `scale(${Math.min(sx, sy) * 0.96})`;
-}
-fitStage();
-window.addEventListener('resize', fitStage);
+// fitStage removed for sharp text (no compositor flatten)
 
 const ifm = new IframeManager(iframeStage, {
   viewport: { width: 1180, height: 604 },
