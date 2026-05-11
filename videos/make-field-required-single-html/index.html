@@ -250,9 +250,12 @@ async function play() {
   showNarration('Scroll down to find the Required toggle. Switch it on.');
   await wait(0.8);
 
-  // Find the required toggle row — pattern: #wpforms-field-option-row-{ID}-required
-  // In builder-field-options-email, the email field ID may differ. Try common IDs.
-  const requiredRow = ifm.query('#wpforms-field-option-row-49-required, [id^="wpforms-field-option-row-"][id$="-required"]');
+  // The Email field's ID differs between builder-fields snapshot (49) and
+  // builder-field-options-email snapshot (2). Use the class-based selector
+  // that targets the Required toggle row inside the Email field's option
+  // panel — works regardless of the underlying data-field-id.
+  const requiredRow = ifm.query('.wpforms-field-option-email .wpforms-field-option-row-required')
+    || ifm.query('[id^="wpforms-field-option-row-"][id$="-required"]');
   if (requiredRow) {
     // Smooth scroll the option panel into view first
     await ifm.smoothScrollIntoView(requiredRow, { duration: 0.7, block: 'center' });
@@ -299,15 +302,19 @@ async function play() {
 
   // Swap to frontend snapshot
   await ifm.swap('frontend-published-form', { duration: 0.55 });
-  await wait(1.5);
+  await wait(1.0);
 
-  // Camera focus on the email field with the asterisk (frontend snapshot)
-  // Try common frontend selectors
+  // The captured frontend page is 6088px tall (full WP page with chrome and
+  // content above/below the form). The email field is at y~633 in iframe doc
+  // coords — just below the 604px iframe viewport. Smooth-scroll to bring it
+  // into the visible stage before the cursor glides.
   const frontendEmail = ifm.query('.wpforms-field-email, .wpforms-field.wpforms-field-email input[type="email"]');
   if (frontendEmail) {
+    await ifm.smoothScrollIntoView(frontendEmail, { duration: 0.7, block: 'center' });
+    await wait(0.3);
     const pt = ifm.elementToStageCoords(frontendEmail);
     await cursor.glide(pt, { duration: 0.7 });
-    // Light pause to highlight the asterisk visually
+    // Light pause to let viewer see the required asterisk on the live form
   }
 
   await wait(1.5);
