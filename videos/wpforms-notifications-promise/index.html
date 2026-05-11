@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Notifications That Just Work — WPForms</title>
+<link rel="stylesheet" href="/reference/wpforms-brand/tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #d8dbe2;
+    font-family: var(--wpf-font-stack);
+    overflow: hidden;
+    color: var(--wpf-ink);
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: 1280px; height: 720px;
+    transform-origin: center center;
+    background: var(--wpf-bg-cream);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  }
+
+  /* Warm atmosphere — cream + orange tones, no purple */
+  .atmo {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0;
+    background: linear-gradient(155deg, #fbf7f0 0%, #f7ede0 45%, #f1e2cc 100%);
+  }
+  .bloom {
+    position: absolute; border-radius: 50%;
+    mix-blend-mode: multiply;
+    filter: blur(70px) saturate(1.0);
+  }
+  .b1 {
+    width: 880px; height: 880px;
+    right: -260px; top: -200px;
+    background: radial-gradient(circle, rgba(226,119,48,0.22) 0%, rgba(226,119,48,0.10) 38%, rgba(226,119,48,0) 78%);
+  }
+  .b2 {
+    width: 640px; height: 640px;
+    left: -160px; bottom: -200px;
+    background: radial-gradient(circle, rgba(241,225,205,0.95) 0%, rgba(228,200,170,0.4) 40%, rgba(228,200,170,0) 80%);
+    opacity: 0.65;
+  }
+  .b3 {
+    width: 460px; height: 460px;
+    left: 50%; top: 56%;
+    background: radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,236,210,0.5) 30%, rgba(255,236,210,0) 80%);
+    mix-blend-mode: screen; filter: blur(50px); opacity: 0.5;
+  }
+
+  /* Mac frame chrome */
+  .mac-frame {
+    position: absolute;
+    left: 50px; top: 40px;
+    width: 1180px; height: 640px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow:
+      0 40px 80px rgba(0,0,0,0.18),
+      0 14px 36px rgba(0,0,0,0.10);
+    overflow: hidden;
+    z-index: 5;
+    opacity: 0;
+    transform: scale(0.96);
+    transform-origin: center center;
+    will-change: transform, opacity;
+  }
+  .mac-chrome {
+    height: 36px;
+    background: #ececef;
+    border-bottom: 1px solid #d8d9dc;
+    display: flex; align-items: center;
+    padding: 0 14px; gap: 8px;
+  }
+  .mac-chrome .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .mac-chrome .dot.r { background: #ff5f57; }
+  .mac-chrome .dot.y { background: #febc2e; }
+  .mac-chrome .dot.g { background: #28c840; }
+  .mac-body {
+    position: relative;
+    height: calc(640px - 36px);
+    background: #fbfaf7;
+    overflow: hidden;
+  }
+
+  /* The single morph-host element — carries the entire story */
+  .morph-host {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px; height: 56px;
+    background: var(--wpf-orange);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #ffffff;
+    font: 600 16px/1 var(--wpf-font-stack);
+    cursor: default; user-select: none;
+    box-shadow: 0 6px 16px rgba(226, 119, 48, 0.32);
+    will-change: width, height, background, border-radius, transform, color;
+    z-index: 20;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .morph-host .label {
+    display: block;
+    transition: none;
+  }
+
+  /* Envelope outline overlay — appears during beat 3 */
+  .envelope-flap {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 50%;
+    background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+    border: 1px solid #cfd4dc;
+    border-bottom: 1px solid #d0d4dc;
+    transform-origin: bottom center;
+    transform: rotateX(0deg);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 25;
+    transform-style: preserve-3d;
+  }
+  .envelope-flap::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 100%;
+    width: 0; height: 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 12px; height: 12px;
+    background: #fafafa;
+    border-right: 1px solid #cfd4dc;
+    border-bottom: 1px solid #cfd4dc;
+  }
+
+  /* Notification card content — appears inside the morph-host after envelope opens */
+  .notif-content {
+    position: absolute;
+    left: 16px; right: 16px; top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    pointer-events: none;
+    text-align: left;
+    color: var(--wpf-ink);
+  }
+  .notif-content .from {
+    font: 600 13px/1.2 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .notif-content .subject {
+    font: 400 12px/1.3 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .notif-content .email-line {
+    font: 400 11px/1.2 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+
+  /* Additional notification cards that cascade in for beat 5 */
+  .notif-stack {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 540px;
+    z-index: 19;
+    pointer-events: none;
+  }
+  .notif-row {
+    background: #ffffff;
+    border: 1px solid #e6e9ed;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    box-shadow: 0 2px 8px rgba(20, 22, 28, 0.05);
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0;
+    transform: translateY(12px);
+    will-change: transform, opacity, filter;
+    filter: blur(4px);
+  }
+  .notif-row .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--wpf-blue);
+    flex: 0 0 auto;
+  }
+  .notif-row .text {
+    font: 400 13px/1.3 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+  }
+  .notif-row .text strong {
+    font-weight: 600;
+    color: var(--wpf-ink);
+    margin-right: 6px;
+  }
+  .notif-row .text span {
+    color: var(--wpf-ink-mute);
+  }
+
+  /* Brand sign-off */
+  .brand-tag {
+    position: absolute;
+    left: 50%; bottom: 80px;
+    transform: translateX(-50%);
+    font: 500 18px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    opacity: 0;
+    letter-spacing: 0.005em;
+    z-index: 30;
+    text-align: center;
+  }
+  .brand-tag .accent {
+    color: var(--wpf-orange);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="atmo"></div>
+    <div class="bloom b1"></div>
+    <div class="bloom b2"></div>
+    <div class="bloom b3"></div>
+
+    <div class="mac-frame" id="macFrame">
+      <div class="mac-chrome">
+        <span class="dot r"></span>
+        <span class="dot y"></span>
+        <span class="dot g"></span>
+      </div>
+      <div class="mac-body" id="macBody">
+        <div class="morph-host" id="morphHost">
+          <span class="label" id="morphLabel">Submit Form</span>
+          <div class="envelope-flap" id="envFlap"></div>
+          <div class="notif-content" id="notifContent">
+            <div class="from" id="notifFrom"></div>
+            <div class="subject" id="notifSubject"></div>
+            <div class="email-line" id="notifEmail"></div>
+          </div>
+        </div>
+
+        <div class="notif-stack" id="notifStack">
+          <!-- Three cards revealed in beat 5 -->
+          <div class="notif-row" data-i="0">
+            <span class="dot"></span>
+            <div class="text"><strong>Marcus Rivera</strong><span>— New contact form submission</span></div>
+          </div>
+          <div class="notif-row" data-i="1">
+            <span class="dot"></span>
+            <div class="text"><strong>Priya Sharma</strong><span>— Question about pricing</span></div>
+          </div>
+          <div class="notif-row" data-i="2">
+            <span class="dot"></span>
+            <div class="text"><strong>Emily Chen</strong><span>— Demo request</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-tag" id="brandTag">
+      Notifications <span class="accent">that just work.</span>
+    </div>
+  </div>
+</div>
+
+<script src="/vendor/gsap/3.15.0/gsap.min.js"></script>
+<script type="module">
+import { Cursor, caretType, statusPillMorph, fieldStaggerReveal, mountSullieBug } from '/videos/_shared/motion-primitives.js';
+
+const stage = document.getElementById('stage');
+const macFrame = document.getElementById('macFrame');
+const macBody = document.getElementById('macBody');
+const morphHost = document.getElementById('morphHost');
+const morphLabel = document.getElementById('morphLabel');
+const envFlap = document.getElementById('envFlap');
+const notifContent = document.getElementById('notifContent');
+const notifFrom = document.getElementById('notifFrom');
+const notifSubject = document.getElementById('notifSubject');
+const notifEmail = document.getElementById('notifEmail');
+const notifStack = document.getElementById('notifStack');
+const brandTag = document.getElementById('brandTag');
+const notifRows = Array.from(document.querySelectorAll('.notif-row'));
+
+// Fit stage to viewport
+function fitStage() {
+  const sx = window.innerWidth / 1280;
+  const sy = window.innerHeight / 720;
+  stage.style.transform = `scale(${Math.min(sx, sy) * 0.96})`;
+}
+fitStage();
+window.addEventListener('resize', fitStage);
+
+// Cursor parked off-stage top-right
+const cursor = new Cursor(macBody, { initialX: 1100, initialY: 60, size: 26, zIndex: 50 });
+
+// Hide notif stack initially (it sits on top of morphHost coords; we hide morphHost when stack reveals)
+notifStack.style.opacity = '0';
+
+const tl = gsap.timeline({ paused: true });
+
+// ───────────────────────────────────────────────────────
+// BEAT 1 — Arrival (0 - 2.5s)
+// Mac frame fades + scales up; morph host sits ready
+// ───────────────────────────────────────────────────────
+tl.to(macFrame, {
+  opacity: 1,
+  scale: 1,
+  duration: 0.9,
+  ease: 'power3.out',
+}, 0);
+
+// Morph host starts hidden inside, fades in at 0.5s
+gsap.set(morphHost, { opacity: 0, scale: 0.92 });
+tl.to(morphHost, {
+  opacity: 1,
+  scale: 1,
+  duration: 0.7,
+  ease: 'back.out(1.3)',
+}, 0.5);
+
+// Hold for a beat to let viewer see the button
+tl.add('beat2', 2.4);
+
+// ───────────────────────────────────────────────────────
+// BEAT 2 — Submit click (2.5 - 5s)
+// Cursor glides to button via curved arc; clicks; button morphs to pill
+// ───────────────────────────────────────────────────────
+const buttonCenter = { x: 590, y: 302 }; // morphHost center in macBody coords (1180/2=590, 604/2=302)
+tl.add(() => {
+  cursor.glide(buttonCenter, { duration: 0.7, via: { x: 800, y: 200 } });
+}, 'beat2');
+
+// At ~0.7s into beat2, the click
+tl.add(() => {
+  cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
+}, 'beat2+=0.75');
+
+// Button morphs into status pill at click moment
+tl.to(morphHost, {
+  width: 280,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: '#fff7ef',
+  color: 'var(--wpf-orange)',
+  boxShadow: '0 0 0 2px rgba(226, 119, 48, 0.4), 0 4px 10px rgba(226, 119, 48, 0.15)',
+  duration: 0.45,
+  ease: 'power3.inOut',
+}, 'beat2+=0.85');
+
+// Swap text content + start typing
+tl.add(() => {
+  morphLabel.style.color = 'var(--wpf-orange)';
+  morphLabel.style.fontSize = '13px';
+  morphLabel.textContent = '';
+  caretType(morphLabel, 'Submitting...', { charDuration: 0.045 });
+}, 'beat2+=1.0');
+
+tl.add('beat3', 'beat2+=2.5');
+
+// ───────────────────────────────────────────────────────
+// BEAT 3 — Status morph (5 - 9s)
+// statusPillMorph: Submitting → Sent → Delivered to inbox
+// During last phase, color shifts orange → blue (envelope-ready)
+// ───────────────────────────────────────────────────────
+tl.add(() => {
+  // Clear caret-type contents first to set a clean state
+  morphLabel.textContent = 'Submitting...';
+  const pillTl = statusPillMorph(morphLabel, ['Submitting...', 'Sent', 'Delivered to inbox'], {
+    holdEach: 0.7,
+    morphDuration: 0.4,
+  });
+  pillTl.play();
+}, 'beat3');
+
+// Subtle scale breath
+tl.to(morphHost, {
+  scale: 1.03,
+  duration: 0.6,
+  ease: 'sine.inOut',
+  yoyo: true,
+  repeat: 1,
+}, 'beat3+=1.2');
+
+// During the last phase (around beat3+=2.0s), shift color orange → blue
+tl.to(morphHost, {
+  backgroundColor: '#f0f7fb',
+  boxShadow: '0 0 0 2px rgba(6, 106, 171, 0.4), 0 4px 10px rgba(6, 106, 171, 0.15)',
+  color: 'var(--wpf-blue)',
+  duration: 0.7,
+  ease: 'power2.inOut',
+}, 'beat3+=2.0');
+
+tl.to(morphLabel, {
+  color: 'var(--wpf-blue)',
+  duration: 0.7,
+  ease: 'power2.inOut',
+}, 'beat3+=2.0');
+
+// Pill grows slightly wider for "Delivered to inbox" text
+tl.to(morphHost, {
+  width: 340,
+  duration: 0.4,
+  ease: 'power2.inOut',
+}, 'beat3+=2.0');
+
+tl.add('beat4', 'beat3+=3.7');
+
+// ───────────────────────────────────────────────────────
+// BEAT 4 — Envelope opens (9 - 13s)
+// Pill expands into envelope shape; flap rotates open; lines type in
+// ───────────────────────────────────────────────────────
+
+// Expand pill into envelope-card
+tl.to(morphHost, {
+  width: 360,
+  height: 140,
+  borderRadius: 12,
+  backgroundColor: '#ffffff',
+  boxShadow: '0 0 0 1px #e6e9ed, 0 12px 28px rgba(20, 22, 28, 0.08)',
+  duration: 0.7,
+  ease: 'power3.inOut',
+}, 'beat4');
+
+// Hide label, prep envelope flap + notif content
+tl.to(morphLabel, {
+  opacity: 0,
+  duration: 0.25,
+  ease: 'power2.out',
+}, 'beat4');
+
+tl.set(envFlap, { opacity: 1 }, 'beat4+=0.3');
+tl.set(notifContent, { opacity: 1 }, 'beat4+=0.3');
+
+// Envelope flap rotates open
+tl.fromTo(envFlap, {
+  rotateX: 0,
+}, {
+  rotateX: -180,
+  duration: 0.8,
+  ease: 'power3.inOut',
+  transformPerspective: 600,
+}, 'beat4+=0.4');
+
+// Fade flap out after it rotates
+tl.to(envFlap, {
+  opacity: 0,
+  duration: 0.3,
+}, 'beat4+=1.0');
+
+// Type "From: Marcus Rivera"
+tl.add(() => {
+  caretType(notifFrom, 'From: Marcus Rivera', { charDuration: 0.040 });
+}, 'beat4+=1.2');
+
+// Type "Subject: New contact form submission"
+tl.add(() => {
+  caretType(notifSubject, 'Subject: New contact form submission', { charDuration: 0.030 });
+}, 'beat4+=2.2');
+
+// Fade in the email line
+tl.fromTo(notifEmail, {
+  opacity: 0,
+}, {
+  opacity: 1,
+  duration: 0.4,
+  ease: 'power2.out',
+  onStart: () => { notifEmail.textContent = 'marcus@example.com'; },
+}, 'beat4+=3.4');
+
+tl.add('beat5', 'beat4+=4.0');
+
+// ───────────────────────────────────────────────────────
+// BEAT 5 — Notification list + brand sign-off (13 - 18s)
+// Card shrinks to fit row; two more rows cascade in below
+// Sullie mounts; brand tag fades in
+// ───────────────────────────────────────────────────────
+
+// Fade out the inner contents of the envelope and shrink morphHost out
+tl.to(morphHost, {
+  opacity: 0,
+  duration: 0.35,
+  ease: 'power2.in',
+}, 'beat5');
+
+// Reveal the notif stack
+tl.to(notifStack, {
+  opacity: 1,
+  duration: 0.4,
+  ease: 'power2.out',
+}, 'beat5+=0.25');
+
+// fieldStaggerReveal cascade on the 3 rows
+tl.add(() => {
+  const cascade = fieldStaggerReveal(notifRows, {
+    duration: 0.55,
+    stagger: 0.12,
+    rise: 14,
+    blurFrom: 4,
+  });
+  cascade.play();
+}, 'beat5+=0.4');
+
+// Mount Sullie bottom-right
+tl.add(() => {
+  mountSullieBug({
+    src: '/reference/wpforms-brand/assets/sullie-master.svg',
+    position: 'bottom-right',
+  });
+}, 'beat5+=1.4');
+
+// Brand tag fade in (slight rise)
+tl.fromTo(brandTag, {
+  opacity: 0,
+  y: 8,
+}, {
+  opacity: 1,
+  y: 0,
+  duration: 0.7,
+  ease: 'power2.out',
+}, 'beat5+=1.8');
+
+// Hold the final composition
+tl.to({}, { duration: 1.2 }, 'beat5+=2.6');
+
+// Auto-play
+tl.play();
+
+// Expose for scrubbing/debug
+window._tl = tl;
+window._cursor = cursor;
+</script>
+</body>
+</html>
