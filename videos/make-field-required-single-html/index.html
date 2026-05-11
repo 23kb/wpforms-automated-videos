@@ -277,14 +277,26 @@ async function play() {
 
   await wait(1.0);
 
-  // markerSweep on the narration to emphasize "Required"
   showNarration('A red asterisk now marks the field as mandatory.');
   await wait(0.6);
 
-  // popOut the asterisk emphasis — find a label with required class in the iframe
-  // Note: builder-fields snapshot has field-49 already with "required" class so the asterisk is already there
-  // For the tutorial flow, we mimic the moment with a popOut on a label element near the required toggle
-  await wait(2.0);
+  // popOut the Required toggle row as emphasis — clones the element out of the
+  // iframe into the parent doc, lifts with perspective + shadow. Sharp at any
+  // zoom because it's rendered fresh in parent-doc DOM, not GPU-sampled from
+  // the iframe texture. This is exactly the "use popOut for deep-zoom-feel
+  // emphasis" pattern from INV-2 in docs/video-architecture-invariants.
+  if (requiredRow) {
+    await popOut(ifm.iframe(), requiredRow, {
+      lift: 60,
+      tilt: 4,
+      riseMs: 600,
+      holdMs: 1800,
+      fallMs: 500,
+      hideOriginal: false,
+      shadow: 'strong',
+    }).catch(err => console.warn('[popOut]', err));
+  }
+
   await hideNarration();
   await wait(0.4);
 

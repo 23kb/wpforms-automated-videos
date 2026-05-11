@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Zoom Quality — Before vs After (side-by-side QC)</title>
+<style>
+  html, body { margin: 0; background: #1a1a1a; color: #ddd; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; }
+  body { display: grid; grid-template-rows: 50px 1fr; height: 100vh; }
+  header { background: #111; padding: 8px 12px; display: flex; gap: 8px; align-items: center; font-size: 13px; border-bottom: 1px solid #333; }
+  header button { background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 6px 12px; cursor: pointer; font-size: 12px; border-radius: 3px; }
+  header button:hover { background: #3a3a3a; }
+  header button.active { background: #E27730; border-color: #E27730; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: #0d0d0d; }
+  .panel { position: relative; background: #0d0d0d; overflow: hidden; }
+  .panel-title { position: absolute; top: 6px; left: 8px; z-index: 200; background: rgba(0,0,0,0.7); color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; pointer-events: none; }
+  .stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform: translate(-50%, -50%) scale(0.43); transform-origin: center center; background: #F4F1EC; box-shadow: 0 4px 18px rgba(0,0,0,0.5); overflow: hidden; }
+  iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; border: 0; transform-origin: 0 0; background: #F4F1EC; }
+  .reticle { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid rgba(226, 119, 48, 0.9); border-radius: 999px; box-shadow: 0 0 0 6px rgba(226, 119, 48, 0.18); z-index: 100; pointer-events: none; }
+</style>
+</head>
+<body>
+<header>
+  <strong style="color:#E27730">Side-by-side zoom QC</strong>
+  <span style="color:#888">target:</span>
+  <button data-target="#the-list tr:nth-child(3) [data-field-type='email']" class="active">Entry email (3rd row)</button>
+  <button data-target="#the-list tr:nth-child(1) [data-field-type='name']">Entry name (1st row)</button>
+  <button data-target="#wpforms-entries-search-input">Search input</button>
+  <span style="color:#888">zoom:</span>
+  <button data-zoom="2">2×</button>
+  <button data-zoom="3" class="active">3×</button>
+  <button data-zoom="3.8">3.8×</button>
+  <button data-zoom="5">5×</button>
+  <span id="meta" style="margin-left:auto; color:#6dffb1; font-family:monospace; font-size:11px">init</span>
+</header>
+<div class="compare">
+  <div class="panel" id="leftPanel">
+    <div class="panel-title">BEFORE: CSS transform: scale(N) — pixel-doubled by GPU compositor</div>
+    <div class="stage" id="stageL">
+      <iframe id="iframeL" src="/snapshots/admin-entries-list/index.html"></iframe>
+      <div class="reticle"></div>
+    </div>
+  </div>
+  <div class="panel" id="rightPanel">
+    <div class="panel-title">AFTER: settle mode — iframe@N× + html.zoom=N + left/top offset (native re-raster)</div>
+    <div class="stage" id="stageR">
+      <iframe id="iframeR" src="/snapshots/admin-entries-list/index.html"></iframe>
+      <div class="reticle"></div>
+    </div>
+  </div>
+</div>
+<script>
+const STAGE_W = 1280;
+const STAGE_H = 720;
+const state = { target: "#the-list tr:nth-child(3) [data-field-type='email']", zoom: 3 };
+const meta = document.getElementById('meta');
+
+function setMeta(s) { meta.textContent = s; }
+
+async function waitForLoad(iframe) {
+  return new Promise(resolve => {
+    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete' && iframe.contentDocument.body) {
+      resolve();
+    } else {
+      iframe.addEventListener('load', () => resolve(), { once: true });
+    }
+  });
+}
+
+async function applyLeft() {
+  // BEFORE: CSS transform on iframe, original size
+  const f = document.getElementById('iframeL');
+  await waitForLoad(f);
+  const doc = f.contentDocument;
+  // Reset
+  doc.documentElement.style.zoom = '';
+  f.style.width = STAGE_W + 'px';
+  f.style.height = STAGE_H + 'px';
+  f.style.left = '0px';
+  f.style.top = '0px';
+  // Scroll to bring target into iframe view
+  const el = doc.querySelector(state.target);
+  if (!el) { setMeta('target not found'); return; }
+  el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+  // Wait one frame so BCR settles
+  await new Promise(r => requestAnimationFrame(r));
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  // Same camera math as IframeManager:
+  // scale(N) translate(tx/N, ty/N) with transform-origin 0 0
+  // We want target center to land at stage center (640, 360)
+  // After scale, target center is at (cx*N, cy*N). Need translation tx, ty:
+  // 640 = cx*N + tx → tx = 640 - cx*N
+  const tx = STAGE_W / 2 - cx * state.zoom;
+  const ty = STAGE_H / 2 - cy * state.zoom;
+  f.style.transformOrigin = '0 0';
+  f.style.transform = `scale(${state.zoom}) translate(${tx/state.zoom}px, ${ty/state.zoom}px)`;
+}
+
+async function applyRight() {
+  // AFTER: settle mode
+  const f = document.getElementById('iframeR');
+  await waitForLoad(f);
+  const doc = f.contentDocument;
+  // First, reset to baseline + put target in iframe view
+  doc.documentElement.style.zoom = '';
+  f.style.width = STAGE_W + 'px';
+  f.style.height = STAGE_H + 'px';
+  f.style.left = '0px';
+  f.style.top = '0px';
+  f.style.transform = 'none';
+  const el = doc.querySelector(state.target);
+  if (!el) return;
+  el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+  await new Promise(r => requestAnimationFrame(r));
+  // Compute pre-zoom target center (in iframe-CSS px)
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  // Same camera (zoom, tx, ty) as left panel
+  const tx = STAGE_W / 2 - cx * state.zoom;
+  const ty = STAGE_H / 2 - cy * state.zoom;
+  // Apply settle mode geometry:
+  //   iframe.style.width  = STAGE_W * N
+  //   iframe.style.height = STAGE_H * N
+  //   doc.documentElement.style.zoom = N
+  //   iframe.style.left/top = tx, ty (origin = 0,0)
+  //   iframe.style.transform = none
+  f.style.width = (STAGE_W * state.zoom) + 'px';
+  f.style.height = (STAGE_H * state.zoom) + 'px';
+  doc.documentElement.style.zoom = String(state.zoom);
+  f.style.transform = 'none';
+  f.style.left = tx + 'px';
+  f.style.top = ty + 'px';
+}
+
+async function apply() {
+  setMeta(`target=${state.target} zoom=${state.zoom}`);
+  await Promise.all([applyLeft(), applyRight()]);
+  setMeta(`✓ target=${state.target.slice(0,40)}… zoom=${state.zoom}× — compare panels`);
+}
+
+document.querySelectorAll('button[data-target]').forEach(b => {
+  b.addEventListener('click', () => {
+    state.target = b.dataset.target;
+    document.querySelectorAll('button[data-target]').forEach(x => x.classList.toggle('active', x === b));
+    apply();
+  });
+});
+document.querySelectorAll('button[data-zoom]').forEach(b => {
+  b.addEventListener('click', () => {
+    state.zoom = parseFloat(b.dataset.zoom);
+    document.querySelectorAll('button[data-zoom]').forEach(x => x.classList.toggle('active', x === b));
+    apply();
+  });
+});
+
+// Auto-apply when both iframes ready
+Promise.all([
+  waitForLoad(document.getElementById('iframeL')),
+  waitForLoad(document.getElementById('iframeR')),
+]).then(() => apply());
+</script>
+</body>
+</html>

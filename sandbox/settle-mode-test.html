@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Settle Mode Integration Test</title>
+<style>
+  html, body { margin: 0; background: #1a1a1a; color: #ddd; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; }
+  body { display: grid; grid-template-rows: 50px 1fr; height: 100vh; }
+  header { background: #111; padding: 8px 12px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; border-bottom: 1px solid #333; }
+  header button { background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 6px 10px; cursor: pointer; font-size: 12px; border-radius: 3px; }
+  header button:hover { background: #3a3a3a; }
+  #log { color: #6dffb1; font-family: monospace; font-size: 11px; margin-left: auto; }
+  .stage-wrap { position: relative; overflow: hidden; background: #0d0d0d; }
+  .stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform: translate(-50%, -50%) scale(0.96); transform-origin: center center; background: #F4F1EC; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+  .reticle { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid rgba(226, 119, 48, 0.9); border-radius: 999px; box-shadow: 0 0 0 6px rgba(226, 119, 48, 0.18); z-index: 100; pointer-events: none; }
+</style>
+</head>
+<body>
+<header>
+  <button id="loadBtn">Load admin-entries-list</button>
+  <button data-target="#wpforms-entries-search-input">Zoom: search input</button>
+  <button data-target="#the-list tr:nth-child(3) [data-field-type='email']">Zoom: Entry email (3rd row)</button>
+  <button data-target="#the-list tr:nth-child(1) [data-field-type='name']">Zoom: Entry name (1st row)</button>
+  <button id="resetBtn">Reset camera</button>
+  <button id="measureBtn">Measure settle state</button>
+  <span id="log">init</span>
+</header>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="reticle"></div>
+  </div>
+</div>
+<script src="/vendor/gsap/3.15.0/gsap.min.js"></script>
+<script type="module">
+import { IframeManager } from '/videos/_shared/wpforms-interactions.js';
+
+const stage = document.getElementById('stage');
+const log = document.getElementById('log');
+const ifm = new IframeManager(stage);
+window.__ifm = ifm;
+
+function setLog(s) { log.textContent = s; }
+
+async function load() {
+  setLog('loading admin-entries-list…');
+  await ifm.load('admin-entries-list');
+  setLog('ready');
+}
+
+async function zoomTo(selector) {
+  try {
+    const el = ifm.query(selector);
+    if (!el) { setLog('not found: ' + selector); return; }
+    await ifm.smoothScrollIntoView(el, { block: 'center', inline: 'center', duration: 0.5 });
+    const pose = ifm.cameraToElement(selector, { fill: 0.76, pad: 12, minZoom: 1, maxZoom: 3.8 });
+    setLog(`tweening to zoom ${pose.zoom.toFixed(2)}…`);
+    await ifm.tweenCamera({ ...pose, duration: 0.82, ease: 'power3.out' });
+    setLog(`tween done; settle pending. settleMode=${ifm._settleMode}`);
+    // Settle mode is scheduled via rAF; wait one more rAF
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    setLog(`settled. zoom=${ifm._camera.zoom.toFixed(2)} settleMode=${ifm._settleMode}`);
+  } catch (e) {
+    setLog('err: ' + e.message);
+    console.error(e);
+  }
+}
+
+document.getElementById('loadBtn').addEventListener('click', load);
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  await ifm.resetCamera({ duration: 0.5 });
+  setLog(`reset. settleMode=${ifm._settleMode} cam=(${ifm._camera.zoom},${ifm._camera.tx.toFixed(0)},${ifm._camera.ty.toFixed(0)})`);
+});
+document.getElementById('measureBtn').addEventListener('click', () => {
+  const f = ifm._iframe;
+  const doc = f.contentDocument;
+  setLog(JSON.stringify({
+    settleMode: ifm._settleMode,
+    cam: { zoom: ifm._camera.zoom, tx: ifm._camera.tx, ty: ifm._camera.ty },
+    iframeStyle: { w: f.style.width, h: f.style.height, l: f.style.left, t: f.style.top, transform: f.style.transform },
+    htmlZoom: doc?.documentElement.style.zoom,
+  }));
+});
+document.querySelectorAll('button[data-target]').forEach(b => {
+  b.addEventListener('click', () => zoomTo(b.dataset.target));
+});
+
+// Auto-load on boot
+load();
+</script>
+</body>
+</html>
