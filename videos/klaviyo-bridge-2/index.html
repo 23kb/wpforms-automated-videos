@@ -1,0 +1,2912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>WPForms × Klaviyo — intro</title>
+<style>
+  :root {
+    --stage-w: 1920px;
+    --stage-h: 1080px;
+
+    --wpf-orange: #E27730;
+    --wpf-orange-bright: #FF9C4A;
+    --wpf-orange-deep: #B95E1F;
+
+    --canvas-ink: #0a0e14;
+    --canvas-ink-edge: #050810;
+
+    --cream: #f4ecd9;
+    --cream-soft: #d9d2c0;
+    --cream-mute: #8a8678;
+
+    --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
+    --display-font: "Fraunces", "Canela", "Recoleta", "IvyPresto Display", Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #000;
+    font-family: var(--font-stack);
+    color: var(--cream);
+    overflow: hidden;
+  }
+  .stage-wrap {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage {
+    position: relative;
+    width: var(--stage-w);
+    height: var(--stage-h);
+    flex: 0 0 auto;
+    transform-origin: center center;
+    background: var(--canvas-ink);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+  }
+
+  /* ==========================================================
+     Atmospheric layers — five named beds that swap on beats.
+     All layers coexist as siblings; only autoAlpha varies.
+     ========================================================== */
+  .atmo-base {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 1200px 800px at 50% 55%,
+      #0c1119 0%,
+      var(--canvas-ink) 40%,
+      var(--canvas-ink-edge) 100%);
+    pointer-events: none;
+  }
+  .atmo {
+    position: absolute; inset: 0; z-index: 1;
+    pointer-events: none;
+    will-change: opacity, transform;
+    opacity: 0;
+  }
+  /* B1: deep-night — base only (atmo-base shown; atmo layers all 0) */
+  /* B2: warm-pull */
+  .atmo-warm-pull {
+    background:
+      radial-gradient(ellipse 760px 540px at 50% 50%,
+        rgba(255, 175, 95, 0.18) 0%,
+        rgba(226, 119, 48, 0.10) 35%,
+        rgba(226, 119, 48, 0.00) 75%);
+  }
+  /* B3: tension — warm pool intensifies + cool kiss */
+  .atmo-tension {
+    background:
+      radial-gradient(ellipse 900px 640px at 50% 50%,
+        rgba(255, 180, 100, 0.32) 0%,
+        rgba(226, 119, 48, 0.18) 30%,
+        rgba(226, 119, 48, 0.00) 72%);
+  }
+  .atmo-cool-kiss {
+    background:
+      radial-gradient(ellipse 540px 760px at 78% 55%,
+        rgba(130, 175, 220, 0.18) 0%,
+        rgba(100, 145, 195, 0.08) 30%,
+        rgba(80, 125, 175, 0.00) 65%);
+  }
+  /* B4: impact-flash — bright orange burst */
+  .atmo-impact {
+    background:
+      radial-gradient(ellipse 1100px 780px at 50% 50%,
+        rgba(255, 200, 140, 0.55) 0%,
+        rgba(255, 150, 80, 0.30) 25%,
+        rgba(226, 119, 48, 0.10) 55%,
+        rgba(226, 119, 48, 0.00) 80%);
+  }
+  /* B5: lockup-warmth — settled */
+  .atmo-warmth {
+    background:
+      radial-gradient(ellipse 820px 600px at 50% 50%,
+        rgba(255, 175, 90, 0.26) 0%,
+        rgba(226, 119, 48, 0.14) 28%,
+        rgba(226, 119, 48, 0.04) 55%,
+        rgba(226, 119, 48, 0.00) 80%);
+  }
+  /* Scene 2: lighter editorial atmosphere, in the family of the reference templates. */
+  .atmo-light {
+    background:
+      radial-gradient(ellipse 860px 620px at 24% 72%,
+        rgba(255, 216, 176, 0.72) 0%,
+        rgba(255, 232, 205, 0.34) 34%,
+        rgba(255, 232, 205, 0.00) 68%),
+      radial-gradient(ellipse 760px 580px at 82% 28%,
+        rgba(186, 217, 255, 0.52) 0%,
+        rgba(207, 229, 255, 0.24) 38%,
+        rgba(207, 229, 255, 0.00) 72%),
+      linear-gradient(145deg, #fffaf4 0%, #f8f3ec 46%, #edf5fb 100%);
+  }
+  /* Scene 3: Klaviyo docs atmosphere — cooler, cleaner SaaS surface. */
+  .atmo-klaviyo {
+    background:
+      radial-gradient(ellipse 820px 560px at 18% 78%,
+        rgba(226, 119, 48, 0.22) 0%,
+        rgba(255, 211, 172, 0.18) 34%,
+        rgba(255, 211, 172, 0.00) 70%),
+      radial-gradient(ellipse 900px 620px at 84% 24%,
+        rgba(159, 190, 215, 0.58) 0%,
+        rgba(190, 213, 229, 0.32) 42%,
+        rgba(190, 213, 229, 0.00) 76%),
+      linear-gradient(145deg, #f6f4ef 0%, #eef3f5 45%, #dde6ec 100%);
+  }
+
+  /* Decorative aura ring behind the lockup zone (subtle warmth halo) */
+  .lockup-halo {
+    position: absolute;
+    left: 50%; top: 47%;
+    width: 720px; height: 720px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(255, 180, 100, 0.18) 0%,
+      rgba(226, 119, 48, 0.08) 28%,
+      rgba(226, 119, 48, 0.00) 60%);
+    filter: blur(20px);
+    z-index: 2;
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+
+  /* Grain */
+  #grain {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 80;
+    opacity: 0.055; mix-blend-mode: overlay;
+  }
+
+  /* ==========================================================
+     Lockup row — typography appears first, logos tuck in after.
+     ========================================================== */
+  .lockup-el {
+    position: absolute;
+    top: 47%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    will-change: transform, opacity, filter;
+  }
+
+  /* Final lockup centres (px from stage left) */
+  .logo-wpf { left: 590px; width: 72px; height: 72px; }
+  .wm-wpf   { left: 760px; font-family: var(--display-font); font-size: 62px; font-weight: 500;
+              letter-spacing: -0.008em; color: var(--cream);
+              white-space: nowrap; text-shadow: 0 14px 42px rgba(0,0,0,0.38); }
+  .glyph    { left: 960px; font-family: var(--display-font); font-size: 56px; font-weight: 400;
+              letter-spacing: 0; color: rgba(255, 174, 92, 0.95);
+              white-space: nowrap; text-shadow: 0 10px 34px rgba(226,119,48,0.38); }
+  .wm-klv   { left: 1160px; font-family: var(--display-font); font-size: 62px; font-weight: 500;
+              letter-spacing: -0.008em; color: var(--cream);
+              white-space: nowrap; text-shadow: 0 14px 42px rgba(0,0,0,0.38); }
+  .logo-klv { left: 1340px; width: 74px; height: 74px; }
+
+  .logo-wpf, .logo-klv {
+    object-fit: contain;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.55));
+  }
+  /* Klaviyo flag is solid black on dark canvas — invert to cream */
+  .logo-klv {
+    filter:
+      drop-shadow(0 6px 18px rgba(0,0,0,0.55))
+      invert(0.94) brightness(1.05);
+  }
+
+  /* Subheading */
+  .subhead {
+    position: absolute;
+    left: 50%; top: 64%;
+    transform: translate(-50%, -50%);
+    z-index: 21;
+    font-size: 25px;
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    color: var(--cream-soft);
+    white-space: nowrap;
+    will-change: transform, opacity;
+    opacity: 0;
+  }
+  .text-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: baseline;
+    padding: 0.10em 0.08em 0.16em;
+    margin: -0.10em -0.08em -0.16em;
+  }
+  .text-reveal-unit {
+    display: inline-block;
+    will-change: transform, opacity, filter;
+  }
+
+  /* ==========================================================
+     Scene 2 — live snapshot iframe with a quiet 3D editorial frame
+     ========================================================== */
+  .iframe-scene {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 1280px; height: 720px;
+    transform: translate(-50%, -50%);
+    perspective: 1400px;
+    z-index: 24;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .iframe-card {
+    position: absolute; inset: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(255,255,255,0.72);
+    box-shadow:
+      0 46px 110px rgba(44, 39, 32, 0.28),
+      0 18px 38px rgba(44, 39, 32, 0.16),
+      inset 0 1px 0 rgba(255,255,255,0.86);
+    transform-style: preserve-3d;
+    will-change: transform, filter, opacity;
+  }
+  .iframe-card::before {
+    content: "";
+    position: absolute; inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(115deg,
+        rgba(255,255,255,0.34) 0%,
+        rgba(255,255,255,0.08) 24%,
+        rgba(255,255,255,0.00) 52%),
+      radial-gradient(ellipse 540px 260px at 18% 8%,
+        rgba(255,255,255,0.34) 0%,
+        rgba(255,255,255,0.00) 64%);
+    mix-blend-mode: screen;
+  }
+  .iframe-card iframe {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: 0;
+    background: #fff;
+  }
+  .docs-scene {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 1280px; height: 720px;
+    transform: translate(-50%, -50%);
+    z-index: 16;
+    perspective: 1400px;
+    pointer-events: none;
+    transform-style: preserve-3d;
+  }
+  .docs-card {
+    position: absolute; inset: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(255,255,255,0.76);
+    box-shadow:
+      0 48px 116px rgba(31, 40, 54, 0.30),
+      0 18px 42px rgba(31, 40, 54, 0.16),
+      inset 0 1px 0 rgba(255,255,255,0.9);
+    transform-style: preserve-3d;
+    will-change: transform, filter, opacity;
+  }
+  .docs-card::before {
+    content: "";
+    position: absolute; inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(115deg,
+        rgba(255,255,255,0.30) 0%,
+        rgba(255,255,255,0.06) 28%,
+        rgba(255,255,255,0.00) 58%),
+      radial-gradient(ellipse 500px 230px at 16% 6%,
+        rgba(255,255,255,0.28) 0%,
+        rgba(255,255,255,0.00) 68%);
+    mix-blend-mode: screen;
+  }
+  .docs-card iframe {
+    position: absolute; inset: 0;
+    width: 1280px; height: 720px;
+    border: 0;
+    background: #fff;
+    transform: none;
+    transform-origin: 0 0;
+  }
+
+  /* ==========================================================
+     Scattered figjam-style canvas — 3 panels scattered on a wide
+     canvas (5200×2400). Camera transform animates focus → wide
+     → glide → focus on panel 3. Pattern from
+     videos/_qc-primitives/scattered-canvas-flight.html.
+     ========================================================== */
+  .scattered-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 26;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity;
+  }
+  /* Atmosphere stack — lifted from wpforms-ai-board, retuned cool-neutral
+     (no cream). Five layers compose the editorial bed:
+       1. .sc-atmo-grad        soft cool 3-stop linear + faint warm/cool radial pools
+       2. .sc-atmo-bloom-warm  blurred orange blob, screen blend
+       3. .sc-atmo-bloom-cool  blurred blue blob,   screen blend
+       4. .sc-atmo-grain       mulberry32 grain canvas, multiply blend, ~0.045 opacity
+       5. .sc-atmo-grid        1px dots @ 28px, multiply, radial-masked toward edges
+     Lives on .scattered-scene (camera-independent) so the bed stays still as
+     the camera moves; panels float on it. */
+  .sc-atmo {
+    position: absolute; inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .sc-atmo-grad {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 92% 72% at 22% 18%, rgba(255, 244, 226, 0.28) 0%, rgba(248, 244, 234, 0.12) 40%, transparent 72%),
+      radial-gradient(ellipse 82% 62% at 78% 82%, rgba(214, 226, 244, 0.34) 0%, rgba(225, 232, 244, 0.14) 42%, transparent 74%),
+      linear-gradient(155deg, #f3f5f8 0%, #ebedf1 48%, #e3e6ec 100%);
+  }
+  .sc-atmo-bloom-warm {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 48% at 30% 36%, rgba(255, 178, 110, 0.16) 0%, rgba(255, 178, 110, 0.06) 40%, transparent 72%);
+    filter: blur(28px);
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .sc-atmo-bloom-cool {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 55% 45% at 72% 70%, rgba(124, 168, 220, 0.20) 0%, rgba(124, 160, 210, 0.10) 42%, transparent 74%);
+    filter: blur(32px);
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .sc-atmo-grain {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0.045;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+  .sc-atmo-grid {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(40, 42, 52, 0.16) 1px, transparent 1.4px);
+    background-size: 28px 28px;
+    opacity: 0.32;
+    mix-blend-mode: multiply;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 50%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 50%, transparent 100%);
+  }
+  .scattered-camera {
+    position: absolute;
+    left: 0; top: 0;
+    width: 5200px; height: 2400px;
+    transform-origin: center center;
+    will-change: transform;
+    /* No background — atmosphere stack above provides the bed. */
+    background: transparent;
+  }
+
+  .scattered-panel {
+    position: absolute;
+    width: 1280px; height: 720px;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow:
+      0 36px 84px rgba(20, 15, 8, 0.30),
+      0 12px 26px rgba(20, 15, 8, 0.18),
+      0 0 0 1px rgba(20, 15, 8, 0.08);
+    transform-origin: center center;
+  }
+  /* Oversample: render each panel's iframe at 1920×1080 native, CSS-scale to
+     fit the 1280×720 panel slot. At max camera zoom (1.25×) panel displays
+     1600px wide from a 1920 raster — downsample, stays sharp. At wide camera
+     scale (0.32×) panel displays ~410px wide from 1920 raster — heavy
+     downsample, stays sharp. No jagged upscale at any zoom. */
+  .scattered-panel iframe {
+    position: absolute;
+    left: 0; top: 0;
+    width: 1920px; height: 1080px;
+    border: 0;
+    background: #fff;
+    display: block;
+    pointer-events: none;
+    transform-origin: 0 0;
+    transform: scale(0.6666666667); /* 1280 / 1920 */
+  }
+  /* Panel positions on the canvas (top-left). Centres derived from these. */
+  .scattered-panel#sp1 {
+    /* Klaviyo Settings — focused at start; centre (1400, 1200) */
+    left: 760px; top: 840px;
+    transform: rotate(0deg);
+  }
+  .scattered-panel#sp2 {
+    /* Klaviyo Docs — top-right scatter; centre (2700, 600) */
+    left: 2060px; top: 240px;
+    transform: rotate(2deg);
+  }
+  .scattered-panel#sp3 {
+    /* Builder Providers — far right scatter; centre (4100, 1500) */
+    left: 3460px; top: 1140px;
+    transform: rotate(-2deg);
+  }
+
+  /* ==========================================================
+     Outro endplate — premium brand resolve after the 3-panel board.
+     ========================================================== */
+  .outro-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 34;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    background:
+      radial-gradient(ellipse 980px 720px at 34% 38%,
+        rgba(255, 184, 116, 0.26) 0%,
+        rgba(226, 119, 48, 0.12) 38%,
+        rgba(226, 119, 48, 0.00) 72%),
+      radial-gradient(ellipse 960px 720px at 72% 58%,
+        rgba(150, 190, 222, 0.34) 0%,
+        rgba(184, 211, 230, 0.18) 42%,
+        rgba(184, 211, 230, 0.00) 76%),
+      linear-gradient(145deg, #f7f4ee 0%, #eef3f5 45%, #dfe8ee 100%);
+  }
+  .outro-sheen {
+    position: absolute;
+    left: -18%; top: -40%;
+    width: 42%; height: 180%;
+    transform: rotate(18deg);
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.24) 48%,
+      transparent 100%);
+    filter: blur(18px);
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .outro-route {
+    position: absolute;
+    left: 50%; top: 44%;
+    width: 720px; height: 2px;
+    transform: translate(-50%, -50%) scaleX(0);
+    transform-origin: 50% 50%;
+    border-radius: 999px;
+    background: linear-gradient(90deg,
+      rgba(226,119,48,0.00),
+      rgba(226,119,48,0.72) 34%,
+      rgba(80,130,168,0.62) 66%,
+      rgba(80,130,168,0.00));
+    box-shadow: 0 0 28px rgba(226,119,48,0.22);
+    opacity: 0;
+  }
+  .outro-dot {
+    position: absolute;
+    top: 44%;
+    width: 10px; height: 10px;
+    margin: -5px 0 0 -5px;
+    border-radius: 50%;
+    background: #E27730;
+    box-shadow: 0 0 0 8px rgba(226,119,48,0.12);
+    opacity: 0;
+  }
+  .outro-dot.left { left: calc(50% - 360px); }
+  .outro-dot.right {
+    left: calc(50% + 360px);
+    background: #3f7598;
+    box-shadow: 0 0 0 8px rgba(63,117,152,0.12);
+  }
+  .outro-lockup {
+    position: absolute;
+    left: 50%; top: 41%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity, filter;
+  }
+  .outro-logo {
+    width: 86px; height: 86px;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 32px rgba(28, 36, 48, 0.20));
+  }
+  .outro-logo.klv {
+    background: #101010;
+    border-radius: 12px;
+    padding: 14px;
+    filter: drop-shadow(0 14px 32px rgba(28, 36, 48, 0.22));
+  }
+  .outro-x {
+    font-family: var(--display-font);
+    font-size: 62px;
+    color: #E27730;
+    line-height: 1;
+    transform: translateY(-2px);
+  }
+  .outro-title {
+    position: absolute;
+    left: 50%; top: 55%;
+    transform: translate(-50%, -50%);
+    font-family: var(--display-font);
+    font-size: 78px;
+    line-height: 0.96;
+    font-weight: 540;
+    letter-spacing: -0.01em;
+    color: #17191f;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity, filter;
+  }
+  .outro-sub {
+    position: absolute;
+    left: 50%; top: 65%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    font-weight: 520;
+    line-height: 1.25;
+    color: rgba(23,25,31,0.68);
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity, filter;
+  }
+  .outro-pill {
+    position: absolute;
+    left: 50%; top: 74%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(255,255,255,0.88);
+    box-shadow: 0 18px 44px rgba(34, 43, 54, 0.14), inset 0 1px 0 rgba(255,255,255,0.9);
+    color: rgba(23,25,31,0.72);
+    font-weight: 700;
+    font-size: 17px;
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity, filter;
+  }
+  .outro-pill i {
+    color: #18a957;
+    font-size: 18px;
+  }
+  .ml-cursor svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .copy-helper {
+    position: absolute;
+    left: 0; top: 0;
+    z-index: 92;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(22, 28, 36, 0.92);
+    color: #fff;
+    font: 700 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0;
+    box-shadow:
+      0 12px 28px rgba(16, 20, 26, 0.22),
+      inset 0 1px 0 rgba(255,255,255,0.18);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity, filter;
+  }
+
+  /* ==========================================================
+     Collision particles + ripple rings
+     ========================================================== */
+  .burst-anchor {
+    position: absolute;
+    left: 960px; top: 506px;
+    width: 0; height: 0;
+    z-index: 30;
+    pointer-events: none;
+  }
+  .particle {
+    position: absolute;
+    left: 0; top: 0;
+    border-radius: 50%;
+    will-change: transform, opacity;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .ripple {
+    position: absolute;
+    left: 0; top: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 175, 90, 0.85);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .ripple.r2 {
+    border-color: rgba(255, 200, 140, 0.55);
+    border-width: 1.5px;
+  }
+  .ripple.r3 {
+    border-color: rgba(244, 236, 217, 0.35);
+    border-width: 1px;
+  }
+
+  /* Light streaks chasing each logo during entrance */
+  .streak {
+    position: absolute;
+    top: 47%;
+    height: 6px;
+    transform: translate(-50%, -50%) scaleX(0);
+    transform-origin: center center;
+    border-radius: 3px;
+    filter: blur(6px);
+    z-index: 4;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .streak-l {
+    left: 650px;
+    width: 360px;
+    background: linear-gradient(90deg,
+      rgba(255, 175, 90, 0.00) 0%,
+      rgba(255, 175, 90, 0.55) 50%,
+      rgba(255, 175, 90, 0.95) 100%);
+  }
+  .streak-r {
+    left: 1270px;
+    width: 360px;
+    background: linear-gradient(270deg,
+      rgba(244, 236, 217, 0.00) 0%,
+      rgba(244, 236, 217, 0.40) 50%,
+      rgba(244, 236, 217, 0.85) 100%);
+  }
+
+  /* ==========================================================
+     Scrubber controls
+     ========================================================== */
+  .controls {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(20,20,24,0.92);
+    color: #eee;
+    padding: 10px 16px;
+    display: flex; gap: 12px; align-items: center;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    z-index: 1000;
+  }
+  .controls input[type=range] { flex: 1; }
+  .controls button {
+    background: var(--wpf-orange); color: #fff;
+    border: 0;
+    padding: 6px 14px; border-radius: 4px;
+    font-weight: 600; cursor: pointer;
+  }
+  .controls .t { min-width: 110px; }
+  .controls .label { color: #999; }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+
+    <!-- Atmospheric beds (siblings; only autoAlpha varies per beat) -->
+    <div class="atmo-base"></div>
+    <div class="atmo atmo-warm-pull"   id="atmoWarmPull"></div>
+    <div class="atmo atmo-tension"     id="atmoTension"></div>
+    <div class="atmo atmo-cool-kiss"   id="atmoCoolKiss"></div>
+    <div class="atmo atmo-impact"      id="atmoImpact"></div>
+    <div class="atmo atmo-warmth"      id="atmoWarmth"></div>
+    <div class="atmo atmo-light"       id="atmoLight"></div>
+    <div class="atmo atmo-klaviyo"     id="atmoKlaviyo"></div>
+
+    <!-- Warmth halo behind the lockup -->
+    <div class="lockup-halo" id="lockupHalo"></div>
+
+    <!-- Light streaks chasing each logo during entrance -->
+    <div class="streak streak-l" id="streakL"></div>
+    <div class="streak streak-r" id="streakR"></div>
+
+    <!-- Lockup elements (absolute, centred via translate(-50%,-50%)) -->
+    <img class="lockup-el logo-wpf"
+         id="logoWpf"
+         src="../../reference/wpforms-brand/assets/sullie-master.svg"
+         alt="WPForms" />
+    <span class="lockup-el wm-wpf" id="wmWpf">WPForms</span>
+    <span class="lockup-el glyph"  id="glyph">×</span>
+    <span class="lockup-el wm-klv" id="wmKlv">Klaviyo</span>
+    <img class="lockup-el logo-klv"
+         id="logoKlv"
+         src="../klaviyo-quick-connect/assets/klaviyo-logo.png"
+         alt="Klaviyo" />
+
+    <!-- Subheading -->
+    <div class="subhead" id="subhead">Your forms can now talk to Klaviyo.</div>
+
+    <!-- Scene 2: live Klaviyo connection form snapshot -->
+    <div class="iframe-scene" id="iframeScene">
+      <div class="iframe-card" id="iframeCard">
+        <iframe
+          id="klaviyoFormFrame"
+          src="../../snapshots/admin-settings-integrations-klaviyo-open/index.html"
+          loading="eager"></iframe>
+      </div>
+    </div>
+
+    <!-- Scene 3: Klaviyo docs / API key creation snapshot -->
+    <div class="docs-scene" id="docsScene">
+      <div class="docs-card" id="docsCard">
+        <iframe
+          id="docsFrame"
+          src="../../snapshots/docs-klaviyo/klaviyo-api-created.html"
+          loading="eager"></iframe>
+      </div>
+    </div>
+
+    <!-- Scene 4: scattered figjam-style canvas with 3 panels.
+         Camera starts focused on Panel 1 (Klaviyo Settings, matched to the prior
+         iframeCard view via pre-injected Connected pill + pre-scrolled to row),
+         then zooms out → glides → zooms in on Panel 3. -->
+    <div class="scattered-scene" id="scatteredScene">
+      <!-- Atmosphere bed — wpforms-ai-board pattern, retuned cool-neutral. Stays
+           still as the camera moves; panels float on it. -->
+      <div class="sc-atmo">
+        <div class="sc-atmo-grad"></div>
+        <div class="sc-atmo-bloom-warm" id="scAtmoBloomWarm"></div>
+        <div class="sc-atmo-bloom-cool" id="scAtmoBloomCool"></div>
+        <canvas class="sc-atmo-grain" id="scAtmoGrain" width="640" height="360"></canvas>
+        <div class="sc-atmo-grid"></div>
+      </div>
+      <div class="scattered-camera" id="scatteredCamera">
+        <div class="scattered-panel" id="sp1">
+          <iframe
+            id="spKlaviyoSettings"
+            src="../../snapshots/admin-settings-integrations-klaviyo-open/index.html"
+            loading="eager"></iframe>
+        </div>
+        <div class="scattered-panel" id="sp2">
+          <iframe
+            id="spDocs"
+            src="../../snapshots/docs-klaviyo/klaviyo-api-created.html"
+            loading="eager"></iframe>
+        </div>
+        <div class="scattered-panel" id="sp3">
+          <iframe
+            id="spProviders"
+            src="../../snapshots/builder-providers-klaviyo/index.html"
+            loading="eager"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="outro-scene" id="outroScene">
+      <div class="outro-sheen" id="outroSheen"></div>
+      <div class="outro-route" id="outroRoute"></div>
+      <div class="outro-dot left" id="outroDotLeft"></div>
+      <div class="outro-dot right" id="outroDotRight"></div>
+      <div class="outro-lockup" id="outroLockup">
+        <img class="outro-logo" src="../../reference/wpforms-brand/assets/sullie-master.svg" alt="WPForms">
+        <span class="outro-x">×</span>
+        <img class="outro-logo klv" src="../klaviyo-quick-connect/assets/klaviyo-logo.png" alt="Klaviyo">
+      </div>
+      <div class="outro-title" id="outroTitle">Grow your Klaviyo audience from every form.</div>
+      <div class="outro-sub" id="outroSub">Create profiles, update contacts, and add subscribers automatically.</div>
+      <div class="outro-pill" id="outroPill">
+        <i class="fa fa-check-circle-o"></i>
+        <span>Connected with WPForms</span>
+      </div>
+    </div>
+
+    <!-- Burst anchor (particles + ripple rings) -->
+    <div class="burst-anchor" id="burstAnchor">
+      <div class="ripple"    id="ripple1"></div>
+      <div class="ripple r2" id="ripple2"></div>
+      <div class="ripple r3" id="ripple3"></div>
+      <!-- particles injected by JS -->
+    </div>
+
+    <!-- Grain canvas -->
+    <canvas id="grain" width="320" height="180"></canvas>
+    <div class="copy-helper" id="copyHelper">Copied</div>
+  </div>
+</div>
+
+
+<!-- Vendored GSAP for file:// support -->
+<script src="../../vendor/gsap/3.15.0/gsap.min.js"></script>
+<script src="../../vendor/gsap/3.15.0/CustomEase.min.js"></script>
+<script src="../../vendor/gsap/3.15.0/Flip.min.js"></script>
+<script type="module">
+  import { Cursor } from '../_shared/motion-primitives.js';
+
+  // ─────────────────────────────────────────────────────────────
+  // Utility: pausable RAF (skips body when paused at the
+  // document-level pause-manager hook — kept minimal here).
+  // ─────────────────────────────────────────────────────────────
+  function pausableRaf(cb) {
+    let id = null, stopped = false;
+    const tick = (ts) => {
+      if (stopped) return;
+      cb(ts);
+      id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => { stopped = true; if (id != null) cancelAnimationFrame(id); };
+  }
+
+  // Seeded PRNG — particle directions stay identical across reloads.
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  gsap.registerPlugin(CustomEase, Flip);
+  // Entrances — power3.out shape (vendored stock would do; explicit for clarity).
+  CustomEase.create('logo-arrival', 'M0,0 C0.16,0.20 0.20,0.98 1,1');
+  // Magnetic pull — slow start, strong acceleration to landing.
+  CustomEase.create('magnetic-pull', 'M0,0 C0.40,0.02 0.60,0.30 1,1');
+  // Collision recoil — sharp out, smooth in.
+  CustomEase.create('recoil', 'M0,0 C0.20,0.95 0.30,1.00 1,1');
+  // Resolve into lockup — power2.inOut (per brief).
+  CustomEase.create('resolve', 'M0,0 C0.42,0.00 0.58,1.00 1,1');
+
+  // Stage fit-to-window
+  function fit() {
+    const stage = document.getElementById('stage');
+    const w = window.innerWidth;
+    const h = window.innerHeight - 50;
+    const scale = Math.min(w / 1920, h / 1080) * 0.96;
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ─────────────────────────────────────────────────────────────
+  // Generate particles (14, seeded). Radial directions + sizes.
+  // ─────────────────────────────────────────────────────────────
+  const rng = mulberry32(0xBADD1E);
+  const PARTICLE_COUNT = 14;
+  const burstAnchor = document.getElementById('burstAnchor');
+  const particles = [];
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const angle = rng() * Math.PI * 2;
+    const distance = 95 + rng() * 110;            // 95-205 px
+    const size = 4 + rng() * 7;                   // 4-11 px
+    const isOrange = rng() > 0.30;                // ~70% orange, 30% cream
+    const tx = Math.cos(angle) * distance;
+    const ty = Math.sin(angle) * distance;
+
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.width  = `${size}px`;
+    p.style.height = `${size}px`;
+    p.style.background = isOrange
+      ? 'radial-gradient(circle, #FFC58A 0%, #E27730 60%, rgba(226,119,48,0) 100%)'
+      : 'radial-gradient(circle, #ffffff 0%, #f4ecd9 60%, rgba(244,236,217,0) 100%)';
+    burstAnchor.appendChild(p);
+    particles.push({ el: p, tx, ty, delay: rng() * 0.04 });
+  }
+
+  // Animated grain canvas (Mulberry32-seeded, ~8 fps via pausableRaf).
+  (function startGrain() {
+    const c = document.getElementById('grain');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const img = ctx.createImageData(W, H);
+    const grainRng = mulberry32(0xC0FFEE);
+    let lastDraw = 0;
+    pausableRaf((ts) => {
+      if (ts - lastDraw < 125) return;
+      lastDraw = ts;
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = (grainRng() * 255) | 0;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    });
+  })();
+
+  function wrapRevealUnit(el) {
+    const text = el.textContent;
+    el.textContent = '';
+    const mask = document.createElement('span');
+    mask.className = 'text-mask';
+    const unit = document.createElement('span');
+    unit.className = 'text-reveal-unit';
+    unit.textContent = text;
+    mask.appendChild(unit);
+    el.appendChild(mask);
+    return unit;
+  }
+
+  const headingUnits = [
+    wrapRevealUnit(document.getElementById('wmWpf')),
+    wrapRevealUnit(document.getElementById('glyph')),
+    wrapRevealUnit(document.getElementById('wmKlv')),
+  ];
+  const subheadUnit = wrapRevealUnit(document.getElementById('subhead'));
+  const stageEl = document.getElementById('stage');
+  const iframeEl = document.getElementById('klaviyoFormFrame');
+  const docsFrameEl = document.getElementById('docsFrame');
+  const copyHelperEl = document.getElementById('copyHelper');
+  const iframeSceneEl = document.getElementById('iframeScene');
+  const COPIED_API_KEY = 'pk_******_*****************';
+  const ACCOUNT_NICKNAME = "Sullie's Flowers";
+
+  function waitForIframeLoad(iframe) {
+    return new Promise(resolve => {
+      const done = () => resolve(iframe.contentDocument);
+      try {
+        if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') return done();
+      } catch {}
+      iframe.addEventListener('load', done, { once: true });
+    });
+  }
+
+  function framePoint(frame, selector, fallback) {
+    try {
+      const doc = frame.contentDocument;
+      const target = doc?.querySelector(selector);
+      if (!target) return fallback;
+      const targetRect = target.getBoundingClientRect();
+      if (!targetRect.width || !targetRect.height) return fallback;
+      const iframeRect = frame.getBoundingClientRect();
+      const stageRect = stageEl.getBoundingClientRect();
+      const scale = stageRect.width / 1920;
+      const contentScaleX = iframeRect.width / (frame.contentWindow?.innerWidth || iframeRect.width);
+      const contentScaleY = iframeRect.height / (frame.contentWindow?.innerHeight || iframeRect.height);
+      return {
+        x: (iframeRect.left + (targetRect.left + targetRect.width * 0.5) * contentScaleX - stageRect.left) / scale,
+        y: (iframeRect.top + (targetRect.top + targetRect.height * 0.5) * contentScaleY - stageRect.top) / scale,
+      };
+    } catch {
+      return fallback;
+    }
+  }
+
+  function iframePoint(selector, fallback) {
+    return framePoint(iframeEl, selector, fallback);
+  }
+
+  function docsPoint(selector, fallback) {
+    return framePoint(docsFrameEl, selector, fallback);
+  }
+
+  function setIframeScroll(top) {
+    const doc = iframeEl.contentDocument;
+    const scroller = doc?.scrollingElement || doc?.documentElement || doc?.body;
+    if (scroller) scroller.scrollTop = top;
+  }
+
+  function scrollIframeToKlaviyo(extra = 60) {
+    const doc = iframeEl.contentDocument;
+    const target = doc?.querySelector('#wpforms-integration-klaviyo');
+    const scroller = doc?.scrollingElement || doc?.documentElement || doc?.body;
+    if (!target || !scroller) return;
+    scroller.scrollTop = Math.max(0, target.offsetTop + extra);
+  }
+
+  function klaviyoAddNewAccountPoint() {
+    return iframePoint(
+      '#provider-klaviyo .wpforms-settings-provider-accounts-toggle a.wpforms-btn-light-grey',
+      { x: 1120, y: 706 }
+    );
+  }
+
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  function pressCard(cardSelector) {
+    return gsap.timeline()
+      .to(cardSelector, {
+        rotationX: 0.7,
+        rotationY: -1.0,
+        scale: 0.988,
+        duration: 0.12,
+        ease: 'power2.in',
+      }, 0)
+      .to(cardSelector, {
+        rotationX: 0,
+        rotationY: 0,
+        scale: 1,
+        duration: 0.30,
+        ease: 'back.out(1.6)',
+      }, 0.12);
+  }
+
+  async function glideClick(targetGetter, opts = {}) {
+    const {
+      start = null,
+      via = null,
+      duration = 1.15,
+      enterDuration = 0.22,
+      settle = 120,
+      rippleColor = 'rgba(226,119,48,0.88)',
+      rippleScale = 2.35,
+    } = opts;
+
+    if (start) cursor.setPos(start.x, start.y);
+    gsap.to(cursor.el, { autoAlpha: 1, duration: enterDuration, ease: 'power2.out', overwrite: 'auto' });
+    await sleep(Math.max(60, enterDuration * 1000 * 0.7));
+    const target = targetGetter();
+    await cursor.glide(target, {
+      duration,
+      via,
+      viaEase: 'power1.inOut',
+      landEase: 'power2.out',
+    });
+    await sleep(settle);
+    await cursor.click({ rippleColor, rippleScale });
+  }
+
+  async function runAddAccountClick() {
+    await waitForIframeLoad(iframeEl);
+    await glideClick(klaviyoAddNewAccountPoint, {
+      start: { x: 1680, y: 960 },
+      duration: 1.15,
+      settle: 140,
+    });
+    pressCard('#iframeCard');
+    revealKlaviyoConnectForm();
+    gsap.to(cursor.el, { autoAlpha: 0, y: '-=18', duration: 0.38, ease: 'power2.in', delay: 0.45, overwrite: 'auto' });
+  }
+
+  function revealKlaviyoConnectForm() {
+    try {
+      const doc = iframeEl.contentDocument;
+      const wrap = doc?.querySelector('#wpforms-integration-klaviyo');
+      const button = doc?.querySelector('#provider-klaviyo .wpforms-settings-provider-accounts-toggle a.wpforms-btn-light-grey');
+      const connect = doc?.querySelector('#provider-klaviyo .wpforms-settings-provider-accounts-connect');
+      const scroller = doc?.scrollingElement || doc?.documentElement || doc?.body;
+      if (!doc || !connect) return;
+
+      gsap.killTweensOf([connect, button, scroller]);
+
+      const restoreOverflow = connect.style.overflow;
+      connect.style.display = 'block';
+      connect.style.overflow = 'hidden';
+      connect.style.transformOrigin = '50% 0%';
+
+      const targetHeight = connect.scrollHeight;
+      const fields = connect.querySelectorAll(
+        '.wpforms-settings-provider-accounts-connect-general-description, ' +
+        '.wpforms-settings-provider-accounts-connect-fields p, ' +
+        '.wpforms-settings-provider-accounts-connect input, ' +
+        '.wpforms-settings-provider-connect'
+      );
+
+      gsap.set(connect, {
+        height: 0,
+        autoAlpha: 0,
+        y: -14,
+        scaleY: 0.985,
+        filter: 'blur(7px)',
+      });
+      gsap.set(fields, { y: 12, autoAlpha: 0, filter: 'blur(4px)' });
+
+      if (button) {
+        gsap.timeline()
+          .to(button, { scale: 0.965, duration: 0.10, ease: 'power2.in' }, 0)
+          .to(button, { scale: 1, duration: 0.28, ease: 'back.out(2.4)' }, 0.10);
+      }
+
+      const revealTl = gsap.timeline({
+        defaults: { overwrite: 'auto' },
+        onComplete: () => {
+          connect.style.height = 'auto';
+          connect.style.overflow = restoreOverflow || '';
+          gsap.set([connect, fields], { clearProps: 'filter' });
+        },
+      });
+
+      revealTl
+        .to(connect, {
+          height: targetHeight,
+          autoAlpha: 1,
+          y: 0,
+          scaleY: 1,
+          filter: 'blur(0px)',
+          duration: 0.68,
+          ease: 'power3.out',
+        }, 0)
+        .to(fields, {
+          y: 0,
+          autoAlpha: 1,
+          filter: 'blur(0px)',
+          duration: 0.38,
+          ease: 'power2.out',
+          stagger: { each: 0.035, from: 'start' },
+        }, 0.16);
+
+      if (scroller && wrap) {
+        const nextTop = Math.min(scroller.scrollTop + 118, wrap.offsetTop + 210);
+        gsap.to(scroller, { scrollTop: nextTop, duration: 0.58, ease: 'power2.out', delay: 0.12 });
+      }
+    } catch (error) {
+      console.warn('[klaviyo-bridge] form reveal failed', error);
+    }
+  }
+
+  function docsCopyButtonPoint() {
+    return docsPoint(
+      '[data-testid="copyKeyButton"]',
+      { x: 1380, y: 690 }
+    );
+  }
+
+  function klaviyoApiKeyPoint() {
+    return iframePoint(
+      '#provider-klaviyo .wpforms-settings-provider-accounts-connect input[name="api_key"]',
+      { x: 980, y: 710 }
+    );
+  }
+
+  function klaviyoNicknamePoint() {
+    return iframePoint(
+      '#provider-klaviyo .wpforms-settings-provider-accounts-connect input[name="account_name"]',
+      { x: 980, y: 790 }
+    );
+  }
+
+  function klaviyoConnectButtonPoint() {
+    return iframePoint(
+      '#provider-klaviyo .wpforms-settings-provider-connect',
+      { x: 860, y: 855 }
+    );
+  }
+
+  function showCopiedHelper() {
+    const p = cursor._pos || { x: 920, y: 468 };
+    gsap.killTweensOf(copyHelperEl);
+    gsap.set(copyHelperEl, {
+      x: p.x + 28,
+      y: p.y - 22,
+      scale: 0.90,
+      autoAlpha: 0,
+      filter: 'blur(6px)',
+    });
+    gsap.timeline()
+      .to(copyHelperEl, {
+        x: p.x + 38,
+        scale: 1,
+        autoAlpha: 1,
+        filter: 'blur(0px)',
+        duration: 0.24,
+        ease: 'back.out(1.8)',
+      }, 0)
+      .to(copyHelperEl, {
+        y: p.y - 34,
+        autoAlpha: 0,
+        filter: 'blur(4px)',
+        duration: 0.34,
+        ease: 'power2.in',
+      }, 0.78);
+  }
+
+  function pasteApiKeyIntoField() {
+    try {
+      const doc = iframeEl.contentDocument;
+      const input = doc?.querySelector('#provider-klaviyo .wpforms-settings-provider-accounts-connect input[name="api_key"]');
+      if (!input) return;
+      gsap.killTweensOf(input);
+      input.focus();
+      input.style.transition = 'none';
+      input.style.boxShadow = '0 0 0 0 rgba(226,119,48,0)';
+      input.style.borderColor = '#E27730';
+      input.value = COPIED_API_KEY;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+
+      gsap.timeline()
+        .fromTo(input, {
+          scale: 0.992,
+        }, {
+          scale: 1,
+          duration: 0.22,
+          ease: 'back.out(1.7)',
+        }, 0)
+        .to(input, {
+          boxShadow: '0 0 0 4px rgba(226,119,48,0.16)',
+          duration: 0.18,
+          ease: 'power2.out',
+        }, 0)
+        .to(input, {
+          boxShadow: '0 0 0 0 rgba(226,119,48,0)',
+          duration: 0.42,
+          ease: 'power2.out',
+        }, 0.34);
+    } catch (error) {
+      console.warn('[klaviyo-bridge] paste API key failed', error);
+    }
+  }
+
+  function typeAccountNickname() {
+    try {
+      const doc = iframeEl.contentDocument;
+      const input = doc?.querySelector('#provider-klaviyo .wpforms-settings-provider-accounts-connect input[name="account_name"]');
+      if (!input) return;
+      input.focus();
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.style.transition = 'none';
+      input.style.borderColor = '#E27730';
+
+      const proxy = { n: 0 };
+      gsap.timeline()
+        .to(input, {
+          boxShadow: '0 0 0 4px rgba(226,119,48,0.14)',
+          duration: 0.18,
+          ease: 'power2.out',
+        }, 0)
+        .to(proxy, {
+          n: ACCOUNT_NICKNAME.length,
+          duration: 0.72,
+          ease: 'steps(16)',
+          onUpdate: () => {
+            input.value = ACCOUNT_NICKNAME.slice(0, Math.round(proxy.n));
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          },
+        }, 0.06)
+        .to(input, {
+          boxShadow: '0 0 0 0 rgba(226,119,48,0)',
+          duration: 0.42,
+          ease: 'power2.out',
+        }, 0.82);
+    } catch (error) {
+      console.warn('[klaviyo-bridge] type nickname failed', error);
+    }
+  }
+
+  function revealConnectedIndicator() {
+    try {
+      const doc = iframeEl.contentDocument;
+      const providerRow = doc?.querySelector('#wpforms-integration-klaviyo');
+      const providerInfo = providerRow?.querySelector('.wpforms-settings-provider-info');
+      const accounts = doc?.querySelector('#provider-klaviyo');
+      if (!doc || !providerRow || !providerInfo) return;
+
+      providerRow.classList.add('connected');
+      // Cleanup any prior demo indicator anywhere in the row — prevents the
+      // stacked-duplicate bug when the function fires twice (e.g. scrubber replay).
+      providerRow
+        .querySelectorAll('[data-klaviyo-connected-demo], .connected-indicator.green')
+        .forEach(el => el.remove());
+      if (accounts) accounts.style.display = 'none';
+
+      // Build indicator with the EXACT structure from the user's HTML. No inline
+      // appearance overrides — let the snapshot's own .connected-indicator.green
+      // CSS style the pill (background, border, padding, colour, icon size).
+      // Prior version overrode every style which is why this pill looked different
+      // from the snapshot's other "Connected" pills (Google Calendar / Mailchimp).
+      const indicator = doc.createElement('span');
+      indicator.className = 'connected-indicator green';
+      indicator.setAttribute('data-klaviyo-connected-demo', 'true');
+      indicator.innerHTML = '<i class="fa fa-check-circle-o"></i><span>Connected</span>';
+      providerInfo.appendChild(indicator);
+
+      // Measure where the pill landed (stage coords, accounting for current camera).
+      const pillPoint = iframePoint(
+        '#wpforms-integration-klaviyo .connected-indicator.green',
+        { x: 1700, y: 220 }
+      );
+
+      // GSAP initial hidden state — animation-only properties; no appearance.
+      gsap.set(indicator, {
+        autoAlpha: 0,
+        y: 10,
+        scale: 0.92,
+        filter: 'blur(4px)',
+        transformOrigin: '50% 50%',
+      });
+      const icon = indicator.querySelector('i');
+      if (icon) gsap.set(icon, { scale: 0.35, rotation: -22, transformOrigin: '50% 50%' });
+
+      // Camera target — pan/zoom so the pill ends at stage centre (960, 540).
+      const cx = 960, cy = 540;
+      const dx = cx - pillPoint.x;
+      const dy = cy - pillPoint.y;
+      const curX = Number(gsap.getProperty('#iframeCard', 'x')) || 0;
+      const curY = Number(gsap.getProperty('#iframeCard', 'y')) || 0;
+      const newX = curX + dx;
+      const newY = curY + dy;
+
+      // Coordinated sequence: camera glides right; pill reveal fires at the midpoint.
+      const seq = gsap.timeline();
+      const cameraDur = 1.10;
+      seq.to('#iframeCard', {
+        x: newX,
+        y: newY,
+        scale: 1.75,
+        duration: cameraDur,
+        ease: 'expo.out',
+      }, 0);
+      seq.call(() => {
+        gsap.timeline()
+          .to(indicator, {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            filter: 'blur(0px)',
+            duration: 0.55,
+            ease: 'power3.out',
+          }, 0)
+          .to(icon, {
+            scale: 1.18,
+            rotation: 8,
+            duration: 0.32,
+            ease: 'back.out(2)',
+          }, 0.15)
+          .to(icon, {
+            scale: 1,
+            rotation: 0,
+            duration: 0.24,
+            ease: 'power2.out',
+          }, 0.47)
+          .fromTo(indicator, {
+            boxShadow: '0 0 0 0 rgba(18,138,66,0.34)',
+          }, {
+            boxShadow: '0 0 0 10px rgba(18,138,66,0)',
+            duration: 0.72,
+            ease: 'power2.out',
+          }, 0.18);
+      }, null, cameraDur * 0.50);
+    } catch (error) {
+      console.warn('[klaviyo-bridge] connected indicator failed', error);
+    }
+  }
+
+  async function runCopyKeyClick() {
+    await waitForIframeLoad(docsFrameEl);
+    await sleep(260);
+    await glideClick(docsCopyButtonPoint, {
+      start: { x: 1680, y: 960 },
+      duration: 1.12,
+      settle: 130,
+      rippleScale: 2.15,
+    });
+    showCopiedHelper();
+    gsap.to(cursor.el, { autoAlpha: 0, y: '-=18', duration: 0.34, ease: 'power2.in', delay: 0.82, overwrite: 'auto' });
+  }
+
+  async function runPasteApiKeyFlow() {
+    await waitForIframeLoad(iframeEl);
+    scrollIframeToKlaviyo();
+    await sleep(360);
+    await glideClick(klaviyoApiKeyPoint, {
+      start: { x: 1680, y: 960 },
+      duration: 1.06,
+      settle: 95,
+      rippleScale: 2.0,
+    });
+    pasteApiKeyIntoField();
+    await sleep(320);
+    await glideClick(klaviyoNicknamePoint, {
+      duration: 0.74,
+      settle: 80,
+      rippleScale: 1.8,
+    });
+    typeAccountNickname();
+    await sleep(1040);
+    await glideClick(klaviyoConnectButtonPoint, {
+      duration: 0.82,
+      settle: 90,
+      rippleScale: 1.95,
+    });
+    // Click animation on the Connect to Klaviyo button itself — sells the press
+    // beyond just the cursor ripple. Quick scale-dip + spring-back.
+    try {
+      const connectBtn = iframeEl.contentDocument?.querySelector(
+        '#provider-klaviyo .wpforms-settings-provider-connect'
+      );
+      if (connectBtn) {
+        gsap.timeline()
+          .to(connectBtn, {
+            scale: 0.94,
+            duration: 0.12,
+            ease: 'power2.in',
+            transformOrigin: 'center center',
+          }, 0)
+          .to(connectBtn, {
+            scale: 1,
+            duration: 0.26,
+            ease: 'back.out(1.7)',
+          }, 0.12);
+      }
+    } catch (e) { /* iframe access guard */ }
+
+    gsap.to(cursor.el, {
+      autoAlpha: 0, y: '-=16',
+      duration: 0.34, ease: 'power2.in',
+      delay: 0.18, overwrite: 'auto',
+    });
+
+    // Small settle so the button press registers visually before the camera moves.
+    await sleep(240);
+
+    // Camera glides right + indicator reveals at the midpoint of the glide.
+    // Both choreographed inside revealConnectedIndicator() as one unit so the
+    // pill ends at stage centre and the reveal lands midway, not at the end.
+    revealConnectedIndicator();
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Audio — real BGM track + real SFX files. Procedural ping/resolve kept
+  // for the outro because the synthesized two-note resolves landed nicely.
+  //   • BGM: bgms/6.mp3 (drops at ~11s and ~18s, aligns with handoffs).
+  //   • SFX: assets/sfx/*.mp3, cloned-per-play so rapid retriggers don't clip.
+  //   • All cues guard on `playing` so scrubbing never retriggers.
+  // ─────────────────────────────────────────────────────────────
+  function makeSfxFile(url, volume = 0.5) {
+    const proto = new Audio(url);
+    proto.preload = 'auto';
+    proto.volume = volume;
+    return function play() {
+      try {
+        const a = proto.cloneNode();
+        a.volume = volume;
+        const p = a.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch (e) { /* ignore */ }
+    };
+  }
+
+  const playClick    = makeSfxFile('../../assets/sfx/click.mp3',         0.55);
+  const playSwipe    = makeSfxFile('../../assets/sfx/swipe.mp3',         0.50);
+  const playPopUi    = makeSfxFile('../../assets/sfx/pop-ui.mp3',        0.20);
+  const playPopDrop  = makeSfxFile('../../assets/sfx/pop-drop.mp3',      0.55);
+  const playSwoosh   = makeSfxFile('../../assets/sfx/swoosh.mp3',        0.45);
+  const playSwooshIn = makeSfxFile('../../assets/sfx/swoosh-entry.mp3',  0.50);
+  const playHover    = makeSfxFile('../../assets/sfx/hover.mp3',         0.40);
+  const playType     = makeSfxFile('../../assets/sfx/type.mp3',          0.55);
+
+  // Procedural fallback only used for outro ping/resolve (user-loved the two-note pill).
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audioCtx = new Ctx();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function envTone({ freq, dur = 0.2, type = 'sine', gain = 0.05, attack = 0.005, filterFreq = null, filterQ = 0.8 }) {
+    const ctx = getCtx(); if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); osc.type = type; osc.frequency.value = freq;
+    const g = ctx.createGain(); g.gain.value = 0;
+    let node = osc; osc.connect(g);
+    if (filterFreq) {
+      const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = filterFreq; f.Q.value = filterQ;
+      g.connect(f); node = f;
+    } else { node = g; }
+    node.connect(ctx.destination);
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(gain, now + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + Math.max(dur, attack + 0.02));
+    osc.start(now); osc.stop(now + dur + 0.06);
+  }
+
+  const SFX = {
+    click:   playClick,
+    tick:    playSwipe,
+    pop:     playPopUi,
+    popDrop: playPopDrop,
+    whoosh:  playSwoosh,
+    swell:   playSwooshIn,
+    hover:   playHover,
+    type:    playType,
+    // Settle = soft warm cue (re-uses hover for now; swap to your preference).
+    settle:  playHover,
+    // Procedural cues kept — outro pill liked.
+    ping() {
+      envTone({ freq: 783.99, dur: 0.20, gain: 0.045, filterFreq: 3000 });
+      setTimeout(() => envTone({ freq: 1046.50, dur: 0.36, gain: 0.045, filterFreq: 3200 }), 110);
+    },
+    resolve() {
+      envTone({ freq: 261.63, dur: 0.50, gain: 0.045, filterFreq: 1500 });
+      setTimeout(() => envTone({ freq: 392.00, dur: 0.50, gain: 0.045, filterFreq: 1500 }), 180);
+      setTimeout(() => envTone({ freq: 523.25, dur: 0.85, gain: 0.055, filterFreq: 1600 }), 360);
+    },
+  };
+
+  // BGM — bgms/6.mp3, drops at ~11s and ~18s. Played from T=0 so drops align
+  // naturally with the cinematic flight (11.20) and the back-to-WPForms
+  // handoff (~17.58). Volume rides ~0.45 baseline with cue-duck rampers.
+  const bgmEl = new Audio('../../bgms/6.mp3');
+  bgmEl.preload = 'auto';
+  bgmEl.loop = false;
+  const BGM_BASE_VOL = 0.12;
+  const BGM_FADE_IN_SEC = 3.0;
+  bgmEl.volume = 0;
+
+  let bgmDuckRaf = null;
+  function rampBgm(target, durSec) {
+    if (!bgmEl) return;
+    if (bgmDuckRaf) cancelAnimationFrame(bgmDuckRaf);
+    const start = bgmEl.volume;
+    const to = Math.max(0, Math.min(1, target));
+    const t0 = performance.now();
+    const ms = Math.max(50, durSec * 1000);
+    function step() {
+      const k = Math.min(1, (performance.now() - t0) / ms);
+      bgmEl.volume = start + (to - start) * k;
+      if (k < 1) bgmDuckRaf = requestAnimationFrame(step);
+      else bgmDuckRaf = null;
+    }
+    step();
+  }
+  function startBgm() {
+    // BGM disabled — Umair wants a clean SFX-only track for editing hard cuts
+    // against. SFX still play; only the background track is suppressed.
+    try { bgmEl.pause(); bgmEl.volume = 0; } catch (e) { /* ignore */ }
+  }
+  function stopBgm() {
+    if (bgmDuckRaf) { cancelAnimationFrame(bgmDuckRaf); bgmDuckRaf = null; }
+    try { bgmEl.pause(); bgmEl.currentTime = 0; } catch (e) {}
+    bgmEl.volume = 0;
+  }
+  // duckBgm(targetMul, durSec) — targetMul is 0..1 of BGM_BASE_VOL.
+  function duckBgm(targetMul = 0.6, durSec = 0.4) {
+    rampBgm(BGM_BASE_VOL * targetMul, durSec);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Master timeline
+  // ─────────────────────────────────────────────────────────────
+  const TOTAL = 52.55;
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+  const cursor = new Cursor(stageEl, { size: 30, initialX: 1680, initialY: 960, zIndex: 90 });
+
+  // Initial state
+  gsap.set('#logoWpf',   { x: -46, y: 8, scale: 0.78, autoAlpha: 0, filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.55)) blur(8px)' });
+  gsap.set('#logoKlv',   { x:  46, y: 8, scale: 0.78, autoAlpha: 0, filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.55)) invert(0.94) brightness(1.05) blur(8px)' });
+  gsap.set(['#wmWpf', '#glyph', '#wmKlv', '#subhead'], { autoAlpha: 1 });
+  gsap.set(headingUnits, { x: -42, autoAlpha: 0, filter: 'blur(8px)' });
+  gsap.set(subheadUnit, { x: -32, autoAlpha: 0, filter: 'blur(5px)' });
+  gsap.set('#lockupHalo',{ autoAlpha: 0, scale: 0.85 });
+  gsap.set('.ripple',    { opacity: 0, scale: 0 });
+  gsap.set('.particle',  { opacity: 0, scale: 0, x: 0, y: 0 });
+  gsap.set('#streakL',   { opacity: 0, scaleX: 0 });
+  gsap.set('#streakR',   { opacity: 0, scaleX: 0 });
+  gsap.set('#iframeScene', { autoAlpha: 0 });
+  gsap.set('#docsScene', { autoAlpha: 0 });
+  gsap.set('#outroScene', { autoAlpha: 0 });
+  gsap.set(['#outroLockup', '#outroTitle', '#outroSub', '#outroPill'], {
+    autoAlpha: 0,
+    y: 26,
+    filter: 'blur(12px)',
+  });
+  gsap.set('#outroRoute', { autoAlpha: 0, scaleX: 0 });
+  gsap.set(['#outroDotLeft', '#outroDotRight'], { autoAlpha: 0, scale: 0 });
+  gsap.set('#outroSheen', { autoAlpha: 0, x: 0 });
+  gsap.set('#iframeCard', {
+    y: 88,
+    scale: 0.80,
+    rotationX: 11,
+    rotationY: -7,
+    rotationZ: -0.8,
+    filter: 'blur(14px) saturate(0.86) brightness(1.08)',
+    transformPerspective: 1400,
+    transformOrigin: '50% 58%',
+  });
+  gsap.set('#docsCard', {
+    x: 1500,
+    y: 22,
+    scale: 0.56,
+    rotationX: 2.4,
+    rotationY: -12,
+    rotationZ: 0.6,
+    autoAlpha: 0,
+    filter: 'blur(14px) saturate(0.90) brightness(1.06)',
+    transformPerspective: 1400,
+    transformOrigin: '50% 58%',
+  });
+  gsap.set(cursor.el, { autoAlpha: 0 });
+
+  // ──── Atmosphere — bounded drifts on warm-pull/tension/warmth ────
+  // 5s cycle, yoyo, 1 repeat (~10s span fits cleanly over the 6s clip).
+  const atmoDrift = gsap.timeline({ repeat: 1, yoyo: true });
+  atmoDrift.to('#atmoWarmth', { scale: 1.04, duration: 5, ease: 'sine.inOut' }, 0);
+  atmoDrift.to('#atmoWarmPull', { x: -18, duration: 5, ease: 'sine.inOut' }, 0);
+  atmoDrift.to('#atmoCoolKiss', { x:  14, duration: 5, ease: 'sine.inOut' }, 0);
+  atmoDrift.to('#atmoLight', { scale: 1.035, x: -14, duration: 5, ease: 'sine.inOut' }, 0);
+  atmoDrift.to('#atmoKlaviyo', { scale: 1.025, x: 12, duration: 5, ease: 'sine.inOut' }, 0);
+  tl.add(atmoDrift, 0);
+
+  // ============================================================
+  // BEAT 1 — deep-night → warm-pull (0.0 - 0.4)
+  // ============================================================
+  tl.to('#atmoWarmPull', { autoAlpha: 0.45, duration: 0.40, ease: 'power1.out' }, 0.05);
+
+  // ============================================================
+  // BEAT 2 — heading appears first (0.3 - 1.45)
+  //   Pixel-Point-style short-slide-right: masked word slides in
+  //   from the left with a quick blur resolve.
+  // ============================================================
+  tl.to(headingUnits[0], { x: 0, autoAlpha: 1, filter: 'blur(0px)', duration: 0.55, ease: 'power4.out' }, 0.30);
+  tl.to(headingUnits[1], { x: 0, autoAlpha: 1, filter: 'blur(0px)', duration: 0.50, ease: 'power4.out' }, 0.62);
+  tl.to(headingUnits[2], { x: 0, autoAlpha: 1, filter: 'blur(0px)', duration: 0.55, ease: 'power4.out' }, 0.88);
+
+  // Warm halo glow rises under the typography as it resolves.
+  tl.to('#lockupHalo', { autoAlpha: 1, scale: 1.0, duration: 1.20, ease: 'power2.out' }, 0.45);
+
+  // ============================================================
+  // BEAT 3 — logos tuck into the completed text lockup (1.55 - 2.25)
+  // ============================================================
+  tl.to('#logoWpf', {
+    autoAlpha: 1, x: 0, y: 0, scale: 1,
+    filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.55)) blur(0px)',
+    duration: 0.62, ease: 'logo-arrival',
+  }, 1.50);
+  tl.to('#logoKlv', {
+    autoAlpha: 1, x: 0, y: 0, scale: 1,
+    filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.55)) invert(0.94) brightness(1.05) blur(0px)',
+    duration: 0.62, ease: 'logo-arrival',
+  }, 1.58);
+
+  // A quiet premium pulse under the x, keeping the connection cue without a collision.
+  tl.to('#atmoWarmth', { autoAlpha: 0.85, duration: 0.55, ease: 'power2.out' }, 1.78);
+  tl.fromTo('#ripple1',
+    { opacity: 0.42, scale: 0.20 },
+    { opacity: 0, scale: 3.1, duration: 0.70, ease: 'power2.out' }, 1.88);
+  tl.to(headingUnits[1], { scale: 1.08, duration: 0.20, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 1.90);
+
+  // ============================================================
+  // BEAT 4 — subheading appears with Pixel-Point short-slide-right (2.55 - 3.20)
+  // ============================================================
+  tl.to(subheadUnit, {
+    x: 0, autoAlpha: 1, filter: 'blur(0px)',
+    duration: 0.50, ease: 'power3.out',
+  }, 2.55);
+  tl.to('#lockupHalo', { autoAlpha: 0.72, scale: 0.96, duration: 0.55, ease: 'power2.out' }, 2.70);
+
+  // BEAT 7 (removed) — Beat 8 now starts at 3.85 to land on the BGM kick.
+  // The breathing tweens that previously held at 3.90 would collide with the
+  // exit and were dropped intentionally.
+
+  // ============================================================
+  // BEAT 8 — transition to live iframe scene (5.70 - 8.20)
+  //   The lockup recedes, atmosphere warms into a light editorial
+  //   canvas, and the snapshot iframe settles with a soft 3D lens.
+  // ============================================================
+  tl.to(['#logoWpf', '#wmWpf', '#glyph', '#wmKlv', '#logoKlv', '#subhead'], {
+    y: -34,
+    scale: 0.92,
+    autoAlpha: 0,
+    filter: 'blur(10px)',
+    duration: 0.58,
+    ease: 'power2.in',
+    stagger: { each: 0.025, from: 'center' },
+  }, 3.85);
+  tl.to('#lockupHalo', { autoAlpha: 0, scale: 1.32, duration: 0.72, ease: 'power3.out' }, 3.87);
+  tl.to(['#atmoWarmPull', '#atmoWarmth', '#atmoCoolKiss'], {
+    autoAlpha: 0,
+    duration: 0.70,
+    ease: 'power2.inOut',
+  }, 3.93);
+  tl.to('#atmoLight', {
+    autoAlpha: 1,
+    duration: 0.90,
+    ease: 'power2.inOut',
+  }, 3.97);
+  tl.to('#iframeScene', { autoAlpha: 1, duration: 0.10 }, 4.33);
+  tl.to('#iframeCard', {
+    y: 0,
+    scale: 1,
+    rotationX: 0,
+    rotationY: 0,
+    rotationZ: 0,
+    filter: 'blur(0px) saturate(1) brightness(1)',
+    duration: 1.22,
+    ease: 'expo.inOut',
+  }, 4.37);
+  tl.to('#iframeCard', {
+    rotationX: 1.2,
+    rotationY: -1.6,
+    scale: 1.012,
+    duration: 1.15,
+    ease: 'sine.inOut',
+    yoyo: true,
+    repeat: 1,
+  }, 5.45);
+
+  // ============================================================
+  // BEAT 9 — scroll to Klaviyo, click Add New Account
+  //   The Klaviyo section is already expanded in the base snapshot,
+  //   so the cursor goes directly to the real Add New Account button.
+  // ============================================================
+  tl.call(() => {
+    waitForIframeLoad(iframeEl).then(() => {
+      const doc = iframeEl.contentDocument;
+      const target = doc?.querySelector('#wpforms-integration-klaviyo');
+      if (!target) return;
+      const scroller = doc.scrollingElement || doc.documentElement || doc.body;
+      const top = Math.max(0, target.offsetTop + 60);
+      gsap.to(scroller, { scrollTop: top, duration: 1.18, ease: 'power2.inOut' });
+    });
+  }, null, 6.73);
+
+  tl.call(() => { runAddAccountClick(); }, null, 7.73);
+  tl.to('#iframeCard', {
+    scale: 1.008,
+    rotationX: 0.55,
+    rotationY: -0.55,
+    duration: 1.10,
+    ease: 'sine.inOut',
+    yoyo: true,
+    repeat: 1,
+  }, 10.07);
+
+  // ============================================================
+  // BEAT 10 — cinematic inter-snapshot flight to Klaviyo docs
+  //   3-act feel: pull away from WPForms → traverse → land on Klaviyo.
+  // ============================================================
+  tl.call(() => {
+    waitForIframeLoad(docsFrameEl);
+  }, null, 10.33);
+  tl.to('#atmoLight', { autoAlpha: 0.10, duration: 0.78, ease: 'power2.inOut' }, 10.33);
+  tl.to('#atmoKlaviyo', { autoAlpha: 1, duration: 0.90, ease: 'power2.inOut' }, 10.33);
+  tl.to('#docsScene', { autoAlpha: 1, duration: 0.05 }, 10.37);
+  tl.to('#iframeCard', {
+    x: -1500,
+    y: -18,
+    scale: 0.56,
+    rotationX: 2.0,
+    rotationY: 12,
+    rotationZ: -0.5,
+    filter: 'blur(12px) saturate(0.88) brightness(1.06)',
+    duration: 1.28,
+    ease: 'power2.inOut',
+  }, 10.41);
+  tl.to('#docsCard', {
+    x: 0,
+    y: 0,
+    scale: 1,
+    rotationX: 0,
+    rotationY: 0,
+    rotationZ: 0,
+    autoAlpha: 1,
+    filter: 'blur(0px) saturate(1) brightness(1)',
+    duration: 1.28,
+    ease: 'power2.inOut',
+  }, 10.41);
+  tl.to('#docsCard', {
+    scale: 1.006,
+    rotationX: 0.45,
+    rotationY: -0.45,
+    duration: 0.62,
+    ease: 'sine.inOut',
+    yoyo: true,
+    repeat: 1,
+  }, 11.63);
+
+  // ============================================================
+  // BEAT 11 — copy the already-created API key
+  // ============================================================
+  tl.call(() => { runCopyKeyClick(); }, null, 12.05);
+
+  // ============================================================
+  // BEAT 12 — return to WPForms and paste the copied key
+  // ============================================================
+  tl.to('#docsCard', {
+    x: 1500,
+    y: -8,
+    scale: 0.56,
+    rotationX: 2.0,
+    rotationY: -11,
+    rotationZ: 0.5,
+    filter: 'blur(12px) saturate(0.88) brightness(1.06)',
+    duration: 1.18,
+    ease: 'power2.inOut',
+  }, 14.47);
+  tl.to('#iframeCard', {
+    x: 0,
+    y: 0,
+    scale: 1,
+    rotationX: 0,
+    rotationY: 0,
+    rotationZ: 0,
+    filter: 'blur(0px) saturate(1) brightness(1)',
+    duration: 1.18,
+    ease: 'power2.inOut',
+  }, 14.47);
+  tl.to('#atmoKlaviyo', { autoAlpha: 0.20, duration: 0.82, ease: 'power2.inOut' }, 14.47);
+  tl.to('#atmoLight', { autoAlpha: 0.92, duration: 0.82, ease: 'power2.inOut' }, 14.47);
+  tl.to('#iframeCard', {
+    x: 225,
+    y: 116,
+    scale: 1.75,
+    rotationX: 0,
+    rotationY: -0.35,
+    duration: 1.05,
+    ease: 'power3.inOut',
+  }, 15.73);
+  tl.call(() => { runPasteApiKeyFlow(); }, null, 16.33);
+  tl.to({}, { duration: 8.32 }, 16.33);
+
+  // ============================================================
+  // BEAT 13 — scattered figjam canvas reveal + flight to Panel 3
+  //   • Pre-inject Connected pill into Panel 1's iframe so the crossfade
+  //     from iframeCard to scattered-scene is visually continuous.
+  //   • Camera starts focused on Panel 1 (Klaviyo Settings) at scale 1.75
+  //     so it matches the iframeCard view at handoff.
+  //   • Zoom out → glide right → zoom in on Panel 3.
+  //   Pattern from videos/_qc-primitives/scattered-canvas-flight.html.
+  // ============================================================
+
+  // Canvas math — 5200×2400, origin (2600, 1200), stage centre (960, 540).
+  const SC_W = 5200, SC_H = 2400;
+  const SC_OX = SC_W / 2, SC_OY = SC_H / 2;
+  const SC_CX = 960, SC_CY = 540;
+  function scFocus(cx, cy, scale = 1.0) {
+    return {
+      x: SC_CX - SC_OX - scale * (cx - SC_OX),
+      y: SC_CY - SC_OY - scale * (cy - SC_OY),
+      scale,
+    };
+  }
+
+  // Panel centres on canvas
+  const SC_PANEL_1 = { cx: 1400, cy: 1200 };  // Klaviyo Settings (focused at start)
+  const SC_PANEL_2 = { cx: 2700, cy: 600  };  // Klaviyo Docs
+  const SC_PANEL_3 = { cx: 4100, cy: 1500 };  // Builder Providers Klaviyo (target)
+
+  // Initial pose — focus the Connected pill area inside Panel 1.
+  // Pill iframe position (after scroll to Klaviyo row, post-injection):
+  //   roughly iframe x ≈ 1150, iframe y ≈ 345 (when the row is centred in panel).
+  // Pill canvas position: panel-top-left + iframe-coord = (760 + 1150, 840 + 345) = (1910, 1185).
+  const SC_POSE_START_DEFAULT = scFocus(1910, 1185, 1.75);
+  const SC_POSE_WIDE_MID      = scFocus(2750, 1350, 0.65);
+  const SC_POSE_WIDE_P3       = scFocus(SC_PANEL_3.cx, SC_PANEL_3.cy, 0.65);
+  const SC_POSE_TARGET_P3     = scFocus(SC_PANEL_3.cx, SC_PANEL_3.cy, 1.25);
+
+  // Apply initial pose immediately so the camera is pre-positioned at handoff.
+  gsap.set('#scatteredCamera', SC_POSE_START_DEFAULT);
+
+  // Atmosphere grain for the scattered scene (mulberry32-seeded, ~8 fps via
+  // pausableRaf). Multiply-blended at 0.045 opacity over the cool-neutral
+  // gradient — adds editorial texture without dominating the bed.
+  (function startSCAtmoGrain() {
+    const c = document.getElementById('scAtmoGrain');
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const img = ctx.createImageData(W, H);
+    const rng = mulberry32(0xDEC0DE);
+    let lastDraw = 0;
+    pausableRaf((ts) => {
+      if (ts - lastDraw < 125) return;
+      lastDraw = ts;
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = (rng() * 255) | 0;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    });
+  })();
+
+  // Prep Panel 1: scroll to Klaviyo row + inject Connected pill (pre-revealed).
+  // Runs on iframe load — same DOM contract as revealConnectedIndicator() but
+  // no animation (the pill is already visible by the time we crossfade to it).
+  const spKlaviyoSettingsEl = document.getElementById('spKlaviyoSettings');
+  // Scale applied to each scattered-panel iframe via CSS transform — must match
+  // the value in .scattered-panel iframe { transform: scale(...) }.
+  const SP_IFRAME_SCALE = 1280 / 1920; // 0.6666...
+
+  function prepScatteredPanel1() {
+    try {
+      const doc = spKlaviyoSettingsEl.contentDocument;
+      if (!doc) return;
+
+      // Scroll iframe so the Klaviyo row sits ~38% from the top of the 1080-tall
+      // iframe viewport (lands roughly centred in the visible 720-tall panel slot
+      // after the iframe is CSS-scaled to 0.6667).
+      const target = doc.querySelector('#wpforms-integration-klaviyo');
+      const scroller = doc.scrollingElement || doc.documentElement || doc.body;
+      if (target && scroller) {
+        const viewportH = doc.documentElement?.clientHeight || 1080;
+        scroller.scrollTop = Math.max(0, target.offsetTop - viewportH * 0.38);
+      }
+
+      // Inject Connected pill in the SAME spot as revealConnectedIndicator does.
+      const providerRow = doc.querySelector('#wpforms-integration-klaviyo');
+      const providerInfo = providerRow?.querySelector('.wpforms-settings-provider-info');
+      const accounts = doc.querySelector('#provider-klaviyo');
+      if (!providerRow || !providerInfo) return;
+
+      providerRow.classList.add('connected');
+      providerRow
+        .querySelectorAll('[data-klaviyo-connected-demo], .connected-indicator.green')
+        .forEach(el => el.remove());
+      if (accounts) accounts.style.display = 'none';
+
+      const indicator = doc.createElement('span');
+      indicator.className = 'connected-indicator green';
+      indicator.setAttribute('data-klaviyo-connected-demo', 'true');
+      indicator.innerHTML = '<i class="fa fa-check-circle-o"></i><span>Connected</span>';
+      providerInfo.appendChild(indicator);
+
+      // After layout, refine the camera start pose to the actual pill canvas centre.
+      // Convert iframe-internal coords → panel-displayed coords (× SP_IFRAME_SCALE)
+      // → canvas coords (+ panel top-left).
+      setTimeout(() => {
+        try {
+          const ind = doc.querySelector('#wpforms-integration-klaviyo .connected-indicator.green');
+          if (!ind) return;
+          const r = ind.getBoundingClientRect();
+          const panel = document.getElementById('sp1');
+          const panelLeft = parseFloat(panel.style.left) || 760;
+          const panelTop = parseFloat(panel.style.top) || 840;
+          const pillCanvasX = panelLeft + (r.left + r.width / 2) * SP_IFRAME_SCALE;
+          const pillCanvasY = panelTop + (r.top + r.height / 2) * SP_IFRAME_SCALE;
+          const refined = scFocus(pillCanvasX, pillCanvasY, 1.75);
+          // Only apply if scattered-scene hasn't yet been revealed (we'd disturb a tween).
+          const sceneStyle = getComputedStyle(document.getElementById('scatteredScene'));
+          if (sceneStyle.visibility === 'hidden') {
+            gsap.set('#scatteredCamera', refined);
+          }
+        } catch (e) { /* ignore */ }
+      }, 80);
+    } catch (e) {
+      console.warn('[scattered] prep panel 1 failed', e);
+    }
+  }
+  if (spKlaviyoSettingsEl) {
+    if (spKlaviyoSettingsEl.contentDocument
+        && spKlaviyoSettingsEl.contentDocument.readyState === 'complete') {
+      prepScatteredPanel1();
+    } else {
+      spKlaviyoSettingsEl.addEventListener('load', prepScatteredPanel1, { once: true });
+    }
+  }
+
+  // Crossfade at T=26.50 — iframeCard + docsCard fade out, scattered-scene fades in.
+  // Both views frame the pill at stage centre at scale 1.75, so the swap is continuous.
+  // Zoom-out begins simultaneously so motion masks the asset swap — no frozen-camera
+  // beat after the Connected pill reveal.
+  tl.to('#iframeCard',    { autoAlpha: 0, duration: 0.50, ease: 'power2.inOut' }, 24.65);
+  tl.to('#docsCard',      { autoAlpha: 0, duration: 0.50, ease: 'power2.inOut' }, 24.65);
+  tl.to('#scatteredScene',{ autoAlpha: 1, duration: 0.50, ease: 'power2.inOut' }, 24.65);
+
+  // Zoom out to wide centred between Panel 1 and Panel 3. Starts in lock-step with
+  // the crossfade; power2.inOut gives an implicit anticipation curve at the start.
+  tl.to('#scatteredCamera', {
+    ...SC_POSE_WIDE_MID,
+    duration: 1.40,
+    ease: 'power2.inOut',
+  }, 24.65);
+
+  // Glide pan to wide centred on Panel 3 (same scale — feels like a continuous arc).
+  tl.to('#scatteredCamera', {
+    ...SC_POSE_WIDE_P3,
+    duration: 0.90,
+    ease: 'power2.inOut',
+  }, 26.05);
+
+  // Zoom in on Panel 3.
+  tl.to('#scatteredCamera', {
+    ...SC_POSE_TARGET_P3,
+    duration: 1.20,
+    ease: 'power3.inOut',
+  }, 26.95);
+
+  // Straighten Panel 3 as the camera lands on it.
+  tl.to('#sp3', {
+    rotation: 0,
+    duration: 1.20,
+    ease: 'power3.inOut',
+  }, 26.95);
+
+  // Final hold — extra breathing room before BEAT 14 (tl.call at 31.70).
+  tl.to({}, { duration: 1.70 }, 28.15);
+
+  // ============================================================
+  // BEAT 14 — final outro resolve
+  //   Three scattered panels breathe on the gradient, then the board
+  //   clears into the final WPForms × Klaviyo endplate.
+  // ============================================================
+  tl.to('#scatteredCamera', {
+    ...SC_POSE_WIDE_MID,
+    duration: 0.92,
+    ease: 'power3.inOut',
+  }, 47.05);
+  tl.to('#sp1', { x: -34, y: 18, rotation: -2.4, duration: 1.15, ease: 'sine.inOut' }, 47.11);
+  tl.to('#sp2', { x: 22, y: -20, rotation: 3.2, duration: 1.15, ease: 'sine.inOut' }, 47.15);
+  tl.to('#sp3', { x: 38, y: 22, rotation: -3.0, duration: 1.15, ease: 'sine.inOut' }, 47.19);
+
+  tl.to('#scatteredCamera', {
+    scale: 0.52,
+    y: '+=20',
+    duration: 0.86,
+    ease: 'power2.inOut',
+  }, 48.05);
+  tl.to('#scatteredScene', {
+    autoAlpha: 0,
+    filter: 'blur(10px)',
+    duration: 0.72,
+    ease: 'power2.inOut',
+  }, 48.29);
+  tl.to('#outroScene', {
+    autoAlpha: 1,
+    duration: 0.72,
+    ease: 'power2.inOut',
+  }, 48.21);
+  tl.to('#outroSheen', {
+    autoAlpha: 1,
+    x: 2450,
+    duration: 0.92,
+    ease: 'power3.out',
+  }, 48.43);
+  tl.to('#outroRoute', {
+    autoAlpha: 1,
+    scaleX: 1,
+    duration: 0.68,
+    ease: 'power3.out',
+  }, 48.77);
+  // Soft post-settle drift on the route — a 2% scaleX overshoot then ease back,
+  // plus a faint opacity breath, so the line doesn't read as "drawn and frozen".
+  tl.fromTo('#outroRoute',
+    { scaleX: 1.02 },
+    { scaleX: 1, duration: 0.46, ease: 'sine.inOut' },
+    49.45);
+  tl.to('#outroRoute',
+    { autoAlpha: 0.88, duration: 0.55, ease: 'sine.inOut', yoyo: true, repeat: 1 },
+    50.00);
+  tl.to(['#outroDotLeft', '#outroDotRight'], {
+    autoAlpha: 1,
+    scale: 1,
+    duration: 0.34,
+    ease: 'back.out(2.2)',
+    stagger: 0.10,
+  }, 48.87);
+  tl.to('#outroLockup', {
+    autoAlpha: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    duration: 0.58,
+    ease: 'back.out(1.4)',
+  }, 49.17);
+  tl.to('#outroTitle', {
+    autoAlpha: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    duration: 0.70,
+    ease: 'power3.out',
+  }, 49.57);
+  tl.to('#outroSub', {
+    autoAlpha: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    duration: 0.58,
+    ease: 'power3.out',
+  }, 49.97);
+  tl.to('#outroPill', {
+    autoAlpha: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    duration: 0.46,
+    ease: 'back.out(1.7)',
+  }, 50.37);
+  tl.fromTo('#outroPill', {
+    boxShadow: '0 18px 44px rgba(34,43,54,0.14), 0 0 0 0 rgba(24,169,87,0.22)',
+  }, {
+    boxShadow: '0 18px 44px rgba(34,43,54,0.14), 0 0 0 10px rgba(24,169,87,0)',
+    duration: 0.76,
+    ease: 'power2.out',
+  }, 50.57);
+  tl.fromTo('#outroPill', {
+    boxShadow: '0 18px 44px rgba(34,43,54,0.14), 0 0 0 0 rgba(24,169,87,0.10)',
+  }, {
+    boxShadow: '0 18px 44px rgba(34,43,54,0.14), 0 0 0 8px rgba(24,169,87,0)',
+    duration: 0.62,
+    ease: 'power2.out',
+  }, 51.42);
+  tl.to({}, { duration: 1.42 }, 51.13);
+
+  // ============================================================
+  // BEAT 14 — zoom into "Add New Connection" button on Panel 3,
+  //           click it, inject the Klaviyo connection form HTML
+  //           with a smooth reveal.
+  // ============================================================
+  const spProvidersEl = document.getElementById('spProviders');
+
+  function spProvidersAddConnectionPoint() {
+    return framePoint(
+      spProvidersEl,
+      '#klaviyo-provider button.js-wpforms-builder-provider-connection-add:not(.hidden)',
+      { x: 1500, y: 320 }
+    );
+  }
+
+  // Inject the user's exact connection HTML into #klaviyo-provider's connections
+  // container, hide the empty-state placeholder, and animate the new block in.
+  function injectKlaviyoConnectionBlock() {
+    try {
+      const doc = spProvidersEl.contentDocument;
+      if (!doc) return;
+      const container = doc.querySelector('#klaviyo-provider .wpforms-builder-provider-connections');
+      const placeholder = doc.querySelector('#klaviyo-provider .wpforms-builder-provider-connections-default');
+      if (!container) return;
+
+      // Fade out the empty-state placeholder AND remove it from layout flow —
+      // autoAlpha alone leaves the placeholder's box reserving vertical space,
+      // which is why the injected connection appeared to have a big gap above it.
+      if (placeholder) {
+        gsap.timeline()
+          .to(placeholder, { autoAlpha: 0, duration: 0.26, ease: 'power2.in' }, 0)
+          .set(placeholder, { display: 'none' }, 0.26);
+      }
+      // Also collapse the body wrapper's empty default-state padding so the
+      // injected block sits flush under the title.
+      const bodyWrap = doc.querySelector('#klaviyo-provider .wpforms-builder-provider-body');
+      if (bodyWrap) {
+        gsap.to(bodyWrap, { paddingTop: 0, marginTop: 0, duration: 0.26, ease: 'power2.in' });
+      }
+
+      // Cleanup any prior injected connection (idempotent on scrubber replay)
+      container.querySelectorAll('[data-klaviyo-injected-connection]').forEach(el => el.remove());
+
+      const wrap = doc.createElement('div');
+      wrap.setAttribute('data-klaviyo-injected-connection', 'true');
+      wrap.innerHTML = `
+<div class="wpforms-builder-provider-connection wpforms-builder-klaviyo-provider-connection" data-connection_id="19e17acd4fe" data-undo-redo-element-key="div-19e17acdb28-341cb">
+  <div class="wpforms-builder-provider-connection-title">
+    Klaviyo Connection
+    <button class="wpforms-builder-provider-connection-delete js-wpforms-builder-provider-connection-delete" type="button">
+      <i class="fa fa-trash-o"></i>
+    </button>
+  </div>
+  <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-accounts">
+    <h4>Select Account<span class="required">*</span></h4>
+    <select class="js-wpforms-builder-klaviyo-provider-connection-account wpforms-required" name="providers[klaviyo][19e17acd4fe][account_id]">
+      <option value="" disabled>--- Select ---</option>
+      <option value="6a011463138468.57466906" data-option_id="" selected>Sullie Eloso</option>
+    </select>
+  </div>
+  <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-actions">
+    <h4>Action To Perform<span class="required">*</span></h4>
+    <select class="js-wpforms-builder-klaviyo-provider-connection-action wpforms-required" id="wpforms-builder-klaviyo-provider-19e17acd4fe-action" name="providers[klaviyo][19e17acd4fe][action]">
+      <option value="" disabled>--- Select Action ---</option>
+      <option value="create_update_profile" selected>Create / Update Profile</option>
+      <option value="unsubscribe">Unsubscribe</option>
+      <option value="remove_from_list">Remove from List</option>
+    </select>
+    <p class="description wpforms-builder-klaviyo-action-description" style="display:none"></p>
+  </div>
+  <div class="wpforms-builder-klaviyo-provider-actions-data">
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-email">
+      <h4>Email<span class="required">*</span></h4>
+      <select class="wpforms-builder-provider-connection-field-value wpforms-field-map-select wpforms-required" name="providers[klaviyo][19e17acd4fe][email]" data-field-map-allowed="email" data-field-map-placeholder="--- Select Form Field ---">
+        <option value="" selected>--- Select Form Field ---</option>
+        <option value="3">Email</option>
+      </select>
+    </div>
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-list_id">
+      <h4>List</h4>
+      <select class="wpforms-builder-provider-connection-field-value" name="providers[klaviyo][19e17acd4fe][list_id]">
+        <option value="" selected>— No list (profile only) —</option>
+        <option value="1">Name</option>
+        <option value="2">Checkboxes</option>
+        <option value="3">Email</option>
+      </select>
+    </div>
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-email_consent">
+      <span class="wpforms-toggle-control">
+        <input type="checkbox" value="1" id="wpforms-builder-klaviyo-provider-19e17acd4fe-email_consent" name="providers[klaviyo][19e17acd4fe][email_consent]" class="sf-hidden">
+        <label class="wpforms-toggle-control-icon" for="wpforms-builder-klaviyo-provider-19e17acd4fe-email_consent"></label>
+        <label for="wpforms-builder-klaviyo-provider-19e17acd4fe-email_consent" class="wpforms-toggle-control-label">Subscribe to Email Marketing</label>
+        <i class="fa fa-question-circle-o wpforms-help-tooltip" title="Profiles must be subscribed to receive email marketing."></i>
+      </span>
+    </div>
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-provider-connection-fields">
+      <h4 id="custom-fields">Custom Fields</h4>
+      <table class="wpforms-builder-provider-connection-fields-table wpforms-undo-redo-container" aria-describedby="custom-fields">
+        <thead>
+          <tr>
+            <th>Custom Field Name</th>
+            <th colspan="3">Form Field Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="wpforms-builder-provider-connection-fields-table-row">
+            <td>
+              <select class="js-wpforms-builder-provider-connection-field-name wpforms-builder-provider-connection-field-name" name="providers[klaviyo][19e17acd4fe][fields_meta][0][name]">
+                <option value="" selected>--- Select Klaviyo Field ---</option>
+                <option value="__custom__">New Custom Field</option>
+                <option value="first_name">First Name</option>
+                <option value="last_name">Last Name</option>
+                <option value="phone_number">Phone Number</option>
+                <option value="organization">Organization</option>
+                <option value="title">Job Title</option>
+                <option value="image">Image URL</option>
+                <option value="address1">Address Line 1</option>
+                <option value="address2">Address Line 2</option>
+                <option value="city">City</option>
+                <option value="region">State / Region</option>
+                <option value="zip">Postal / ZIP Code</option>
+                <option value="country">Country</option>
+              </select>
+              <input type="text" class="wpforms-builder-provider-connection-field-name sf-hidden" placeholder="Field Name" value="">
+              <a href="#" class="js-wpforms-builder-klaviyo-new-custom-field-close wpforms-builder-klaviyo-new-custom-field-close fa fa-close sf-hidden"></a>
+            </td>
+            <td>
+              <select class="wpforms-builder-provider-connection-field-value" name="providers[klaviyo][19e17acd4fe][fields_meta][0][field_id]">
+                <option value="" selected>--- Select Form Field ---</option>
+                <option value="1.full">Name (Full)</option>
+                <option value="1.first">Name (First)</option>
+                <option value="1.last">Name (Last)</option>
+                <option value="2">Checkboxes</option>
+                <option value="3">Email</option>
+              </select>
+            </td>
+            <td class="add">
+              <button class="button-secondary js-wpforms-builder-provider-connection-fields-add" title="Add Another">
+                <i class="fa fa-plus-circle"></i>
+              </button>
+            </td>
+            <td class="delete">
+              <button class="button js-wpforms-builder-provider-connection-fields-delete hidden sf-hidden" title="Delete"></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="description">Map Klaviyo custom fields to form field values. New custom fields will be created in Klaviyo when the form is saved.</p>
+    </div>
+  </div>
+  <div class="wpforms-conditional-block wpforms-conditional-block-panel" data-type="panel">
+    <div id="wpforms-panel-field-klaviyo-19e17acd4fe-conditional_logic-wrap" class="wpforms-panel-field wpforms-conditionals-enable-toggle wpforms-panel-field-toggle">
+      <span class="wpforms-toggle-control">
+        <input type="checkbox" id="wpforms-panel-field-klaviyo-19e17acd4fe-conditional_logic" name="providers[klaviyo][19e17acd4fe][conditional_logic]" class="wpforms-panel-field-conditional_logic-checkbox sf-hidden" value="1" data-name="providers[klaviyo][19e17acd4fe]" data-action-desc="this connection if" data-reference="">
+        <label class="wpforms-toggle-control-icon" for="wpforms-panel-field-klaviyo-19e17acd4fe-conditional_logic"></label>
+        <label for="wpforms-panel-field-klaviyo-19e17acd4fe-conditional_logic" class="wpforms-toggle-control-label">Enable Conditional Logic</label>
+        <i class="fa fa-question-circle-o wpforms-help-tooltip"></i>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+      container.appendChild(wrap);
+
+      // Animate the connection block in — outer shell rises softly, then internal
+      // blocks reveal in staggered sequence so the form feels like it's
+      // materialising field-by-field rather than landing as one slab.
+      const inner = wrap.querySelector('.wpforms-builder-provider-connection');
+      if (inner) {
+        gsap.set(inner, {
+          autoAlpha: 0,
+          y: -14,
+          scale: 0.992,
+          filter: 'blur(3px)',
+          transformOrigin: '50% 0%',
+        });
+        const titleEl = inner.querySelector('.wpforms-builder-provider-connection-title');
+        const blockEls = Array.from(inner.querySelectorAll('.wpforms-builder-provider-connection-block'));
+        const condEl   = inner.querySelector('.wpforms-conditional-block');
+        const innerBits = [titleEl, ...blockEls, condEl].filter(Boolean);
+        if (innerBits.length) {
+          gsap.set(innerBits, { autoAlpha: 0, y: -8, filter: 'blur(4px)' });
+        }
+        gsap.timeline()
+          .to(inner, {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            filter: 'blur(0px)',
+            duration: 0.52,
+            ease: 'power3.out',
+          }, 0)
+          .to(innerBits, {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.48,
+            ease: 'power3.out',
+            stagger: 0.07,
+          }, 0.18);
+      }
+    } catch (e) {
+      console.warn('[klaviyo-bridge] inject connection failed', e);
+    }
+  }
+
+  async function runProvidersAddConnectionFlow() {
+    await waitForIframeLoad(spProvidersEl);
+    await sleep(160);
+
+    // Zoom camera further into the Add New Connection button.
+    try {
+      const doc = spProvidersEl.contentDocument;
+      const btn = doc?.querySelector('#klaviyo-provider button.js-wpforms-builder-provider-connection-add:not(.hidden)');
+      if (btn) {
+        const r = btn.getBoundingClientRect();
+        const panelLeft = parseFloat(document.getElementById('sp3').style.left) || 3460;
+        const panelTop = parseFloat(document.getElementById('sp3').style.top) || 1140;
+        const btnCanvasX = panelLeft + (r.left + r.width / 2) * SP_IFRAME_SCALE;
+        const btnCanvasY = panelTop + (r.top + r.height / 2) * SP_IFRAME_SCALE;
+        const zoomPose = scFocus(btnCanvasX, btnCanvasY, 1.55);
+        await new Promise(resolve => {
+          gsap.to('#scatteredCamera', {
+            ...zoomPose,
+            duration: 0.85,
+            ease: 'expo.out',
+            onComplete: resolve,
+          });
+        });
+      }
+    } catch (e) { /* ignore */ }
+
+    await sleep(120);
+
+    // Glide cursor in + click the button.
+    await glideClick(spProvidersAddConnectionPoint, {
+      start: { x: 1680, y: 960 },
+      duration: 0.95,
+      settle: 100,
+      rippleScale: 1.9,
+    });
+
+    // Press animation on the button itself.
+    try {
+      const doc = spProvidersEl.contentDocument;
+      const btn = doc?.querySelector('#klaviyo-provider button.js-wpforms-builder-provider-connection-add:not(.hidden)');
+      if (btn) {
+        gsap.timeline()
+          .to(btn, {
+            scale: 0.94,
+            duration: 0.12,
+            ease: 'power2.in',
+            transformOrigin: 'center center',
+          }, 0)
+          .to(btn, {
+            scale: 1,
+            duration: 0.26,
+            ease: 'back.out(1.7)',
+          }, 0.12);
+      }
+    } catch (e) { /* ignore */ }
+
+    // Cursor fades after the press.
+    gsap.to(cursor.el, {
+      autoAlpha: 0, y: '-=14',
+      duration: 0.32, ease: 'power2.in',
+      delay: 0.18, overwrite: 'auto',
+    });
+
+    // Pan + zoom out so the new form area is in view, then settle BEFORE the
+    // inject. The connection block reveal animates against a stable camera
+    // (no compound motion fighting the staggered field reveal).
+    await sleep(180);
+    await new Promise(resolve => {
+      gsap.to('#scatteredCamera', {
+        ...scFocus(SC_PANEL_3.cx, 1460, 1.30),
+        duration: 0.95,
+        ease: 'power3.inOut',
+        onComplete: resolve,
+      });
+    });
+    await sleep(100);
+    injectKlaviyoConnectionBlock();
+  }
+
+  tl.call(() => { runProvidersAddConnectionFlow(); }, null, 29.85);
+  tl.to({}, { duration: 5.00 }, 29.85);
+
+  // ============================================================
+  // BEAT 15 — Action showcase.
+  //   Zoom in on the Klaviyo Connection block (scale 1.45, centred).
+  //   Open the Action To Perform dropdown 3 times; for each cycle the
+  //   faux menu animates open, the target option highlights and
+  //   "clicks", the menu closes, and the fields below smoothly morph
+  //   in three phases: fade out removed → Flip kept to new positions
+  //   → fade in added. No overlap = no stacking.
+  // ============================================================
+  const ACTION_PLAYBOOK = {
+    create_update_profile: {
+      visible: ['email', 'list_id', 'email_consent', 'fields'],
+      description: '',
+    },
+    unsubscribe: {
+      visible: ['email'],
+      description: "This action revokes the profile's global email marketing consent. They will stop receiving marketing emails from all lists.",
+    },
+    remove_from_list: {
+      visible: ['email', 'list_id'],
+      description: 'This action removes the profile from the selected list only. Their global marketing consent is not changed.',
+    },
+  };
+
+  const ACTION_BLOCK_SELECTORS = {
+    email:         '.wpforms-builder-klaviyo-provider-email',
+    list_id:       '.wpforms-builder-klaviyo-provider-list_id',
+    email_consent: '.wpforms-builder-klaviyo-provider-email_consent',
+    fields:        '.wpforms-builder-provider-connection-fields',
+  };
+
+  const ACTION_LABELS = [
+    { value: 'create_update_profile', label: 'Create / Update Profile' },
+    { value: 'unsubscribe',           label: 'Unsubscribe' },
+    { value: 'remove_from_list',      label: 'Remove from List' },
+  ];
+
+  async function zoomToConnectionBlock() {
+    try {
+      const doc = spProvidersEl.contentDocument;
+      const block = doc?.querySelector('.wpforms-builder-klaviyo-provider-connection');
+      if (!block) return;
+      const r = block.getBoundingClientRect();
+      const panel = document.getElementById('sp3');
+      const panelLeft = parseFloat(panel.style.left) || 3460;
+      const panelTop = parseFloat(panel.style.top) || 1140;
+      // The block is wider than its visible content (content sits in the left
+      // ~60% with a whitespace gutter to the right). Bias horizontal focus to
+      // the left third of the block so the form sits centred on stage. Bias
+      // vertical focus toward the dropdown row (where the cursor lands).
+      const focusX = panelLeft + (r.left + r.width * 0.34) * SP_IFRAME_SCALE;
+      const focusY = panelTop  + (r.top  + r.height * 0.38) * SP_IFRAME_SCALE;
+      const pose = scFocus(focusX, focusY, 2.30);
+      await new Promise(resolve => {
+        gsap.to('#scatteredCamera', {
+          ...pose,
+          duration: 0.90,
+          ease: 'power3.out',
+          onComplete: resolve,
+        });
+      });
+    } catch (e) { /* ignore */ }
+  }
+
+  // Faux native dropdown: synthesizes a menu that animates open, highlights
+  // the target option with a click flash, then closes. Cursor glides to the
+  // dropdown, clicks to open, glides down to the target option, clicks to
+  // select. The real <select>.value is updated so the visible label updates.
+  async function selectFromActionDropdown(action, opts = {}) {
+    try {
+      const { isFirst = false } = opts;
+      const doc = spProvidersEl.contentDocument;
+      const select = doc?.querySelector('select[name="providers[klaviyo][19e17acd4fe][action]"]');
+      if (!doc || !select) return;
+
+      // Bring cursor in on first cycle (it was hidden from BEAT 14 onward).
+      if (isFirst) {
+        cursor.setPos(1820, 240);
+        gsap.to(cursor.el, { autoAlpha: 1, duration: 0.24, ease: 'power2.out', overwrite: 'auto' });
+      }
+
+      // 1. Glide cursor to the dropdown's stage position.
+      const dropdownPoint = framePoint(
+        spProvidersEl,
+        'select[name="providers[klaviyo][19e17acd4fe][action]"]',
+        { x: 960, y: 200 }
+      );
+      await cursor.glide(dropdownPoint, {
+        via: isFirst ? { x: 1380, y: 220 } : null,
+        duration: isFirst ? 0.55 : 0.36,
+        viaEase: 'power1.inOut',
+        landEase: 'power2.out',
+      });
+      await sleep(40);
+
+      // 2. Click on the dropdown — cursor squash + ripple.
+      await cursor.click({
+        rippleScale: 1.7,
+        rippleColor: 'rgba(226, 119, 48, 0.85)',
+      });
+      await sleep(30);
+
+      // 3. Build the faux menu — mounted on PARENT STAGE (not inside the
+      //    iframe). The iframe doc has a strict CSP (`default-src 'none'`)
+      //    which silently blocks JS-set inline styles, so a menu created
+      //    inside the iframe never paints. Parent doc has no such CSP.
+      //    Position computed in stage-design-pixel coords via framePoint logic.
+      document.querySelectorAll('.klaviyo-faux-action-menu').forEach(el => el.remove());
+
+      const sRect = select.getBoundingClientRect();
+      const iframeRect = spProvidersEl.getBoundingClientRect();
+      const stageRect = stageEl.getBoundingClientRect();
+      const stageScale = stageRect.width / 1920;
+      const cw = spProvidersEl.contentWindow;
+      const contentScaleX = iframeRect.width  / (cw?.innerWidth  || iframeRect.width);
+      const contentScaleY = iframeRect.height / (cw?.innerHeight || iframeRect.height);
+      // Match the real WPForms <select> markup the user shared — a disabled
+      // placeholder option at the top, then the three real actions. The faux
+      // menu mirrors the native dropdown the browser would render when the
+      // real <select> is opened, using WPForms-builder typography.
+      const ACTION_MENU_ROWS = [
+        { value: '',                       label: '--- Select Action ---', disabled: true },
+        { value: 'create_update_profile',  label: 'Create / Update Profile' },
+        { value: 'unsubscribe',            label: 'Unsubscribe' },
+        { value: 'remove_from_list',       label: 'Remove from List' },
+      ];
+
+      const menuStageLeft = (iframeRect.left + sRect.left * contentScaleX - stageRect.left) / stageScale;
+      const menuStageTop  = (iframeRect.top  + (sRect.top + sRect.height - 1) * contentScaleY - stageRect.top) / stageScale;
+      const menuStageWidth  = (sRect.width  * contentScaleX) / stageScale;
+      const rowStageHeight  = 36; // matches the row padding+line-height below
+
+      const menu = document.createElement('div');
+      menu.className = 'klaviyo-faux-action-menu';
+      menu.style.cssText = `
+        position: absolute;
+        left: ${menuStageLeft}px;
+        top: ${menuStageTop}px;
+        width: ${menuStageWidth}px;
+        background: #ffffff;
+        border: 1px solid #8c8f94;
+        border-top: none;
+        border-radius: 0 0 3px 3px;
+        box-shadow: 0 6px 16px rgba(8, 12, 20, 0.14);
+        z-index: 95;
+        overflow: hidden;
+        transform-origin: top center;
+        pointer-events: none;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #1d2327;
+        opacity: 0;
+        transform: scaleY(0.45) translateY(-10px);
+      `;
+      ACTION_MENU_ROWS.forEach((opt) => {
+        const row = document.createElement('div');
+        row.dataset.fauxValue = opt.value;
+        row.style.cssText = `
+          padding: 7px 12px;
+          color: ${opt.disabled ? '#8c8f94' : '#1d2327'};
+          background-color: #ffffff;
+          ${opt.disabled ? 'font-style: italic;' : ''}
+        `;
+        row.textContent = opt.label;
+        menu.appendChild(row);
+      });
+      stageEl.appendChild(menu);
+
+      // 4. Open menu — GSAP animation on parent-doc element (no CSP issues).
+      await new Promise(resolve => {
+        gsap.timeline({ onComplete: resolve })
+          .to(menu, {
+            opacity: 1, scaleY: 1.03, y: 2,
+            duration: 0.18, ease: 'power3.out',
+          }, 0)
+          .to(menu, {
+            scaleY: 1, y: 0,
+            duration: 0.12, ease: 'power2.inOut',
+          }, 0.18);
+      });
+
+      // 5. Brief hold so the viewer reads all 3 options.
+      await sleep(100);
+
+      // 6. Glide cursor down to the target option. Compute the row position
+      //    in stage coords (same coordinate system the cursor uses). Row 0 is
+      //    the disabled placeholder; real actions start at row 1.
+      const rowIndex = ACTION_MENU_ROWS.findIndex(o => o.value === action);
+      const targetRowPoint = rowIndex >= 0 ? {
+        x: menuStageLeft + menuStageWidth / 2,
+        y: menuStageTop + rowStageHeight * (rowIndex + 0.5),
+      } : null;
+      if (targetRowPoint) {
+        await cursor.glide(targetRowPoint, {
+          duration: 0.24,
+          landEase: 'power2.out',
+        });
+        await sleep(30);
+      }
+
+      // 7. Click on the row — cursor click runs in parallel with the row's
+      //    highlight + flash so the press feels coordinated.
+      const targetRow = menu.querySelector(`[data-faux-value="${action}"]`);
+      if (targetRow) {
+        // Pre-highlight (hover bg) — quick before the click tap
+        await new Promise(resolve => {
+          gsap.to(targetRow, {
+            backgroundColor: '#0a6bb8',
+            color: '#ffffff',
+            duration: 0.14, ease: 'power2.out',
+            onComplete: resolve,
+          });
+        });
+      }
+      await Promise.all([
+        cursor.click({
+          rippleScale: 1.5,
+          rippleColor: 'rgba(226, 119, 48, 0.85)',
+        }),
+        targetRow ? new Promise(resolve => {
+          gsap.timeline({ onComplete: resolve })
+            .to(targetRow, { backgroundColor: '#155a92', duration: 0.10, ease: 'power2.in' }, 0)
+            .to(targetRow, { backgroundColor: '#0a6bb8', duration: 0.18, ease: 'power2.out' }, 0.10);
+        }) : Promise.resolve(),
+      ]);
+      await sleep(60);
+
+      // 8. Update the real <select>'s value.
+      select.value = action;
+
+      // 9. Close menu + glide cursor back to the dropdown in parallel.
+      const closeP = new Promise(resolve => {
+        gsap.to(menu, {
+          opacity: 0, scaleY: 0.5, y: -6,
+          duration: 0.16, ease: 'power2.in',
+          onComplete: () => { menu.remove(); resolve(); },
+        });
+      });
+      await Promise.all([
+        closeP,
+        cursor.glide(dropdownPoint, {
+          duration: 0.28,
+          landEase: 'power2.out',
+        }),
+      ]);
+    } catch (e) {
+      console.warn('[klaviyo-bridge] faux dropdown failed', e);
+    }
+  }
+
+  // Phased field morph — no overlap, no stacking:
+  //   Phase A: fade out blocks that are leaving
+  //   Phase B: Flip the kept blocks to their new layout positions
+  //   Phase C: fade in blocks that are entering
+  async function morphActionTo(action) {
+    try {
+      const doc = spProvidersEl.contentDocument;
+      const cfg = ACTION_PLAYBOOK[action];
+      if (!doc || !cfg) return;
+
+      const blocks = {};
+      for (const [key, sel] of Object.entries(ACTION_BLOCK_SELECTORS)) {
+        blocks[key] = doc.querySelector(sel);
+      }
+      const allKeys = Object.keys(ACTION_BLOCK_SELECTORS);
+      const currentlyVisible = allKeys.filter(k =>
+        blocks[k] && getComputedStyle(blocks[k]).display !== 'none'
+      );
+      const targetVisible = cfg.visible;
+      const removed = currentlyVisible.filter(k => !targetVisible.includes(k));
+      const added = targetVisible.filter(k => !currentlyVisible.includes(k));
+      const kept = currentlyVisible.filter(k => targetVisible.includes(k));
+
+      // Early return when no structural change (Cycle 1 from Create/Update
+      // to Create/Update). Skip all phases — there's nothing visible to morph.
+      // Still handle the email-consent toggle for the hero state.
+      if (removed.length === 0 && added.length === 0) {
+        if (action === 'create_update_profile') {
+          const consentToggle = doc.querySelector('input[name="providers[klaviyo][19e17acd4fe][email_consent]"]');
+          if (consentToggle) consentToggle.checked = true;
+        }
+        return;
+      }
+
+      // Description handling (parallel)
+      const descEl = doc.querySelector('.wpforms-builder-klaviyo-action-description');
+      if (descEl) {
+        const isHidden = getComputedStyle(descEl).display === 'none';
+        if (cfg.description) {
+          if (isHidden) {
+            descEl.textContent = cfg.description;
+            descEl.style.display = '';
+            gsap.fromTo(descEl,
+              { autoAlpha: 0, y: -4 },
+              { autoAlpha: 1, y: 0, duration: 0.42, ease: 'power3.out', delay: 0.40 });
+          } else {
+            gsap.timeline()
+              .to(descEl, { autoAlpha: 0, duration: 0.22, ease: 'power2.in' }, 0)
+              .call(() => { descEl.textContent = cfg.description; }, null, 0.22)
+              .to(descEl, { autoAlpha: 1, duration: 0.32, ease: 'power3.out' }, 0.22);
+          }
+        } else if (!isHidden) {
+          gsap.to(descEl, {
+            autoAlpha: 0, duration: 0.22, ease: 'power2.in',
+            onComplete: () => { descEl.style.display = 'none'; },
+          });
+        }
+      }
+
+      // Phase A — fade out removed blocks (with blur for depth on exit)
+      if (removed.length > 0) {
+        await new Promise(resolve => {
+          gsap.to(removed.map(k => blocks[k]).filter(Boolean), {
+            autoAlpha: 0,
+            y: -16,
+            scale: 0.95,
+            filter: 'blur(5px)',
+            duration: 0.42,
+            ease: 'power2.in',
+            stagger: 0.07,
+            onComplete: resolve,
+          });
+        });
+      }
+
+      // Phase B — Flip the kept blocks to their new positions
+      const keptEls = kept.map(k => blocks[k]).filter(Boolean);
+      const state = keptEls.length > 0 ? Flip.getState(keptEls) : null;
+
+      // Mutate: hide removed (out of flow), show added (in flow but invisible,
+      // pre-positioned higher with blur so the fade-in feels like a soft rise).
+      for (const k of removed) {
+        if (blocks[k]) blocks[k].style.display = 'none';
+      }
+      for (const k of added) {
+        if (blocks[k]) {
+          blocks[k].style.display = '';
+          gsap.set(blocks[k], {
+            autoAlpha: 0,
+            y: -18,
+            scale: 0.95,
+            filter: 'blur(6px)',
+            transformOrigin: '50% 0%',
+          });
+        }
+      }
+
+      if (state) {
+        await new Promise(resolve => {
+          Flip.from(state, {
+            duration: 0.62,
+            ease: 'power3.inOut',
+            absolute: false,
+            onComplete: resolve,
+          });
+        });
+      }
+
+      // Phase C — fade in added blocks (soft rise, depth via blur, more
+      // separation between fields via larger stagger).
+      if (added.length > 0) {
+        await new Promise(resolve => {
+          gsap.to(added.map(k => blocks[k]).filter(Boolean), {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            filter: 'blur(0px)',
+            duration: 0.56,
+            ease: 'power3.out',
+            stagger: 0.09,
+            onComplete: resolve,
+          });
+        });
+      }
+
+      // Email-consent toggle ON for Create / Update Profile (sells "subscribers grow")
+      if (action === 'create_update_profile') {
+        const consentToggle = doc.querySelector('input[name="providers[klaviyo][19e17acd4fe][email_consent]"]');
+        if (consentToggle) {
+          await sleep(120);
+          consentToggle.checked = true;
+        }
+      }
+    } catch (e) {
+      console.warn('[klaviyo-bridge] morphActionTo failed', e);
+    }
+  }
+
+  async function runActionShowcase() {
+    // Zoom in to the connection block (centred on screen, scale 2.55).
+    await zoomToConnectionBlock();
+    await sleep(220);
+
+    // Cycle 1 — Unsubscribe. Form starts in Create/Update Profile state by
+    // default, so the first showcased click morphs to Unsubscribe. The dropdown
+    // open exposes all three options as it animates, so the viewer still sees
+    // Create/Update Profile in the menu without us clicking it. Cursor enters here.
+    await selectFromActionDropdown('unsubscribe', { isFirst: true });
+    await morphActionTo('unsubscribe');
+    await sleep(280);
+
+    // Cycle 2 — Remove from List.
+    await selectFromActionDropdown('remove_from_list');
+    // Fade cursor out as the last morph starts — viewer's attention shifts
+    // to the morphed fields, not the cursor.
+    gsap.to(cursor.el, {
+      autoAlpha: 0, y: '-=14',
+      duration: 0.34, ease: 'power2.in',
+      delay: 0.10, overwrite: 'auto',
+    });
+    await morphActionTo('remove_from_list');
+    // Hold only briefly — the master timeline's outro (T=48.90) takes over
+    // shortly after this completes.
+    await sleep(180);
+  }
+
+  tl.call(() => { runActionShowcase(); }, null, 34.85);
+  // Dead-pad ends at 36.70 + 11.50 = 48.20, just before the master outro at 48.90.
+  tl.to({}, { duration: 11.50 }, 34.85);
+
+  // ─────────────────────────────────────────────────────────────
+  // SFX hooks — every cue is guarded on `playing` so scrubbing never retriggers.
+  // Volumes are deliberately quiet (~-30dB peak) so audio reads as accent
+  // rather than soundtrack. Pad ducks during high-density SFX moments.
+  // ─────────────────────────────────────────────────────────────
+  const sfx = (t, fn) => tl.call(() => { if (playing) fn(); }, null, t);
+
+  // Lockup hold settles
+  sfx(3.90, () => SFX.settle());
+  // Add New Account click (real cursor click lands ~10.4s)
+  sfx(8.45, () => SFX.click());
+  // Cinematic flight to docs
+  // Copy key click
+  sfx(14.0, () => SFX.click());
+  // Paste flow clicks
+  sfx(17.35, () => SFX.click()); // paste-key click
+  sfx(19.55, () => SFX.click()); // nickname click
+  sfx(21.75, () => SFX.click()); // Connect button click
+  // Connected pill resolves (lands inside revealConnectedIndicator midpoint)
+  sfx(23.45, () => SFX.ping());
+  // Beat 14 — Add New Connection click + form materialise
+  sfx(29.85, () => duckBgm(0.70, 0.4));
+  sfx(31.45, () => SFX.click()); // Add New Connection click
+  sfx(32.95, () => SFX.pop());   // form lands
+  sfx(33.55, () => duckBgm(0.85, 0.6));
+  // Beat 15 — dropdown picks (cycle 1: Unsubscribe; cycle 2: Remove from List)
+  sfx(35.85, () => SFX.click()); // cycle 1: pick Unsubscribe
+  sfx(36.35, () => SFX.pop());   // cycle 1: morph in
+  sfx(39.85, () => SFX.click()); // cycle 2: pick Remove from List
+  sfx(40.35, () => SFX.pop());   // cycle 2: morph in
+  // Outro
+  sfx(49.57, () => SFX.resolve());
+  sfx(50.57, () => SFX.ping());
+  sfx(51.55, () => duckBgm(0.40, 1.0));
+
+  // ─────────────────────────────────────────────────────────────
+  // Playback — click anywhere to start. No scrubber, no controls UI.
+  //   First click triggers tl.play() + startBgm() (needs a user gesture
+  //   for autoplay audio). Subsequent clicks toggle pause/resume.
+  // ─────────────────────────────────────────────────────────────
+  let playing = false;
+  tl.time(0);
+
+  function togglePlayback() {
+    if (playing) {
+      tl.pause();
+      playing = false;
+      stopBgm();
+    } else {
+      if (tl.time() >= TOTAL) tl.time(0);
+      tl.play();
+      playing = true;
+      startBgm();
+    }
+  }
+  document.addEventListener('click', togglePlayback);
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); togglePlayback(); }
+  });
+
+  tl.eventCallback('onUpdate', () => {
+    const t = tl.time();
+    if (t > TOTAL) {
+      tl.pause();
+      playing = false;
+      stopBgm();
+      tl.time(TOTAL);
+    }
+  });
+</script>
+</body>
+</html>
