@@ -1,127 +1,127 @@
-# Storyboard — klaviyo-quick-connect (v2, doc-driven)
+# Storyboard — klaviyo-quick-connect (v12, real Klaviyo logo + atmosphere boosted)
 
-**Path:** Mixed (editorial chrome + real product UI + Klaviyo-side cutaway)
-**Duration:** ~73 seconds, 5 chapters
-**Source doc:** `C:\Users\PC\Desktop\klaviyo\Klaviyo Addon 5 - WPForms.pdf`
-**File:** `videos/klaviyo-quick-connect/index.html`
+## Section A — Intro (0 → 3s)
 
-## Why v2
+Editorial card centered, no mac frame:
+- Sullie logo (real SVG from `reference/wpforms-brand/assets/sullie-master.svg`)
+- Heading: "Klaviyo Addon"
+- Subhead: "Connect WPForms to Klaviyo"
+- Fade in (0.7s) → hold (2.2s) → fade out (0.5s)
 
-The first version (~27s) over-simplified the doc. The real Klaviyo Addon tutorial has 4 major sections:
-1. Connecting WPForms to Klaviyo (Settings → Integrations → Klaviyo → Add New Account)
-2. Generating your Klaviyo API key (on Klaviyo's dashboard — separate workflow)
-3. Finishing the connection in WPForms (paste key, nickname, Connect)
-4. Adding a Klaviyo integration to your form (Marketing tab → Klaviyo → Add New Connection → settings panel)
+## Section B — PostIntro concept beat (3.5 → 14.5s, ~11s)
 
-v2 covers all 4 sections with appropriate visual surfaces (real snapshots where they exist, stylized cutaway mockups for Klaviyo dashboard where snapshots don't exist).
+The animated "what you'll learn" beat. No mac frame, no cursor — auto-animated.
 
-## Snapshot inventory
+The morph chain conveys: **form submission → Klaviyo profile → audience list.**
 
-**Available (real WPForms snapshots):**
-- `admin-settings-integrations-klaviyo-form` — Klaviyo accordion expanded with API Key + Nickname form
+1. **B1 — Tagline (0.7s)**: "Every submission, into your **Klaviyo audience.**" fades in at top with subhead.
+2. **B2 — Form card (0.6s)**: A small WPForms-styled newsletter signup card slides up on the left. Name pre-filled "Sullie", Email empty.
+3. **B3 — Type email (1.2s)**: `caretType` animates `sullie@sulliesbakery.com` into the email field with a blinking orange caret.
+4. **B4 — Submit feedback (0.5s)**: Orange Subscribe button glows + squashes.
+5. **B5 — Pill flight (1.4s)**: A dark "✓ Submitted" pill emerges from the submit area and flies right toward the profile spawn point.
+6. **B6 — Pill morph (0.3s)**: Pill fades; profile card primes.
+7. **B7 — Primary profile (0.8s)**: Klaviyo-styled profile card materializes (black header with avatar, white body) — shows Sullie's email, "Subscribed" status pill, list name.
+8. **B8 — Audience cascade (1.4s total)**: 2 additional profile cards stagger in BEHIND the primary card with slight offset, implying audience growth.
+9. **B9 — Fade out (0.6s)**: Entire postIntro fades; tutorial begins.
+
+Brand discipline:
+- Klaviyo brand black `#1A1A1F` for profile card headers (their actual color)
+- WPForms orange `#E27730` for submit button + caret
+- Real WPForms font stack throughout
+- No mac frame, no purple
+
+## Section C — Tutorial proper (14.5 → 80s, ~65s)
+
+Mac frame fades in. Real snapshots end-to-end (one stylized fallback for the WPForms nickname popup).
+
+### Snapshot inventory
+
+**Real WPForms snapshots:**
+- `admin-forms-overview` — All Forms list (starting page, makes the "WPForms → All Forms" Step 1 truthful)
+- `admin-settings-integrations-klaviyo-form` — Klaviyo accordion + API Key/Nickname form
 - `admin-settings-integrations-klaviyo-open` — post-connect state
 - `builder-providers` — form builder Marketing panel
-- `builder-providers-klaviyo` — Klaviyo selected in sidebar + "Add New Connection" visible
+- `builder-providers-klaviyo` — Klaviyo selected + Add New Connection visible
+- `builder-providers-klaviyo-connection` — **NEW** real Klaviyo Connection settings panel (with Create / Update Profile selected by default)
 
-**Not available (built as stylized cutaway mockups in the parent doc):**
-- Klaviyo dashboard (with sidebar + Welcome banner)
-- Klaviyo account menu popover (Settings link)
-- Klaviyo API Keys page (Create Private API Key button)
-- Klaviyo Private API Key Confirmation modal (with "Full Access Key" badge + key + copy icon)
-- WPForms "Enter a connection nickname" popup (form builder modal)
-- WPForms Klaviyo Connection settings panel (Select Account / Action / Email / List / Subscribe toggle / Custom Fields)
+**Real Klaviyo snapshots (NEW in v4, captured via SingleFile):**
+- `klaviyo-dashboard` — Welcome panel + sidebar
+- `klaviyo-settings` — Settings page (Account tab, sidebar visible)
+- `klaviyo-api-keys` — API Keys page (Public + Private API Keys + Create button)
+- `klaviyo-create-api-key` — Create Private API Key form (Name + Access Level + scopes)
+- `klaviyo-private-key-confirmation` — Post-create modal with key reveal + copy/download
 
-The cutaway mockups are CSS-styled HTML inside the stage, brought in via opacity transitions. They sit OVER the iframe slot. Not pixel-perfect Klaviyo replicas — sufficiently styled to follow the story.
+**Stylized fallback (no capture yet):**
+- WPForms "Enter a connection nickname" form-builder popup — rendered as the same overlay used in v2/v3
 
-## Chapter-by-chapter
+### Chapter 1 — WPForms → All Forms → Settings → Integrations → Klaviyo
+- Load `admin-forms-overview`. URL bar `…?page=wpforms-overview`.
+- **Step 1**: "WPForms → All Forms (your starting point)"
+- **Step 2**: "Open Settings → Integrations" → swap to `admin-settings-integrations-klaviyo-form`
+- **Step 3**: "Click Klaviyo → Add New Account"
 
-### Intro (0 – 3.5s)
-Editorial card centered: "Connect Klaviyo **to WPForms.**" — sub: "Every form submission, straight to your Klaviyo audience."
+### Chapter 2 — Generate Klaviyo API key (real Klaviyo snapshots)
+- Swap through `klaviyo-dashboard` → `klaviyo-settings` → `klaviyo-api-keys` → `klaviyo-create-api-key` → `klaviyo-private-key-confirmation`
+- **Step 4**: "Open Klaviyo → click your account name → Settings"
+- **Step 5**: "In Settings → click API keys in the sidebar"
+- **Step 6**: "Click Create Private API Key"
+- **Step 7**: "Name 'WPForms key' → Full Access Key → Create"
+- **Step 8**: "Copy your new Private API Key"
 
-### Chapter 1 — WPForms Settings → Integrations → Klaviyo (3.5 – 13s)
-- Mac frame fades in
-- URL bar: "sulliesbakery.com/wp-admin → Settings → Integrations"
-- Load `admin-settings-integrations-klaviyo-form` snapshot (real WPForms admin with Klaviyo accordion already expanded showing the Add New Account form)
-- Captions: "Step 1: WPForms → Settings → Integrations" → "Step 2: Click Klaviyo → Add New Account"
+### Chapter 3 — Back to WPForms, paste + connect
+- Swap back to `admin-settings-integrations-klaviyo-form`
+- **Selector fix v3 carried forward**: all queries scoped to `#wpforms-integration-klaviyo` to avoid matching hidden ConvertKit/Kit inputs
+- Cursor → API Key input → type fake key letter-by-letter (Step 9)
+- Cursor → Nickname input → type "Klaviyo key"
+- Cursor → Connect to Klaviyo button (orange ripple) (Step 10)
+- Swap to `admin-settings-integrations-klaviyo-open` (Step 11 "Klaviyo connected ✓")
 
-### Chapter 2 — Klaviyo dashboard cutaway: generate API key (13s – 30s)
-**[Cutaway: stylized Klaviyo dashboard layered over the iframe — no snapshot]**
-- URL bar updates: "klaviyo.com/dashboard → Settings → API keys"
-- Caption: "Step 3: Generate your Klaviyo API key"
-- 2a — Click account name (bottom-left) → menu popover with Settings highlighted
-- 2b — Navigate to API Keys page (content swap to API Keys card with "+ Create Private API Key" button)
-- Caption: "Step 4: Click Create Private API Key"
-- 2c — API Key reveal modal: "WPForms key" name, "Full Access Key" badge, key blurred behind copy icon
-- Caption: "Step 5: Name 'WPForms key' → Full Access → Create"
-
-### Chapter 3 — Back to WPForms: paste, connect (30s – 44s)
-- Cutaway fades out → iframe re-emerges with klaviyo-form snapshot (same as Chapter 1)
-- URL bar back to WPForms
-- Caption: "Step 6: Paste the API key in WPForms"
-- Cursor clicks API Key input → letter-by-letter type `pk_W` + fake suffix
-- Cursor clicks Nickname input → type "Klaviyo key"
-- Caption: "Step 7: Click Connect to Klaviyo"
-- Cursor clicks "Connect to Klaviyo" button (orange ripple)
-- IframeManager.swap to `admin-settings-integrations-klaviyo-open` (post-connect state)
-- Caption: "Step 8: Klaviyo connected ✓"
-
-### Chapter 4 — Form builder → Marketing → Klaviyo (44s – 55s)
-- URL bar: "sulliesbakery.com/wp-admin → Forms → Contact Us → Marketing"
-- IframeManager.swap to `builder-providers`
-- Caption: "Step 9: Open form builder → Marketing → Klaviyo"
-- Cursor clicks Klaviyo sidebar item (`.wpforms-panel-sidebar-section-klaviyo`)
+### Chapter 4 — Form builder → Marketing → Klaviyo
+- Swap to `builder-providers`
+- Cursor → Klaviyo sidebar tab (Step 12)
 - Swap to `builder-providers-klaviyo`
-- Caption: "Step 10: Click Add New Connection"
-- Cursor clicks `.js-wpforms-builder-provider-connection-add` (Add New Connection button)
+- Cursor → Add New Connection button (Step 13)
 
-### Chapter 5 — Connection nickname popup + settings panel (55s – 68s)
-**[Cutaway: nickname popup mockup, then connection settings panel mockup]**
-- Nickname popup materializes (info icon + "Enter a connection nickname" + "Klaviyo Connection" input + OK/Cancel)
-- Caption: "Step 11: Name the connection → OK"
-- Popup fades out
-- Connection settings panel mockup materializes (Klaviyo Connection header + Select Account dropdown showing "Klaviyo key" + Action To Perform dropdown "Create / Update Profile" + Email dropdown + List dropdown + Subscribe to Email Marketing toggle ON)
-- Captions cycle: "Step 12: Choose Action → Create / Update Profile" → "Step 13: Map Email → form Email field" → "Step 14: Pick a list, toggle on email marketing"
+### Chapter 5 — Nickname dialog + REAL Klaviyo Connection panel + action variants
+- Nickname popup materializes over the iframe (Step 14 "Name the connection → OK") — stylized overlay, no real capture
+- Popup fades; **swap iframe to `builder-providers-klaviyo-connection`** (real Klaviyo Connection settings panel — Create / Update Profile selected by default)
+- **Step 15**: "Action: Create / Update Profile (default)"
+- **Step 16**: "Map Email → form Email field, pick a list"
+- **DOM puppetry (inline, per INV-7)** swaps the Action dropdown value + replaces the inner `.wpforms-builder-klaviyo-provider-actions-data` HTML + shows the matching `.wpforms-builder-klaviyo-action-description` paragraph:
+  - **Step 17**: "Action: Unsubscribe (revokes consent)" — Email field only, Klaviyo's actual revocation copy
+  - **Step 18**: "Action: Remove from List (keeps consent)" — Email + List dropdown (Email List preselected), Klaviyo's actual list-only copy
+- Restores to Create / Update Profile before outro
 
-### Outro (68s – 73s)
+## Section D — Outro (~68 → 73s)
+
 - Mac frame fades out
 - Editorial card: "Connected." — sub: "Every form submission → Klaviyo profile. **Just works.**"
-- Sullie mounts bottom-right
+- Sullie bug mounts bottom-right
 
-## Library calls
+## Library fixes landed in v3 (motion-primitives.js + wpforms-interactions.js)
 
-- `IframeManager` — load + swap with 4 real snapshots
-- `Cursor` — glide + click with brand-orange ripples
-- `mountSullieBug` — final brand anchor
-- Inline DOM puppetry: API key letter-by-letter typing (input event dispatch), nickname typing
+These are library-level defensive guards triggered by the v2 cursor bug — they help all future single-HTML videos, not just Klaviyo:
+
+1. **`Cursor.glide(to)`** — no-ops + warns when `to` is null/undefined or has non-finite coords. Previously moved cursor to (0,0).
+2. **`IframeManager.elementToStageCoords(target)`** — throws with informative message when the element has an empty layout rect (width===0 && height===0 && left===0 && top===0). This pattern means the element is in the DOM but hidden / collapsed / display:none. Previously returned origin (0,0), causing the cursor jump.
 
 ## Brand discipline
 
-- `--wpf-orange #E27730` — Connect button ripple
-- `--wpf-blue-light #0399ED` — popup info icon, settings panel toggle ON state (matches WPForms admin toggle color)
-- Klaviyo dashboard cutaway uses #1a1a1f (their actual brand black) for the logo, account icon, and primary buttons
-- No purple anywhere (Klaviyo is not an AI feature)
+- `--wpf-orange #E27730` — primary brand, Connect button ripple, submit button, caret
+- `--wpf-blue-light #0399ED` — popup info icon, settings panel toggle
+- Klaviyo brand black `#1A1A1F` — Klaviyo profile card header, dashboard logo
+- No purple (Klaviyo is not an AI feature)
 
 ## Stage quality
 
-- Stage at native 1280×720 with NO CSS transform (pixel-quality fix from prior commit)
-- Iframe at native 1180×604 (matches mac-body inner) with no pre-scale, identity transform at rest
-- Cutaway mockups render in parent doc with native CSS — sharp text via CPU rasterization
+- Stage at native 1280×720, NO CSS transform (INV-1)
+- Iframe at native 1180×604, identity transform at rest (INV-2)
+- Mac frame fades only at section boundaries — no transforms (INV-3)
+- Cursor in stage-local coord space (INV-4)
+- Klaviyo selectors scoped to `#wpforms-integration-klaviyo` (INV-5)
 
 ## Validation
 
 - Open at `http://localhost:56480/videos/klaviyo-quick-connect/index.html`
-- Visual QC focus:
-  - Editorial intro fades cleanly
-  - Mac frame materializes with the Klaviyo form snapshot visible inside
-  - Klaviyo cutaway feels like a believable representation (not pixel-perfect, just enough to follow)
-  - Snapshot swaps are crossfades (no flash)
-  - API key + nickname typing is smooth
-  - Cursor lands on correct targets in builder-providers / builder-providers-klaviyo
-  - Connection settings panel mockup feels like the real WPForms builder panel
-  - Outro card lands with Sullie
-
-## Known limits
-
-- Klaviyo dashboard side is a stylized mockup, not a pixel-perfect Klaviyo recreation. If you want better fidelity, capture real Klaviyo dashboard snapshots and swap the cutaway for IframeManager-loaded snapshots
-- "Add New Connection" nickname popup + Connection settings panel are also mockups for the same reason
-- These mockups could be promoted to motion-primitives or wpforms-marketing blocks if they get reused
+- Pass: `node tools/lint-determinism.js --video klaviyo-quick-connect`
+- Visual QC by Umair (>5s motion per project guidance)

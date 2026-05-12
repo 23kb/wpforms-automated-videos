@@ -8,7 +8,7 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
-    background: #d8dbe2;
+    background: #f7ede0;
     font-family: var(--wpf-font-stack);
     overflow: hidden;
     color: var(--wpf-ink);
@@ -22,34 +22,53 @@
   }
   .stage {
     position: relative;
-    width: 1280px; height: 720px;
-    background: var(--wpf-bg-cream);
+    width: 1440px; height: 820px;
+    background: #f7ede0;
     overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.10);
     flex: 0 0 auto;
-    /* No transform on stage — sharp text at native render */
   }
   .atmo {
     position: absolute; inset: 0;
     pointer-events: none; z-index: 0;
-    background: linear-gradient(155deg, #fbf7f0 0%, #f7ede0 50%, #f1e2cc 100%);
+    overflow: hidden;
   }
   .bloom {
-    position: absolute; border-radius: 50%;
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px) saturate(1.15);
     mix-blend-mode: multiply;
-    filter: blur(70px) saturate(1.0);
+    opacity: 0;
+    will-change: transform, opacity;
   }
+  /* Higher-saturation source colors so the blooms read clearly through the
+     cream base. mix-blend-mode: multiply still keeps things grounded. */
   .bloom-orange {
-    width: 640px; height: 640px;
-    right: -180px; top: -160px;
-    background: radial-gradient(circle, rgba(226,119,48,0.16) 0%, rgba(226,119,48,0.05) 42%, rgba(226,119,48,0) 80%);
+    width: 820px; height: 820px;
+    right: -180px; top: -200px;
+    background: radial-gradient(circle, rgba(226,119,48,0.55) 0%, rgba(226,119,48,0.18) 45%, rgba(226,119,48,0) 78%);
+  }
+  .bloom-peach {
+    width: 880px; height: 880px;
+    left: -240px; top: -220px;
+    background: radial-gradient(circle, rgba(255,184,134,0.70) 0%, rgba(255,184,134,0.20) 50%, rgba(255,184,134,0) 78%);
+  }
+  .bloom-blue {
+    width: 920px; height: 920px;
+    left: -240px; bottom: -280px;
+    background: radial-gradient(circle, rgba(120,170,225,0.60) 0%, rgba(120,170,225,0.16) 50%, rgba(120,170,225,0) 78%);
+  }
+  .bloom-violet {
+    width: 820px; height: 820px;
+    right: -180px; bottom: -240px;
+    background: radial-gradient(circle, rgba(168,138,210,0.55) 0%, rgba(168,138,210,0.16) 50%, rgba(168,138,210,0) 78%);
   }
 
-  /* Mac frame */
+  /* Mac frame (tutorial section only — INV-3) */
   .mac-frame {
     position: absolute;
-    left: 50px; top: 40px;
-    width: 1180px; height: 640px;
+    left: 30px; top: 40px;
+    width: 1380px; height: 740px;
     background: #ffffff;
     border-radius: 14px;
     box-shadow: 0 40px 80px rgba(0,0,0,0.20), 0 14px 36px rgba(0,0,0,0.12);
@@ -58,20 +77,90 @@
     opacity: 0;
     will-change: opacity;
   }
+  /* Browser tab strip — Safari/Chrome style */
+  .tab-strip {
+    height: 36px;
+    background: #dededf;
+    border-bottom: 1px solid #c5c5c8;
+    display: flex; align-items: flex-end;
+    padding: 0 8px;
+    position: relative;
+    z-index: 2;
+  }
+  .tab {
+    flex: 0 0 auto;
+    min-width: 180px;
+    max-width: 240px;
+    height: 28px;
+    background: #cfcfd0;
+    color: #5a5b5e;
+    border-radius: 8px 8px 0 0;
+    padding: 0 12px;
+    display: flex; align-items: center; gap: 8px;
+    font: 500 11px/1 var(--wpf-font-stack);
+    overflow: hidden;
+    white-space: nowrap;
+    margin-right: 2px;
+    border: 1px solid transparent;
+    transition: background 0.25s ease, color 0.25s ease;
+    will-change: transform, opacity;
+  }
+  .tab.active {
+    background: #ffffff;
+    color: var(--wpf-ink);
+    border-color: #c5c5c8;
+    border-bottom: 1px solid #ffffff; /* merges with white URL bar below */
+    position: relative;
+    z-index: 3;
+  }
+  .tab .favicon {
+    width: 14px; height: 14px;
+    flex: 0 0 auto;
+    border-radius: 3px;
+    background: #eee;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .tab .favicon.kl {
+    background: #1a1a1f; color: #ffffff;
+  }
+  .tab .favicon.wp img {
+    width: 14px; height: 14px;
+  }
+  .tab .title { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .tab .close {
+    color: #8a8b8e;
+    font-size: 12px;
+    line-height: 1;
+    width: 14px; height: 14px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+  }
+  .tab-strip .new-tab {
+    margin-left: 4px;
+    color: #5a5b5e;
+    font-size: 18px;
+    height: 28px;
+    width: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+  }
+
   .mac-chrome {
     height: 36px;
-    background: #ececef;
+    background: #ffffff;
     border-bottom: 1px solid #d8d9dc;
     display: flex; align-items: center;
     padding: 0 14px; gap: 8px;
   }
-  .mac-chrome .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .mac-chrome .dot { width: 11px; height: 11px; border-radius: 50%; }
   .mac-chrome .dot.r { background: #ff5f57; }
   .mac-chrome .dot.y { background: #febc2e; }
   .mac-chrome .dot.g { background: #28c840; }
   .mac-chrome .url-bar {
     flex: 1;
-    background: #fff;
+    background: #f3f3f4;
     border: 1px solid #d8d9dc;
     border-radius: 6px;
     height: 24px;
@@ -83,7 +172,8 @@
   }
   .mac-body {
     position: relative;
-    height: calc(640px - 36px);
+    /* 740 frame - 36 tab-strip - 36 chrome = 668 */
+    height: calc(740px - 36px - 36px);
     background: #fbfaf7;
     overflow: hidden;
   }
@@ -91,7 +181,7 @@
     position: absolute; inset: 0;
   }
 
-  /* Editorial intro/outro */
+  /* Editorial intro/outro card */
   .editorial-card {
     position: absolute;
     left: 50%; top: 50%;
@@ -103,20 +193,177 @@
     will-change: opacity, transform;
   }
   .editorial-card h1 {
-    font: 600 44px/1.1 var(--wpf-font-stack);
+    font: 600 48px/1.1 var(--wpf-font-stack);
     margin: 0 0 12px;
     letter-spacing: -0.015em;
     color: var(--wpf-ink);
   }
   .editorial-card h1 .accent { color: var(--wpf-orange); }
   .editorial-card .sub {
-    font: 400 18px/1.4 var(--wpf-font-stack);
+    font: 400 19px/1.4 var(--wpf-font-stack);
     color: var(--wpf-ink-mute);
-    max-width: 620px;
+    max-width: 660px;
     margin: 0 auto;
   }
+  .editorial-card .sullie-bug {
+    width: 72px; height: 72px;
+    margin: 0 auto 22px;
+    display: block;
+  }
 
-  /* Caption pill */
+  /* PostIntro — concept beat */
+  .postintro {
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+  }
+  .pi-form {
+    position: absolute;
+    left: 180px; top: 230px;
+    width: 360px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+    padding: 28px 28px 24px;
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+  .pi-form .form-title {
+    font: 600 17px/1.2 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    margin: 0 0 20px;
+  }
+  .pi-form .form-row { margin-bottom: 14px; }
+  .pi-form .form-row .label {
+    font: 500 11px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pi-form .form-row .input {
+    border: 1px solid #d5d5d8;
+    border-radius: 6px;
+    padding: 11px 13px;
+    font: 400 14px/1 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    background: #fafafb;
+    min-height: 18px;
+  }
+  .pi-form .form-row .input.value {
+    background: #ffffff;
+    border-color: #cbd2db;
+  }
+  .pi-form .form-row .input .ml-caret {
+    display: inline-block;
+    width: 1px;
+    margin-left: 1px;
+    color: var(--wpf-orange);
+    animation: pi-blink 0.9s steps(2, end) infinite;
+  }
+  @keyframes pi-blink { 50% { opacity: 0; } }
+  .pi-form .submit {
+    width: 100%;
+    background: var(--wpf-orange);
+    color: #ffffff;
+    border: 0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font: 600 14px/1 var(--wpf-font-stack);
+    margin-top: 4px;
+    cursor: default;
+    will-change: transform, box-shadow;
+  }
+  .pi-form .submit.glow {
+    box-shadow: 0 0 0 6px rgba(226,119,48,0.25), 0 10px 22px rgba(226,119,48,0.45);
+  }
+  .pi-pill {
+    position: absolute;
+    left: 550px; top: 400px;
+    background: #14161c;
+    color: #ffffff;
+    padding: 9px 20px;
+    border-radius: 999px;
+    font: 600 14px/1 var(--wpf-font-stack);
+    box-shadow: 0 10px 28px rgba(20,22,28,0.35);
+    opacity: 0;
+    white-space: nowrap;
+    will-change: transform, opacity;
+  }
+  .pi-pill .check { color: #28c840; margin-right: 6px; }
+
+  /* Real Klaviyo profile iframes — 3-card cascade. */
+  .pi-profile-real {
+    position: absolute;
+    width: 740px; height: 370px;
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 32px 70px rgba(0,0,0,0.26), 0 10px 24px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.06);
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+  .pi-profile-real iframe {
+    position: absolute;
+    width: 1624px;
+    height: 704px;
+    border: 0;
+    left: -220px;
+    top: -33px;
+    transform: scale(1.10);
+    transform-origin: 0 0;
+    pointer-events: none;
+  }
+  /* Cascade — front to back, slight offset */
+  #piProfileReal1 { left: 600px; top: 230px; z-index: 5; }
+  #piProfileReal2 { left: 640px; top: 194px; z-index: 4; }
+  #piProfileReal3 { left: 680px; top: 158px; z-index: 3; }
+
+  /* Klaviyo brand intro — real primary logo (charcoal), shown briefly
+     before the profile cascade. */
+  .pi-klaviyo-intro {
+    position: absolute;
+    left: 600px;
+    top: 230px;
+    width: 740px;
+    height: 370px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    z-index: 6;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .pi-klaviyo-intro img {
+    width: 460px;
+    height: auto;
+    display: block;
+    /* The PNG ships at 1200×630 with transparent background — natural fit */
+  }
+
+  .pi-tagline {
+    position: absolute;
+    left: 0; right: 0; top: 70px;
+    font: 600 24px/1.2 var(--wpf-font-stack);
+    color: var(--wpf-ink);
+    letter-spacing: -0.01em;
+    opacity: 0;
+    will-change: opacity, transform;
+    text-align: center;
+  }
+  .pi-tagline .accent { color: var(--wpf-orange); }
+  .pi-tagline .sub {
+    display: block;
+    font: 400 15px/1.3 var(--wpf-font-stack);
+    color: var(--wpf-ink-mute);
+    margin-top: 6px;
+  }
+
+  /* Caption pill (tutorial section only) */
   .caption-pill {
     position: absolute;
     left: 50%; top: 16px;
@@ -138,193 +385,7 @@
     margin-right: 6px;
   }
 
-  /* Klaviyo dashboard cutaway — no snapshot, stylized mockup */
-  .klaviyo-cutaway {
-    position: absolute;
-    inset: 0;
-    background: #ffffff;
-    z-index: 20;
-    opacity: 0;
-    pointer-events: none;
-    overflow: hidden;
-    font: 400 14px/1.4 var(--wpf-font-stack);
-    color: #1b1b1f;
-    will-change: opacity;
-  }
-  /* Klaviyo header */
-  .kl-header {
-    position: absolute;
-    left: 0; right: 0; top: 0; height: 56px;
-    background: #f5f5f7;
-    border-bottom: 1px solid #e6e6e9;
-    display: flex; align-items: center;
-    padding: 0 24px; gap: 16px;
-  }
-  .kl-header .logo {
-    width: 32px; height: 32px;
-    background: #1a1a1f;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    font-weight: 700;
-    font-size: 18px;
-  }
-  .kl-header .search {
-    flex: 1;
-    background: #fff;
-    border: 1px solid #d5d5d8;
-    border-radius: 8px;
-    height: 32px;
-    padding: 0 12px;
-    display: flex; align-items: center;
-    font-size: 13px;
-    color: #8e8e93;
-    max-width: 280px;
-  }
-  /* Klaviyo sidebar */
-  .kl-sidebar {
-    position: absolute;
-    left: 0; top: 56px; bottom: 0; width: 220px;
-    background: #fafafb;
-    border-right: 1px solid #e6e6e9;
-    padding: 16px 0;
-  }
-  .kl-sidebar .item {
-    padding: 8px 24px;
-    font-size: 13px;
-    color: #3a3a3f;
-    display: flex; align-items: center; gap: 10px;
-    cursor: default;
-  }
-  .kl-sidebar .item .ico {
-    width: 16px; height: 16px;
-    background: #c5c5cb;
-    border-radius: 3px;
-  }
-  .kl-sidebar .item.active {
-    background: #ebebef;
-    color: #1a1a1f;
-    font-weight: 500;
-  }
-  .kl-sidebar .item.account {
-    margin-top: auto;
-    border-top: 1px solid #e6e6e9;
-    padding-top: 12px;
-    background: #fff;
-  }
-  /* Klaviyo content area */
-  .kl-content {
-    position: absolute;
-    left: 220px; right: 0; top: 56px; bottom: 0;
-    padding: 32px;
-    overflow: hidden;
-  }
-  .kl-content h2 {
-    font: 600 24px/1.2 var(--wpf-font-stack);
-    margin: 0 0 18px;
-    color: #14161c;
-  }
-  .kl-card {
-    background: #fff;
-    border: 1px solid #e6e6e9;
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
-  }
-  .kl-card .card-title {
-    font: 600 15px/1.2 var(--wpf-font-stack);
-    margin-bottom: 12px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .kl-btn-primary {
-    background: #1a1a1f;
-    color: #fff;
-    border: 0;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font: 500 13px/1 var(--wpf-font-stack);
-    cursor: default;
-  }
-  .kl-btn-primary.create-key {
-    background: #2563eb;
-  }
-  /* Account menu popover */
-  .kl-account-menu {
-    position: absolute;
-    left: 12px; bottom: 90px;
-    width: 220px;
-    background: #fff;
-    border: 1px solid #e6e6e9;
-    border-radius: 8px;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
-    padding: 8px 0;
-    opacity: 0;
-    transform: translateY(8px);
-    will-change: opacity, transform;
-    z-index: 25;
-  }
-  .kl-account-menu .menu-item {
-    padding: 8px 16px;
-    font-size: 13px;
-    color: #3a3a3f;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .kl-account-menu .menu-item.settings {
-    color: #1a1a1f;
-    font-weight: 500;
-    background: #f5f5f7;
-  }
-  /* API key reveal */
-  .kl-key-reveal {
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 540px;
-    background: #fff;
-    border: 1px solid #e6e6e9;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
-    opacity: 0;
-    z-index: 26;
-    will-change: opacity;
-  }
-  .kl-key-reveal h3 {
-    font: 600 17px/1.2 var(--wpf-font-stack);
-    margin: 0 0 6px;
-  }
-  .kl-key-reveal .note {
-    background: #fff8e1;
-    border: 1px solid #f5e1a4;
-    padding: 10px 14px;
-    border-radius: 6px;
-    margin: 14px 0;
-    font: 400 12px/1.4 var(--wpf-font-stack);
-    color: #7a5a00;
-  }
-  .kl-key-reveal .key-row {
-    display: flex; align-items: center; gap: 8px;
-    background: #f5f5f7;
-    border: 1px solid #e6e6e9;
-    border-radius: 6px;
-    padding: 10px 12px;
-    font: 400 13px/1.2 ui-monospace, 'SF Mono', Menlo, monospace;
-    color: #14161c;
-  }
-  .kl-key-reveal .key-row .key {
-    flex: 1;
-    letter-spacing: 0.02em;
-  }
-  .kl-key-reveal .copy-icon {
-    width: 24px; height: 24px;
-    background: #e6e6e9;
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    color: #3a3a3f;
-    font-size: 12px;
-  }
-
-  /* Connection nickname popup mockup */
+  /* Connection nickname popup */
   .nickname-popup {
     position: absolute;
     left: 50%; top: 50%;
@@ -375,88 +436,82 @@
   }
   .nickname-popup .ok { background: #0399ED; color: #fff; }
   .nickname-popup .cancel { background: #e6e6e9; color: #3a3a3f; }
-
-  /* Connection settings panel mockup */
-  .conn-panel {
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 560px;
-    background: #fff;
-    border: 1px solid #e6e9ed;
-    border-radius: 8px;
-    padding: 20px 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.16);
-    opacity: 0;
-    z-index: 32;
-    will-change: opacity, transform;
-  }
-  .conn-panel .panel-header {
-    font: 600 15px/1 var(--wpf-font-stack);
-    color: var(--wpf-ink);
-    padding-bottom: 14px;
-    border-bottom: 1px solid #e6e9ed;
-    margin-bottom: 18px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .conn-panel .panel-header .trash {
-    color: #d63637;
-    font-size: 14px;
-  }
-  .conn-panel .field {
-    margin-bottom: 14px;
-  }
-  .conn-panel .field-label {
-    font: 600 12px/1 var(--wpf-font-stack);
-    color: var(--wpf-ink);
-    margin-bottom: 6px;
-  }
-  .conn-panel .field-label .req { color: #d63637; }
-  .conn-panel .field-input {
-    width: 100%;
-    border: 1px solid #d5d5d8;
-    border-radius: 6px;
-    padding: 8px 12px;
-    background: #fff;
-    font: 400 13px/1 var(--wpf-font-stack);
-    color: var(--wpf-ink);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .conn-panel .field-input .caret {
-    color: var(--wpf-ink-mute);
-    font-size: 10px;
-  }
-  .conn-panel .toggle-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 0;
-  }
-  .conn-panel .toggle-switch {
-    width: 36px; height: 20px;
-    background: #0399ED;
-    border-radius: 999px;
-    position: relative;
-  }
-  .conn-panel .toggle-switch::after {
-    content: '';
-    position: absolute;
-    top: 2px; right: 2px;
-    width: 16px; height: 16px;
-    background: #fff;
-    border-radius: 50%;
-  }
-  .conn-panel .toggle-row .label {
-    font: 500 13px/1 var(--wpf-font-stack);
-    color: var(--wpf-ink);
-  }
 </style>
 </head>
 <body>
 <div class="stage-wrap">
   <div class="stage" id="stage">
-    <div class="atmo"></div>
-    <div class="bloom bloom-orange"></div>
+    <div class="atmo" id="atmo">
+      <div class="bloom bloom-orange" id="bloomOrange"></div>
+      <div class="bloom bloom-peach" id="bloomPeach"></div>
+      <div class="bloom bloom-blue" id="bloomBlue"></div>
+      <div class="bloom bloom-violet" id="bloomViolet"></div>
+    </div>
+
+    <div class="editorial-card" id="introCard">
+      <img class="sullie-bug" src="/reference/wpforms-brand/assets/sullie-master.svg" alt="" />
+      <h1>Klaviyo Addon</h1>
+      <div class="sub">Connect WPForms to Klaviyo</div>
+    </div>
+
+    <!-- PostIntro — concept beat, no mac frame -->
+    <div class="postintro" id="postIntro">
+      <div class="pi-tagline" id="piTagline">
+        Every submission, into your <span class="accent">Klaviyo audience.</span>
+        <span class="sub">Capture profiles, manage lists, subscribe contacts — straight from your forms.</span>
+      </div>
+
+      <div class="pi-form" id="piForm">
+        <div class="form-title">Newsletter signup</div>
+        <div class="form-row">
+          <div class="label">Name</div>
+          <div class="input value" id="piFormName">Sullie</div>
+        </div>
+        <div class="form-row">
+          <div class="label">Email</div>
+          <div class="input value" id="piFormEmail"></div>
+        </div>
+        <button class="submit" id="piSubmit">Subscribe</button>
+      </div>
+
+      <div class="pi-pill" id="piPill"><span class="check">✓</span><span id="piPillText">Submitted</span></div>
+
+      <!-- Klaviyo brand intro — real primary logo (charcoal) -->
+      <div class="pi-klaviyo-intro" id="piKlaviyoIntro">
+        <img src="/videos/klaviyo-quick-connect/assets/klaviyo-logo.png" alt="Klaviyo" />
+      </div>
+
+      <!-- 3 REAL Klaviyo profile iframes — cascade, each customized -->
+      <div class="pi-profile-real" id="piProfileReal3">
+        <iframe data-pi-name="Mira Chen" data-pi-email="mira@bakery.test"
+                sandbox="allow-same-origin" src="about:blank"></iframe>
+      </div>
+      <div class="pi-profile-real" id="piProfileReal2">
+        <iframe data-pi-name="Jordan Reyes" data-pi-email="jordan@bakery.test"
+                sandbox="allow-same-origin" src="about:blank"></iframe>
+      </div>
+      <div class="pi-profile-real" id="piProfileReal1">
+        <iframe data-pi-name="Sullie" data-pi-email="sullie@sulliesbakery.com"
+                sandbox="allow-same-origin" src="about:blank"></iframe>
+      </div>
+    </div>
 
     <div class="mac-frame" id="macFrame">
+      <!-- Browser tab strip -->
+      <div class="tab-strip" id="tabStrip">
+        <div class="tab active" id="tabWPForms">
+          <span class="favicon wp"><img src="/reference/wpforms-brand/assets/sullie-master.svg" alt="" /></span>
+          <span class="title">WPForms — Sullie's Bakery</span>
+          <span class="close">×</span>
+        </div>
+        <div class="tab" id="tabKlaviyo" style="display: none;">
+          <span class="favicon kl">K</span>
+          <span class="title">Home | Klaviyo</span>
+          <span class="close">×</span>
+        </div>
+        <div class="new-tab">+</div>
+      </div>
+      <!-- URL bar row -->
       <div class="mac-chrome">
         <span class="dot r"></span>
         <span class="dot y"></span>
@@ -466,53 +521,6 @@
       <div class="mac-body">
         <div class="iframe-stage" id="iframeStage"></div>
 
-        <!-- Klaviyo dashboard cutaway (no snapshot — stylized) -->
-        <div class="klaviyo-cutaway" id="klCutaway">
-          <div class="kl-header">
-            <div class="logo">K</div>
-            <div class="search">Search ⌘+k</div>
-          </div>
-          <div class="kl-sidebar" id="klSidebar">
-            <div class="item"><span class="ico"></span>Home</div>
-            <div class="item"><span class="ico"></span>Campaigns</div>
-            <div class="item"><span class="ico"></span>Flows</div>
-            <div class="item"><span class="ico"></span>Audience</div>
-            <div class="item"><span class="ico"></span>Content</div>
-            <div class="item"><span class="ico"></span>Analytics</div>
-            <div class="item account" id="klAccountItem">
-              <span class="ico" style="background:#1a1a1f; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border-radius:50%;">S</span>
-              Sullie's Flowers
-            </div>
-          </div>
-          <div class="kl-content" id="klContent">
-            <h2 id="klContentTitle">Welcome, Sullie</h2>
-            <div class="kl-card" id="klPrimaryCard">
-              <div class="card-title">
-                <span>Conversion metric</span>
-              </div>
-              <div style="font-size:13px; color:#5b5f6e;">Placed Order — Apr 8, 2026 to May 8, 2026</div>
-            </div>
-          </div>
-          <!-- Account menu popover -->
-          <div class="kl-account-menu" id="klAccountMenu">
-            <div class="menu-item">What's new?</div>
-            <div class="menu-item">Billing</div>
-            <div class="menu-item settings">⚙ Settings</div>
-            <div class="menu-item">Log out</div>
-          </div>
-          <!-- API key reveal -->
-          <div class="kl-key-reveal" id="klKeyReveal">
-            <h3>Private API Key Confirmation</h3>
-            <div style="font-size:12px; color:#5b5f6e;">WPForms key &middot; <span style="background:#dceefc; color:#0d4674; padding:2px 6px; border-radius:3px; font-size:10px;">Full Access Key</span></div>
-            <div class="note">⚠ This is the only time this private API key will be visible. Please copy it now.</div>
-            <div class="key-row">
-              <span class="key" id="klKeyText">pk_W•••••••••••••••••••••••</span>
-              <span class="copy-icon">⧉</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Connection nickname popup (form builder) -->
         <div class="nickname-popup" id="nicknamePopup">
           <div class="info-icon">i</div>
           <div class="label">Enter a connection nickname</div>
@@ -523,44 +531,11 @@
           </div>
         </div>
 
-        <!-- Connection settings panel mockup -->
-        <div class="conn-panel" id="connPanel">
-          <div class="panel-header">
-            <span>Klaviyo Connection</span>
-            <span class="trash">🗑</span>
-          </div>
-          <div class="field">
-            <div class="field-label">Select Account <span class="req">*</span></div>
-            <div class="field-input"><span>Klaviyo key</span><span class="caret">▾</span></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Action To Perform <span class="req">*</span></div>
-            <div class="field-input"><span>Create / Update Profile</span><span class="caret">▾</span></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Email <span class="req">*</span></div>
-            <div class="field-input"><span>Email</span><span class="caret">▾</span></div>
-          </div>
-          <div class="field">
-            <div class="field-label">List</div>
-            <div class="field-input"><span>Email List</span><span class="caret">▾</span></div>
-          </div>
-          <div class="toggle-row">
-            <div class="toggle-switch"></div>
-            <div class="label">Subscribe to Email Marketing</div>
-          </div>
-        </div>
-
         <div class="caption-pill" id="captionPill">
           <span class="step" id="captionStep">Step 1</span>
           <span id="captionText">Settings → Integrations</span>
         </div>
       </div>
-    </div>
-
-    <div class="editorial-card" id="introCard">
-      <h1>Connect Klaviyo <span class="accent">to WPForms.</span></h1>
-      <div class="sub">Every form submission, straight to your Klaviyo audience.</div>
     </div>
 
     <div class="editorial-card" id="outroCard">
@@ -572,7 +547,7 @@
 
 <script src="/vendor/gsap/3.15.0/gsap.min.js"></script>
 <script type="module">
-import { Cursor, mountSullieBug } from '/videos/_shared/motion-primitives.js';
+import { Cursor, mountSullieBug, caretType, boundedRepeats } from '/videos/_shared/motion-primitives.js';
 import { IframeManager } from '/videos/_shared/wpforms-interactions.js';
 
 const stage = document.getElementById('stage');
@@ -584,20 +559,33 @@ const captionPill = document.getElementById('captionPill');
 const captionStep = document.getElementById('captionStep');
 const captionText = document.getElementById('captionText');
 const urlBar = document.getElementById('urlBar');
-const klCutaway = document.getElementById('klCutaway');
-const klAccountItem = document.getElementById('klAccountItem');
-const klAccountMenu = document.getElementById('klAccountMenu');
-const klContentTitle = document.getElementById('klContentTitle');
-const klPrimaryCard = document.getElementById('klPrimaryCard');
-const klKeyReveal = document.getElementById('klKeyReveal');
 const nicknamePopup = document.getElementById('nicknamePopup');
-const connPanel = document.getElementById('connPanel');
+const tabWPForms = document.getElementById('tabWPForms');
+const tabKlaviyo = document.getElementById('tabKlaviyo');
 
+const bloomOrange = document.getElementById('bloomOrange');
+const bloomPeach = document.getElementById('bloomPeach');
+const bloomBlue = document.getElementById('bloomBlue');
+const bloomViolet = document.getElementById('bloomViolet');
+
+const postIntro = document.getElementById('postIntro');
+const piTagline = document.getElementById('piTagline');
+const piForm = document.getElementById('piForm');
+const piFormEmail = document.getElementById('piFormEmail');
+const piSubmit = document.getElementById('piSubmit');
+const piPill = document.getElementById('piPill');
+const piPillText = document.getElementById('piPillText');
+const piProfileReal1 = document.getElementById('piProfileReal1');
+const piProfileReal2 = document.getElementById('piProfileReal2');
+const piProfileReal3 = document.getElementById('piProfileReal3');
+const piKlaviyoIntro = document.getElementById('piKlaviyoIntro');
+
+// Mac-body is 1380 × 668 (740 frame - 36 tab strip - 36 chrome).
 const ifm = new IframeManager(iframeStage, {
-  viewport: { width: 1180, height: 604 },
-  iframeSize: { width: 1180, height: 604 },
+  viewport: { width: 1380, height: 668 },
+  iframeSize: { width: 1380, height: 668 },
 });
-const cursor = new Cursor(iframeStage, { initialX: 1100, initialY: 60, size: 26, zIndex: 50 });
+const cursor = new Cursor(iframeStage, { initialX: 1280, initialY: 90, size: 28, zIndex: 50 });
 
 function setCaption(step, text) {
   captionStep.textContent = step;
@@ -614,189 +602,812 @@ function showElement(el, props = { duration: 0.45, ease: 'power2.out' }) {
 function hideElement(el, props = { duration: 0.3, ease: 'power2.in' }) {
   return gsap.to(el, { opacity: 0, ...props });
 }
+function klaviyoQuery(selector) {
+  return ifm.query('#wpforms-integration-klaviyo ' + selector);
+}
+
+// Klaviyo zoom 1.0 = native size → fills frame vertically. Wider snapshots
+// will overflow horizontally on the right; that's acceptable since the
+// critical UI (sidebars, headers, forms) is left-aligned.
+function applyKlaviyoZoom(scale = 1.0) {
+  const doc = ifm.doc();
+  if (!doc || !doc.documentElement) return;
+  let style = doc.querySelector('style[data-klaviyo-fit]');
+  if (!style) {
+    style = doc.createElement('style');
+    style.dataset.klaviyoFit = 'true';
+    doc.head.appendChild(style);
+  }
+  style.textContent = `html { zoom: ${scale}; }`;
+}
+function clearKlaviyoZoom() {
+  const doc = ifm.doc();
+  const style = doc?.querySelector('style[data-klaviyo-fit]');
+  if (style) style.remove();
+}
+
+// ─────────────────────────────────────────────────
+// Browser tab strip — animate new-tab open/switch
+// ─────────────────────────────────────────────────
+function setActiveTab(which) {
+  if (which === 'wpforms') {
+    tabWPForms.classList.add('active');
+    tabKlaviyo.classList.remove('active');
+  } else {
+    tabKlaviyo.classList.add('active');
+    tabWPForms.classList.remove('active');
+  }
+}
+async function openKlaviyoTab() {
+  // Tab slides in from the right of WPForms tab + active state shifts.
+  tabKlaviyo.style.display = 'flex';
+  gsap.set(tabKlaviyo, { opacity: 0, x: -30 });
+  await new Promise(r => {
+    gsap.to(tabKlaviyo, { opacity: 1, x: 0, duration: 0.4, ease: 'back.out(1.4)', onComplete: r });
+  });
+  setActiveTab('klaviyo');
+}
+function switchToWPFormsTab() {
+  setActiveTab('wpforms');
+}
+
+// ─────────────────────────────────────────────────
+// Atmosphere — slow drift + opacity color cycle
+// ─────────────────────────────────────────────────
+function startAtmosphere(totalSeconds = 95) {
+  gsap.set([bloomOrange, bloomPeach, bloomBlue, bloomViolet], { opacity: 0 });
+  const tl = gsap.timeline();
+  // Warm tones dominant at intro — bigger opacity so the atmosphere reads
+  // clearly behind the editorial cards.
+  tl.to(bloomOrange, { opacity: 0.95, duration: 1.6, ease: 'sine.inOut' }, 0)
+    .to(bloomPeach, { opacity: 0.85, duration: 1.6, ease: 'sine.inOut' }, 0.3);
+  // Mid-video — cool blue rises, peach softens but stays present.
+  tl.to(bloomPeach, { opacity: 0.55, duration: 6, ease: 'sine.inOut' }, 18)
+    .to(bloomBlue, { opacity: 0.65, duration: 6, ease: 'sine.inOut' }, 22);
+  // Late phase — violet enters for outro warmth.
+  tl.to(bloomViolet, { opacity: 0.60, duration: 5, ease: 'sine.inOut' }, 60)
+    .to(bloomBlue, { opacity: 0.45, duration: 5, ease: 'sine.inOut' }, 70);
+
+  const driftCycle = 22;
+  const reps = boundedRepeats(driftCycle, totalSeconds);
+  gsap.to(bloomOrange, { x: 60, y: -30, duration: driftCycle, ease: 'sine.inOut', repeat: reps, yoyo: true });
+  gsap.to(bloomPeach,  { x: -50, y: 25, duration: driftCycle, ease: 'sine.inOut', repeat: reps, yoyo: true });
+  gsap.to(bloomBlue,   { x: 70, y: -40, duration: driftCycle + 4, ease: 'sine.inOut', repeat: Math.max(0, boundedRepeats(driftCycle + 4, totalSeconds)), yoyo: true });
+  gsap.to(bloomViolet, { x: -60, y: 30, duration: driftCycle + 2, ease: 'sine.inOut', repeat: Math.max(0, boundedRepeats(driftCycle + 2, totalSeconds)), yoyo: true });
+}
+
+// ─────────────────────────────────────────────────
+// Profile iframe — DOM puppetry to display dummy data.
+// Customizes the captured klaviyo-example-profile to show only
+// name + email + status in the visible cropped area.
+// ─────────────────────────────────────────────────
+function customizeProfile(iframe, name, email) {
+  return new Promise(resolve => {
+    iframe.addEventListener('load', () => {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) return resolve();
+        // Walk text nodes and swap fingerprint strings
+        const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+        const replacements = [
+          ['Matt Kemp (Sample)', name],
+          ['Matt Kemp', name],
+          ['matt.kemp@klaviyo-demo.com', email],
+          ['Never Subscribed', 'Subscribed'],
+          ['Never subscribed', 'Subscribed'],
+        ];
+        let node;
+        while ((node = walker.nextNode())) {
+          let t = node.nodeValue;
+          for (const [from, to] of replacements) {
+            if (t.includes(from)) t = t.split(from).join(to);
+          }
+          if (t !== node.nodeValue) node.nodeValue = t;
+        }
+        // Restyle the Subscribed pill (was Never Subscribed — likely yellow)
+        Array.from(doc.querySelectorAll('*')).forEach(el => {
+          if (el.children.length === 0 && el.textContent.trim() === 'Subscribed') {
+            const p = el.closest('[class*="sc-"]') || el.parentElement;
+            if (p) {
+              p.style.background = '#ecf7ed';
+              p.style.color = '#1b7a31';
+              p.style.borderColor = '#9bd9a9';
+            }
+          }
+        });
+      } catch (e) { console.warn('[profile customize]', e); }
+      resolve();
+    }, { once: true });
+    iframe.src = '/snapshots/klaviyo-example-profile/index.html';
+  });
+}
+
+function loadAllProfiles() {
+  const promises = [];
+  for (const card of [piProfileReal1, piProfileReal2, piProfileReal3]) {
+    const f = card.querySelector('iframe');
+    const name = f.dataset.piName;
+    const email = f.dataset.piEmail;
+    promises.push(customizeProfile(f, name, email));
+  }
+  return Promise.all(promises);
+}
+
+// ─────────────────────────────────────────────────
+// DOM puppetry on admin-settings-integrations:
+//   expandKlaviyoAccordion — opens the Klaviyo provider row
+//   expandKlaviyoConnectForm — reveals the API Key + Nickname fields
+//   markKlaviyoConnected — hides connect form, shows "Connected ✓"
+// Mirrors what WPForms admin JS does on those click events.
+// ─────────────────────────────────────────────────
+function markKlaviyoConnected(nickname = 'Klaviyo key') {
+  const doc = ifm.doc();
+  if (!doc) return;
+  // Hide the connect form
+  const connect = doc.querySelector('#wpforms-integration-klaviyo .wpforms-settings-provider-accounts-connect');
+  if (connect) connect.style.display = 'none';
+  // Append the new account to the accounts list
+  const list = doc.querySelector('#wpforms-integration-klaviyo .wpforms-settings-provider-accounts-list ul');
+  if (list) {
+    const today = 'May 12, 2026';
+    const li = doc.createElement('li');
+    li.innerHTML = `<span class="label">${nickname}</span><span class="date">Connected on: ${today}</span><span class="remove"><a href="#" data-provider="klaviyo">Disconnect</a></span>`;
+    li.style.background = '#ecf7ed';
+    li.style.transition = 'background 1.2s ease';
+    list.appendChild(li);
+    // Fade back to default after a moment
+    setTimeout(() => { li.style.background = ''; }, 1200);
+  }
+  // Make sure the green Connected indicator on the header is visible
+  const indicator = doc.querySelector('#wpforms-integration-klaviyo .connected-indicator');
+  if (indicator) indicator.style.display = 'inline-flex';
+}
+
+// ─────────────────────────────────────────────────
+function expandKlaviyoAccordion() {
+  const doc = ifm.doc();
+  if (!doc) return;
+  const wrap = doc.getElementById('wpforms-integration-klaviyo');
+  const inner = doc.getElementById('provider-klaviyo');
+  if (!wrap || !inner) return;
+  wrap.classList.add('opened', 'wpforms-active');
+  inner.style.display = 'block';
+  const chev = wrap.querySelector('.wpforms-settings-provider-logo .fa');
+  if (chev) {
+    chev.classList.remove('fa-chevron-right');
+    chev.classList.add('fa-chevron-down');
+  }
+}
+function expandKlaviyoConnectForm() {
+  const doc = ifm.doc();
+  if (!doc) return;
+  // The connect form (.wpforms-settings-provider-accounts-connect) is hidden
+  // until Add New Account is clicked. Force-show it.
+  const connect = doc.querySelector('#wpforms-integration-klaviyo .wpforms-settings-provider-accounts-connect');
+  if (connect) connect.style.display = 'block';
+}
+
+// ─────────────────────────────────────────────────
+// Find the smallest leaf element containing the given text in the iframe doc.
+// Walks up to the nearest clickable ancestor (button/a/[role]) if any.
+// Falls back to the leaf itself. Used for Klaviyo selector queries since
+// Klaviyo's class names are obfuscated (sc-XXX) and not stable.
+// ─────────────────────────────────────────────────
+function findInIframeByText(text) {
+  const doc = ifm.doc();
+  if (!doc) return null;
+  let leaf = null;
+  // Exact-match leaves first
+  doc.querySelectorAll('*').forEach(el => {
+    if (leaf) return;
+    if (el.children.length === 0 && el.textContent.trim() === text) leaf = el;
+  });
+  // Partial match if no exact
+  if (!leaf) {
+    doc.querySelectorAll('*').forEach(el => {
+      if (leaf) return;
+      if (el.children.length === 0
+          && el.textContent.trim().includes(text)
+          && el.textContent.trim().length < 80) leaf = el;
+    });
+  }
+  if (!leaf) return null;
+  let click = leaf;
+  while (click && click !== doc.body) {
+    if (click.matches('button, a, [role="button"], [role="link"], [tabindex]')) break;
+    click = click.parentElement;
+  }
+  return click && click !== doc.body ? click : leaf;
+}
+
+// ─────────────────────────────────────────────────
+// Step 4 — inject the Klaviyo account-switcher popover (real markup from
+// production Klaviyo). The captured klaviyo-dashboard snapshot doesn't
+// include the popover in the DOM (it only renders when the user clicks
+// the account button), so we inject it ourselves at the right position.
+// Uses Klaviyo's own classes — the styles ride on the snapshot's CSS.
+// ─────────────────────────────────────────────────
+const KLAVIYO_POPOVER_HTML = `
+<div class="InternalPopover-content-yuhcZ InternalPopover-withBorder-W9HKm InternalPopover-medium-FYJvy" data-injected-popover>
+  <div class="sc-blLsxD iQOIgZ">
+    <div overflow="hidden" class="sc-jTrPJq fxtFrE">
+      <div class="sc-jTrPJq kMfPJJ sc-ieZDjg lflUPc">
+        <div class="Avatar-avatar-f5X6L Avatar-jumbo-cHJt1 sc-irTswW frCrL" aria-hidden="true">
+          <span class="Mixins-paragraphEmphasis-x0Aq7 Avatar-label-S42ke">Su</span>
+        </div>
+        <div title="Sullie's Flowers" class="sc-jTrPJq liLeuf sc-gLDzan cPVAgI">
+          <span class="Typography-text-Cqeoe Mixins-UI1-d88Qj"><strong class="Typography-bold-M6EME">Sullie's Flowers</strong></span>
+          <span class="Typography-text-Cqeoe Mixins-UI2-GiqHr Mixins-secondary-BaaMG">sullie@wpforms.com</span>
+        </div>
+      </div>
+      <div aria-hidden="false" class="sc-jsMahE dZbzLH" style="position: relative; bottom: 0px;">
+        <a rel="noopener noreferrer" id="whats-new-nav-link" target="_blank" href="https://www.klaviyo.com/product/whats-new" class="Link-link-eBSLX sc-qRumB rUcnR">
+          <div class="sc-jTrPJq iEhEhm account-switcher-item">
+            <div class="sc-jTrPJq dFSLTc"><span class="Icons-iconWrapper-_IZn1 Icons-small-ctbWI iconWrapper" aria-hidden="true">✨</span></div>
+            <span>What's new?</span>
+          </div>
+        </a>
+        <a href="/settings/billing" class="Link-link-eBSLX sc-fsQiph eArQGJ">
+          <div class="sc-jTrPJq iEhEhm account-switcher-item">
+            <div class="sc-jTrPJq dFSLTc"><span class="Icons-iconWrapper-_IZn1 Icons-small-ctbWI iconWrapper" aria-hidden="true">💳</span></div>
+            <span>Billing</span>
+          </div>
+        </a>
+        <a href="/settings" class="Link-link-eBSLX sc-fsQiph eArQGJ" data-popover-settings>
+          <div class="sc-jTrPJq iEhEhm account-switcher-item">
+            <div class="sc-jTrPJq dFSLTc"><span class="Icons-iconWrapper-_IZn1 Icons-small-ctbWI iconWrapper" aria-hidden="true">⚙</span></div>
+            <span>Settings</span>
+          </div>
+        </a>
+        <hr class="HorizontalRule-horizontalRule-bbgbR sc-kFuwaP jkjRaa">
+        <div class="sc-jTrPJq jKnQqz footer-links">
+          <span class="Typography-text-Cqeoe Mixins-UI1-d88Qj"><a href="/logout" class="Link-link-eBSLX"><span>Log out</span></a></span>
+          <span class="Typography-text-Cqeoe Mixins-UI1-d88Qj"><a rel="noopener noreferrer" target="_blank" href="https://klaviyo.com/legal" class="Link-link-eBSLX"><span>Legal</span></a></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+function showKlaviyoAccountPopover(anchorEl) {
+  const doc = ifm.doc();
+  if (!doc) return null;
+  // Remove any existing injected popover
+  doc.querySelectorAll('[data-injected-popover]').forEach(p => p.remove());
+  const tpl = doc.createElement('div');
+  tpl.innerHTML = KLAVIYO_POPOVER_HTML.trim();
+  const popover = tpl.firstElementChild;
+  // Position relative to viewport — anchor is bottom-left, popover floats above
+  const r = anchorEl.getBoundingClientRect();
+  Object.assign(popover.style, {
+    position: 'fixed',
+    left: (r.left + r.width + 10) + 'px',
+    bottom: (doc.defaultView.innerHeight - r.bottom + 8) + 'px',
+    zIndex: '99999',
+    background: '#ffffff',
+    borderRadius: '10px',
+    boxShadow: '0 18px 40px rgba(0,0,0,0.18), 0 6px 14px rgba(0,0,0,0.10)',
+    padding: '10px 0',
+    minWidth: '260px',
+    border: '1px solid rgba(0,0,0,0.08)',
+    opacity: '0',
+    transform: 'translateY(6px)',
+    transition: 'opacity 0.25s ease, transform 0.25s ease',
+  });
+  // Style child rows so they look like the real Klaviyo popover even if the
+  // captured CSS doesn't fully match (the obfuscated classes are content-hash
+  // dependent and may not include everything).
+  doc.head.insertAdjacentHTML('beforeend', `
+    <style data-injected-popover-style>
+      [data-injected-popover] .account-switcher-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 14px;
+        font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #1a1a1f;
+      }
+      [data-injected-popover] .account-switcher-item:hover { background: #f5f5f7; }
+      [data-injected-popover] .sc-ieZDjg.lflUPc {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 14px 14px;
+        border-bottom: 1px solid #ececef;
+        margin-bottom: 6px;
+      }
+      [data-injected-popover] .Avatar-avatar-f5X6L {
+        width: 36px; height: 36px;
+        background: #1a1a1f; color: #fff;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; font-size: 13px;
+        flex: 0 0 auto;
+      }
+      [data-injected-popover] .liLeuf { display: flex; flex-direction: column; min-width: 0; }
+      [data-injected-popover] .liLeuf strong { font-size: 13px; color: #1a1a1f; }
+      [data-injected-popover] .liLeuf .Mixins-secondary-BaaMG { font-size: 12px; color: #5b5f6e; margin-top: 2px; }
+      [data-injected-popover] a { text-decoration: none; }
+      [data-injected-popover] hr { border: 0; border-top: 1px solid #ececef; margin: 6px 0; }
+      [data-injected-popover] .footer-links { padding: 4px 14px 6px; display: flex; gap: 14px; font-size: 12px; }
+      [data-injected-popover] .footer-links a { color: #2563eb; }
+    </style>
+  `);
+  doc.body.appendChild(popover);
+  // Animate in next frame
+  requestAnimationFrame(() => {
+    popover.style.opacity = '1';
+    popover.style.transform = 'translateY(0)';
+  });
+  return popover;
+}
+
+// Cursor-glide-to-text helper. Scrolls into view first if available.
+async function glideToText(text, opts = {}) {
+  const el = findInIframeByText(text);
+  if (!el) { console.warn('[glideToText] not found:', text); return; }
+  try {
+    await ifm.smoothScrollIntoView(el, { block: 'center', duration: 0.5 });
+    await new Promise(r => setTimeout(r, 150));
+    const pt = ifm.elementToStageCoords(el);
+    await cursor.glide(pt, { duration: opts.duration || 0.85 });
+    if (opts.click) await cursor.click({ ripple: true, rippleColor: opts.rippleColor });
+  } catch (e) { console.warn('[glideToText]', text, e.message); }
+}
+
+// ─────────────────────────────────────────────────
+// Chapter 5 — Action dropdown puppetry on real Builder snapshot
+// ─────────────────────────────────────────────────
+const ACTION_DATA_HTML = {
+  create_update_profile: null,
+  unsubscribe: `
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-email">
+      <h4>Email<span class="required">*</span></h4>
+      <select class="wpforms-builder-provider-connection-field-value wpforms-field-map-select wpforms-required">
+        <option value="">--- Select Form Field ---</option>
+        <option value="3" selected>Email</option>
+      </select>
+    </div>
+  `,
+  remove_from_list: `
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-email">
+      <h4>Email<span class="required">*</span></h4>
+      <select class="wpforms-builder-provider-connection-field-value wpforms-field-map-select wpforms-required">
+        <option value="">--- Select Form Field ---</option>
+        <option value="3" selected>Email</option>
+      </select>
+    </div>
+    <div class="wpforms-builder-provider-connection-block wpforms-builder-klaviyo-provider-list_id">
+      <h4>List<span class="required">*</span></h4>
+      <select class="wpforms-builder-provider-connection-field-value wpforms-required">
+        <option value="" disabled>--- Select ---</option>
+        <option value="email-list" selected>Email List</option>
+      </select>
+    </div>
+  `,
+};
+const ACTION_DESCRIPTIONS = {
+  create_update_profile: '',
+  unsubscribe: 'This action revokes the profile\'s global email marketing consent. They will stop receiving marketing emails from all lists in your Klaviyo account until they re-subscribe. To remove a profile from a specific list without changing their consent, use the "Remove from List" action instead.',
+  remove_from_list: 'This action removes the profile from the selected list only. Their global marketing consent is not changed — they can still receive emails from other lists.',
+};
+function setKlaviyoAction(actionValue) {
+  const doc = ifm.doc();
+  if (!doc) return;
+  const select = doc.querySelector('.js-wpforms-builder-klaviyo-provider-connection-action');
+  const dataWrap = doc.querySelector('.wpforms-builder-klaviyo-provider-actions-data');
+  const desc = doc.querySelector('.wpforms-builder-klaviyo-action-description');
+  if (!select || !dataWrap) return;
+  if (!ACTION_DATA_HTML.create_update_profile) {
+    ACTION_DATA_HTML.create_update_profile = dataWrap.innerHTML;
+  }
+  select.value = actionValue;
+  dataWrap.innerHTML = ACTION_DATA_HTML[actionValue] || ACTION_DATA_HTML.create_update_profile;
+  if (desc) {
+    desc.textContent = ACTION_DESCRIPTIONS[actionValue] || '';
+    desc.style.display = ACTION_DESCRIPTIONS[actionValue] ? '' : 'none';
+  }
+}
 
 async function play() {
-  // ───────────────────────────────────────────────
-  // BEAT 1 — Editorial intro (0 - 3.5s)
-  // ───────────────────────────────────────────────
-  gsap.set(introCard, { opacity: 0, y: 12 });
-  gsap.to(introCard, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
-  await wait(2.5);
-  gsap.to(introCard, { opacity: 0, y: -8, duration: 0.5, ease: 'power2.in' });
+  startAtmosphere(95);
+
+  // ─── SECTION A — INTRO ───
+  gsap.set(introCard, { opacity: 0, y: 14 });
+  gsap.to(introCard, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
+  await wait(2.0);
+  gsap.to(introCard, { opacity: 0, y: -10, duration: 0.5, ease: 'power2.in' });
   await wait(0.5);
 
-  // ───────────────────────────────────────────────
-  // CHAPTER 1 — WPForms → Settings → Integrations → Klaviyo (4s - 13s)
-  // ───────────────────────────────────────────────
+  // ─── SECTION B — POSTINTRO concept beat ───
+  gsap.set(postIntro, { opacity: 1 });
+  // Kick off 3 profile iframes loading in parallel — by B7 they're ready
+  const profilesReady = loadAllProfiles();
+
+  gsap.fromTo(piTagline, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
+  await wait(0.6);
+  gsap.fromTo(piForm, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' });
+  await wait(0.6);
+  await caretType(piFormEmail, 'sullie@sulliesbakery.com', { charDuration: 0.05 });
+  await wait(0.4);
+  piSubmit.classList.add('glow');
+  await wait(0.35);
+  gsap.to(piSubmit, { scale: 0.94, duration: 0.10, ease: 'power2.in' });
+  await wait(0.15);
+  gsap.to(piSubmit, { scale: 1.0, duration: 0.18, ease: 'back.out(2)' });
+  gsap.set(piPill, { x: -180, opacity: 0 });
+  piPillText.textContent = 'Submitted';
+  await new Promise(r => {
+    gsap.timeline({ onComplete: r })
+      .to(piPill, { opacity: 1, x: -60, duration: 0.45, ease: 'power3.out' })
+      .to(piPill, { x: 240, duration: 0.85, ease: 'power2.inOut' }, '+=0.25');
+  });
+  gsap.to(piPill, { opacity: 0, scale: 0.92, duration: 0.32, ease: 'power2.in' });
+
+  await profilesReady;
+
+  // Klaviyo brand intro — logo + wordmark appears where the cards will land,
+  // holds for ~1s, then fades out, then the cards cascade in.
+  gsap.fromTo(piKlaviyoIntro,
+    { opacity: 0, scale: 0.92 },
+    { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.3)' });
+  await wait(1.0);
+  gsap.to(piKlaviyoIntro, { opacity: 0, scale: 0.96, duration: 0.4, ease: 'power2.in' });
+  await wait(0.35);
+
+  // Cascade in: back first, then mid, then front. Each is a REAL Klaviyo
+  // profile iframe with dummy data customized via DOM puppetry.
+  gsap.fromTo(piProfileReal3,
+    { opacity: 0, x: -16, scale: 0.92 },
+    { opacity: 1, x: 0, scale: 1, duration: 0.45, ease: 'back.out(1.3)' });
+  await wait(0.20);
+  gsap.fromTo(piProfileReal2,
+    { opacity: 0, x: -18, scale: 0.94 },
+    { opacity: 1, x: 0, scale: 1, duration: 0.45, ease: 'back.out(1.3)' });
+  await wait(0.20);
+  gsap.fromTo(piProfileReal1,
+    { opacity: 0, x: -24, scale: 0.96 },
+    { opacity: 1, x: 0, scale: 1, duration: 0.55, ease: 'back.out(1.4)' });
+  await wait(1.6);
+
+  gsap.to(postIntro, { opacity: 0, duration: 0.6, ease: 'power2.in' });
+  await wait(0.6);
+
+  // ─── SECTION C — TUTORIAL PROPER ───
+
+  // ─── CHAPTER 1 — All Forms → Settings → Integrations → Klaviyo ───
   gsap.to(macFrame, { opacity: 1, duration: 0.7, ease: 'power3.out' });
-  urlBar.textContent = 'sulliesbakery.com/wp-admin → Settings → Integrations';
-  await ifm.load('admin-settings-integrations-klaviyo-form');
-  await wait(0.5);
-  setCaption('Step 1', 'WPForms → Settings → Integrations');
-  await wait(1.5);
-  setCaption('Step 2', 'Click Klaviyo → Add New Account');
-  await wait(1.0);
+  setActiveTab('wpforms');
+  urlBar.textContent = 'sulliesbakery.com/wp-admin/admin.php?page=wpforms-overview';
+  await ifm.load('admin-forms-overview');
+  cursor.setPos(1280, 90);
+  await wait(0.6);
+  setCaption('Step 1', 'WPForms → All Forms (your starting point)');
+  await cursor.glide({ x: 640, y: 220 }, { duration: 0.75 });
+  await wait(1.2);
 
-  // Move cursor toward Klaviyo connection form (already visible in this snapshot)
-  await wait(1.0);
+  // Step 2 — navigate to Settings → Integrations.
+  // Click target is the real Settings link in WPForms admin sidebar.
+  setCaption('Step 2', 'Open Settings → Integrations');
+  const settingsLink = ifm.query('#toplevel_page_wpforms-overview a[href*="wpforms-settings"]');
+  if (settingsLink) {
+    try {
+      const pt = ifm.elementToStageCoords(settingsLink);
+      await cursor.glide(pt, { duration: 0.8 });
+      await cursor.click({ ripple: true });
+    } catch (e) { console.warn('[ch1 settingsLink]', e.message); }
+  }
+  await ifm.swap('admin-settings-integrations', { duration: 0.5 });
+  urlBar.textContent = 'sulliesbakery.com/wp-admin/admin.php?page=wpforms-settings&view=integrations';
+  await wait(0.7);
+
+  // Step 3 — scroll to Klaviyo row, click to expand the accordion (DOM puppetry,
+  // not a snapshot swap). Then click Add New Account to reveal the form fields.
+  setCaption('Step 3', 'Click Klaviyo → Add New Account');
+  const klaviyoHeader = ifm.query('#wpforms-integration-klaviyo .wpforms-settings-provider-header');
+  if (klaviyoHeader) {
+    try {
+      await ifm.smoothScrollIntoView(klaviyoHeader, { block: 'center', duration: 0.7 });
+      await wait(0.2);
+      const pt = ifm.elementToStageCoords(klaviyoHeader);
+      await cursor.glide(pt, { duration: 0.8 });
+      await cursor.click({ ripple: true });
+    } catch (e) { console.warn('[ch1 klaviyoHeader]', e.message); }
+  }
+  // Expand the accordion in-place (no swap)
+  expandKlaviyoAccordion();
+  await wait(0.7);
+
+  // Click Add New Account → reveal the API Key + Nickname form
+  const addNewAccount = klaviyoQuery('a.wpforms-btn[data-provider="klaviyo"]');
+  if (addNewAccount) {
+    try {
+      await ifm.smoothScrollIntoView(addNewAccount, { block: 'center', duration: 0.5 });
+      await wait(0.2);
+      const pt = ifm.elementToStageCoords(addNewAccount);
+      await cursor.glide(pt, { duration: 0.7 });
+      await cursor.click({ ripple: true });
+    } catch (e) { /* fall through */ }
+  }
+  // DOM puppetry — show the API Key + Nickname connect form
+  expandKlaviyoConnectForm();
+  await wait(1.2);
   await hideCaption();
 
-  // ───────────────────────────────────────────────
-  // CHAPTER 2 — Klaviyo dashboard cutaway: generate API key (13s - 30s)
-  // ───────────────────────────────────────────────
-  // Crossfade to Klaviyo dashboard mockup (no snapshot exists)
-  await showElement(klCutaway, { duration: 0.5, ease: 'power2.out' });
-  urlBar.textContent = 'klaviyo.com/dashboard → Settings → API keys';
-  setCaption('Step 3', 'Generate your Klaviyo API key');
-  await wait(1.2);
-
-  // 2a — Show account name click (bottom-left)
-  klAccountItem.style.background = '#e6e6e9';
-  await wait(0.3);
-  gsap.to(klAccountMenu, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' });
-  await wait(1.5);
-
-  // 2b — Navigate to API Keys page (shift content)
-  gsap.to(klAccountMenu, { opacity: 0, duration: 0.25 });
-  klContentTitle.textContent = 'API Keys';
-  klPrimaryCard.innerHTML = `
-    <div class="card-title">
-      <span>Private API Keys</span>
-      <button class="kl-btn-primary create-key">+ Create Private API Key</button>
-    </div>
-    <div style="font-size:12px; color:#5b5f6e; padding:8px 0;">No private API keys yet — create one to integrate.</div>
-  `;
-  // Update sidebar active state
-  document.querySelectorAll('#klSidebar .item').forEach(i => i.classList.remove('active'));
-  await wait(1.2);
-  setCaption('Step 4', 'Click Create Private API Key');
-  await wait(1.2);
-
-  // 2c — Reveal API key
-  await showElement(klKeyReveal, { duration: 0.45, ease: 'back.out(1.2)' });
-  setCaption('Step 5', 'Name: "WPForms key" → Full Access → Create');
-  await wait(2.5);
-
-  // ───────────────────────────────────────────────
-  // CHAPTER 3 — Back to WPForms, paste key + connect (30s - 42s)
-  // ───────────────────────────────────────────────
-  await hideElement(klKeyReveal);
-  await hideElement(klCutaway, { duration: 0.5 });
-  await hideCaption();
-  urlBar.textContent = 'sulliesbakery.com/wp-admin → Settings → Integrations';
-  setCaption('Step 6', 'Paste the API key in WPForms');
+  // ─── CHAPTER 2 — Klaviyo opens in NEW TAB → generate API key ───
+  // Click targets resolved via findInIframeByText (Klaviyo's class names are
+  // obfuscated; text content is the stable selector path).
+  await openKlaviyoTab();
+  urlBar.textContent = 'klaviyo.com/dashboard';
+  await ifm.swap('klaviyo-dashboard', { duration: 0.5 });
+  applyKlaviyoZoom(1.0);
   await wait(0.5);
-
-  // Type fake key into API key field
-  const apiInput = ifm.query('input[name="api_key"]');
-  if (apiInput) {
-    const pt = ifm.elementToStageCoords(apiInput);
-    await cursor.glide(pt, { duration: 0.6 });
-    await cursor.click({ ripple: true });
-    apiInput.focus();
-    const fakeKey = 'pk_W' + 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4';
-    for (let i = 0; i < fakeKey.length; i++) {
-      apiInput.value = fakeKey.slice(0, i + 1);
-      apiInput.dispatchEvent(new apiInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
-      await new Promise(r => setTimeout(r, 30));
-    }
+  setCaption('Step 4', 'Klaviyo opens in a new tab → click your account name → Settings');
+  // Click account name (bottom-left of sidebar)
+  const accountBtn = findInIframeByText("Sullie's Flowers");
+  if (accountBtn) {
+    try {
+      const pt = ifm.elementToStageCoords(accountBtn);
+      await cursor.glide(pt, { duration: 0.85 });
+      await cursor.click({ ripple: true });
+    } catch (e) { /* fall through */ }
   }
-  await wait(0.4);
-
-  // Type nickname
-  const nicknameInput = ifm.query('input[name="account_name"]');
-  if (nicknameInput) {
-    const pt = ifm.elementToStageCoords(nicknameInput);
-    await cursor.glide(pt, { duration: 0.5 });
-    await cursor.click({ ripple: true });
-    nicknameInput.focus();
-    const nickname = 'Klaviyo key';
-    for (let i = 0; i < nickname.length; i++) {
-      nicknameInput.value = nickname.slice(0, i + 1);
-      nicknameInput.dispatchEvent(new nicknameInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
-      await new Promise(r => setTimeout(r, 50));
-    }
-  }
-  await wait(0.4);
-  setCaption('Step 7', 'Click Connect to Klaviyo');
-  // Click Connect
-  const connectBtn = ifm.query('button[data-provider="klaviyo"].wpforms-settings-provider-connect');
-  if (connectBtn) {
-    const pt = ifm.elementToStageCoords(connectBtn);
-    await cursor.glide(pt, { duration: 0.55 });
-    await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
-  }
+  // Inject the real Klaviyo account-switcher popover above the button
+  const popover = accountBtn ? showKlaviyoAccountPopover(accountBtn) : null;
   await wait(0.8);
+  // Glide to "Settings" inside the popover
+  if (popover) {
+    const settingsRow = popover.querySelector('[data-popover-settings]');
+    if (settingsRow) {
+      try {
+        const pt = ifm.elementToStageCoords(settingsRow);
+        await cursor.glide(pt, { duration: 0.7 });
+        await cursor.click({ ripple: true });
+      } catch (e) { /* fall through */ }
+    }
+  }
+  await wait(0.6);
 
-  // Swap to connected state
-  await ifm.swap('admin-settings-integrations-klaviyo-open', { duration: 0.45 });
+  urlBar.textContent = 'klaviyo.com/settings';
+  await ifm.swap('klaviyo-settings', { duration: 0.45 });
+  applyKlaviyoZoom(1.0);
+  await wait(0.6);
+  setCaption('Step 5', 'In Settings → click API keys in the sidebar');
+  await glideToText('API keys', { click: true });
+  await wait(1.4);
+
+  urlBar.textContent = 'klaviyo.com/settings/account/api-keys';
+  await ifm.swap('klaviyo-api-keys', { duration: 0.45 });
+  applyKlaviyoZoom(1.0);
+  await wait(0.6);
+  setCaption('Step 6', 'Click Create Private API Key');
+  await glideToText('Create Private API Key', { click: true });
+  await wait(1.4);
+
+  urlBar.textContent = 'klaviyo.com/settings/account/api-keys/new';
+  await ifm.swap('klaviyo-create-api-key', { duration: 0.45 });
+  applyKlaviyoZoom(1.0);
+  await wait(0.6);
+  setCaption('Step 7', 'Name "WPForms key" → Full Access Key → Create');
+  // Sweep over Name field (TYPE the name), then Full Access Key radio,
+  // then Create button (top-right of header).
+  const nameInput = ifm.query('input[name="Private API Key Name"]');
+  if (nameInput) {
+    try {
+      await ifm.smoothScrollIntoView(nameInput, { block: 'center', duration: 0.5 });
+      const pt = ifm.elementToStageCoords(nameInput);
+      await cursor.glide(pt, { duration: 0.7 });
+      await cursor.click({ ripple: true });
+      nameInput.focus();
+      const keyName = 'WPForms key';
+      const win = nameInput.ownerDocument.defaultView;
+      for (let i = 0; i < keyName.length; i++) {
+        nameInput.value = keyName.slice(0, i + 1);
+        nameInput.dispatchEvent(new win.Event('input', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 55));
+      }
+      nameInput.dispatchEvent(new win.Event('change', { bubbles: true }));
+    } catch (e) { /* fall through */ }
+  }
+  await wait(0.4);
+  await glideToText('Full Access Key', { duration: 0.8, click: true });
+  await wait(0.4);
+  // Create button in page header — find via text "Create" on a button
+  const createBtn = Array.from(ifm.doc()?.querySelectorAll('button') || [])
+    .find(b => b.textContent.trim() === 'Create');
+  if (createBtn) {
+    try {
+      await ifm.smoothScrollIntoView(createBtn, { block: 'center', duration: 0.5 });
+      const pt = ifm.elementToStageCoords(createBtn);
+      await cursor.glide(pt, { duration: 0.8 });
+      await cursor.click({ ripple: true });
+    } catch (e) { /* fall through */ }
+  }
   await wait(1.0);
-  setCaption('Step 8', 'Klaviyo connected ✓');
-  await wait(1.5);
+
+  await ifm.swap('klaviyo-private-key-confirmation', { duration: 0.45 });
+  applyKlaviyoZoom(1.0);
+  await wait(0.6);
+  setCaption('Step 8', 'Copy your new Private API Key');
+  // Copy icon — small button next to the key field
+  const copyBtn = Array.from(ifm.doc()?.querySelectorAll('button') || [])
+    .find(b => {
+      const r = b.getBoundingClientRect();
+      return r.width >= 30 && r.width <= 60 && r.height >= 30 && r.height <= 60 && r.y > 400;
+    });
+  if (copyBtn) {
+    try {
+      const pt = ifm.elementToStageCoords(copyBtn);
+      await cursor.glide(pt, { duration: 0.9 });
+      await cursor.click({ ripple: true });
+    } catch (e) { /* fall through */ }
+  }
+  await wait(1.8);
   await hideCaption();
 
-  // ───────────────────────────────────────────────
-  // CHAPTER 4 — Form Builder → Marketing → Klaviyo (44s - 55s)
-  // ───────────────────────────────────────────────
-  urlBar.textContent = 'sulliesbakery.com/wp-admin → Forms → Contact Us → Marketing';
+  // ─── CHAPTER 3 — Back to WPForms tab, paste + connect ───
+  // Swap back to the SAME integrations snapshot used in chapters 1+2.
+  // Re-apply DOM puppetry (accordion + connect form open) since iframe
+  // reload reset the DOM state.
+  switchToWPFormsTab();
+  urlBar.textContent = 'sulliesbakery.com/wp-admin/admin.php?page=wpforms-settings&view=integrations';
+  await ifm.swap('admin-settings-integrations', { duration: 0.5 });
+  clearKlaviyoZoom();
+  await wait(0.4);
+  expandKlaviyoAccordion();
+  expandKlaviyoConnectForm();
+  await wait(0.3);
+  setCaption('Step 9', 'Paste the API key into WPForms');
+  await wait(0.4);
+
+  const apiInput = klaviyoQuery('input[name="api_key"]');
+  if (apiInput) {
+    try {
+      await ifm.smoothScrollIntoView(apiInput, { block: 'center', duration: 0.5 });
+      const pt = ifm.elementToStageCoords(apiInput);
+      await cursor.glide(pt, { duration: 0.6 });
+      await cursor.click({ ripple: true });
+      apiInput.focus();
+      // Masked paste format — mirrors how Klaviyo / WPForms typically
+      // visually represent a copied-but-hidden key in screenshots.
+      const fakeKey = 'pk_***********';
+      apiInput.value = fakeKey;
+      const win = apiInput.ownerDocument.defaultView;
+      apiInput.dispatchEvent(new win.Event('input', { bubbles: true }));
+      apiInput.dispatchEvent(new win.Event('change', { bubbles: true }));
+      gsap.fromTo(apiInput,
+        { boxShadow: '0 0 0 0 rgba(226,119,48,0)' },
+        { boxShadow: '0 0 0 4px rgba(226,119,48,0.35)', duration: 0.18, ease: 'power2.out',
+          yoyo: true, repeat: 1 });
+    } catch (e) { console.warn('[ch3 apiInput]', e.message); }
+  }
+  await wait(0.7);
+
+  const nicknameInput = klaviyoQuery('input[name="account_name"]');
+  if (nicknameInput) {
+    try {
+      const pt = ifm.elementToStageCoords(nicknameInput);
+      await cursor.glide(pt, { duration: 0.5 });
+      await cursor.click({ ripple: true });
+      nicknameInput.focus();
+      const nickname = 'Klaviyo key';
+      for (let i = 0; i < nickname.length; i++) {
+        nicknameInput.value = nickname.slice(0, i + 1);
+        nicknameInput.dispatchEvent(new nicknameInput.ownerDocument.defaultView.Event('input', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 50));
+      }
+    } catch (e) { console.warn('[ch3 nicknameInput]', e.message); }
+  }
+  await wait(0.4);
+
+  setCaption('Step 10', 'Click Connect → Klaviyo connected ✓');
+  const connectBtn = klaviyoQuery('button[data-provider="klaviyo"].wpforms-settings-provider-connect');
+  if (connectBtn) {
+    try {
+      const pt = ifm.elementToStageCoords(connectBtn);
+      await cursor.glide(pt, { duration: 0.55 });
+      await cursor.click({ ripple: true, rippleColor: 'rgba(226, 119, 48, 0.55)' });
+    } catch (e) { console.warn('[ch3 connectBtn]', e.message); }
+  }
+  await wait(0.6);
+  // DOM puppetry — flip the same snapshot to connected state (no swap)
+  markKlaviyoConnected('Klaviyo key');
+  await wait(2.0);
+  await hideCaption();
+
+  // ─── CHAPTER 4 — Form Builder → Marketing → Klaviyo ───
+  urlBar.textContent = 'sulliesbakery.com/wp-admin → Forms → Online Feedback Survey';
   await ifm.swap('builder-providers', { duration: 0.5 });
   await wait(0.6);
-  setCaption('Step 9', 'Open form builder → Marketing → Klaviyo');
+  setCaption('Step 11', 'Open form builder → Marketing → Klaviyo');
   await wait(1.2);
 
-  const klaviyoTab = ifm.query('.wpforms-panel-sidebar-section-klaviyo');
-  if (klaviyoTab) {
-    const pt = ifm.elementToStageCoords(klaviyoTab);
-    await cursor.glide(pt, { duration: 0.6 });
-    await cursor.click({ ripple: true });
+  const klaviyoTab2 = ifm.query('.wpforms-panel-sidebar-section-klaviyo');
+  if (klaviyoTab2) {
+    try {
+      const pt = ifm.elementToStageCoords(klaviyoTab2);
+      await cursor.glide(pt, { duration: 0.6 });
+      await cursor.click({ ripple: true });
+    } catch (e) { console.warn('[ch4 klaviyoTab]', e.message); }
   }
   await ifm.swap('builder-providers-klaviyo', { duration: 0.4 });
   await wait(0.8);
-  setCaption('Step 10', 'Click Add New Connection');
-  await wait(1.0);
 
-  // Click Add New Connection button
-  const addBtn = ifm.query('.js-wpforms-builder-provider-connection-add');
+  // Step 12 — cursor clicks Add New Connection, modal animates in right after
+  setCaption('Step 12', 'Click Add New Connection');
+  // Multiple .js-wpforms-builder-provider-connection-add buttons exist (one per
+  // provider). All except the active Klaviyo panel's are display:none. Scope.
+  const addBtn = ifm.query('.wpforms-panel-content-section-klaviyo.active .js-wpforms-builder-provider-connection-add');
   if (addBtn) {
-    const pt = ifm.elementToStageCoords(addBtn);
-    await cursor.glide(pt, { duration: 0.55 });
-    await cursor.click({ ripple: true });
+    try {
+      const pt = ifm.elementToStageCoords(addBtn);
+      await cursor.glide(pt, { duration: 0.6 });
+      await cursor.click({ ripple: true });
+    } catch (e) { console.warn('[ch4 addBtn]', e.message); }
   }
-  await wait(0.4);
-
-  // ───────────────────────────────────────────────
-  // CHAPTER 5 — Connection nickname + settings panel (55s - 68s)
-  // ───────────────────────────────────────────────
-  // Show nickname popup mockup (no snapshot exists)
+  // Nickname modal opens immediately after the click — tight coupling
   gsap.fromTo(nicknamePopup,
     { opacity: 0, scale: 0.95 },
     { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(1.2)' }
   );
-  await wait(1.5);
-  setCaption('Step 11', 'Name the connection → OK');
+  await wait(1.2);
+  setCaption('Step 13', 'Name the connection → OK');
   await wait(1.5);
   gsap.to(nicknamePopup, { opacity: 0, duration: 0.3, ease: 'power2.in' });
   await wait(0.3);
 
-  // Show Connection settings panel mockup
-  gsap.fromTo(connPanel,
-    { opacity: 0, scale: 0.96 },
-    { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
-  );
+  // ─── CHAPTER 5 — Real Builder Klaviyo Connection panel ───
+  await ifm.swap('builder-providers-klaviyo-connection', { duration: 0.5 });
+  await wait(0.6);
+
+  setKlaviyoAction('create_update_profile');
+
+  // Camera move + slight zoom toward the Klaviyo Connection panel so the
+  // viewer can see the form fields without the surrounding admin chrome
+  // hogging the frame. Targets the .wpforms-panel-content-section-klaviyo
+  // wrapper which sits on the right of the form builder layout.
+  try {
+    const pose = ifm.cameraToElement('.wpforms-panel-content-section-klaviyo', {
+      fill: 0.85, pad: 18, minZoom: 1, maxZoom: 1.35,
+    });
+    await ifm.tweenCamera({ zoom: pose.zoom, tx: pose.tx, ty: pose.ty, duration: 0.9, ease: 'power2.inOut' });
+  } catch (e) { console.warn('[ch5 cameraToElement]', e.message); }
+
+  setCaption('Step 14', 'Action: Create / Update Profile (default)');
+
+  async function glideToConn(selector) {
+    const el = ifm.query(selector);
+    if (!el) return;
+    try {
+      const pt = ifm.elementToStageCoords(el);
+      await cursor.glide(pt, { duration: 0.7 });
+    } catch (e) { /* fall through */ }
+  }
+  await glideToConn('.js-wpforms-builder-klaviyo-provider-connection-action');
+  await wait(1.4);
+
+  setCaption('Step 15', 'Map Email → form Email field, pick a list');
+  await glideToConn('.wpforms-builder-klaviyo-provider-email select');
   await wait(1.0);
-  setCaption('Step 12', 'Choose Action → Create / Update Profile');
-  await wait(1.5);
-  setCaption('Step 13', 'Map Email → form Email field');
-  await wait(1.5);
-  setCaption('Step 14', 'Pick a list, toggle on email marketing');
-  await wait(2.0);
+  await glideToConn('.wpforms-builder-klaviyo-provider-list_id select');
+  await wait(1.2);
+
+  setKlaviyoAction('unsubscribe');
+  setCaption('Step 16', 'Action: Unsubscribe (revokes consent)');
+  await glideToConn('.js-wpforms-builder-klaviyo-provider-connection-action');
+  await wait(0.5);
+  await glideToConn('.wpforms-builder-klaviyo-action-description');
+  await wait(1.6);
+
+  setKlaviyoAction('remove_from_list');
+  setCaption('Step 17', 'Action: Remove from List (keeps consent)');
+  await glideToConn('.wpforms-builder-klaviyo-provider-list_id select');
+  await wait(1.8);
+
+  setKlaviyoAction('create_update_profile');
   await hideCaption();
-  gsap.to(connPanel, { opacity: 0, duration: 0.4, ease: 'power2.in' });
+  // Reset camera before chapter 6 outro
+  try { await ifm.resetCamera({ duration: 0.55 }); } catch (e) {}
   await wait(0.4);
 
-  // ───────────────────────────────────────────────
-  // BEAT 6 — Editorial outro (68s - 73s)
-  // ───────────────────────────────────────────────
+  // ─── SECTION D — OUTRO ───
   gsap.to(macFrame, { opacity: 0, duration: 0.7, ease: 'power3.in' });
   await wait(0.5);
   gsap.fromTo(outroCard, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
@@ -810,6 +1421,9 @@ async function play() {
 window._play = play;
 window._ifm = ifm;
 window._cursor = cursor;
+window._setKlaviyoAction = setKlaviyoAction;
+window._expandKlaviyoAccordion = expandKlaviyoAccordion;
+window._openKlaviyoTab = openKlaviyoTab;
 
 play().catch(err => {
   console.error('[klaviyo pilot error]', err);
