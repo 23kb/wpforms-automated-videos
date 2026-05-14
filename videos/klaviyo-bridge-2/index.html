@@ -41,10 +41,12 @@
     width: var(--stage-w);
     height: var(--stage-h);
     flex: 0 0 auto;
-    transform-origin: center center;
-    background: var(--canvas-ink);
+    /* Stage is a positioning context for content only — the editorial
+       backdrop (atmo-base + .atmo layers) is hoisted to .stage-wrap so it
+       fills the full viewport (legacy mesh-bg pattern). No own background
+       or shadow here so the atmo behind shows through to the stage edges. */
+    background: transparent;
     overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
   }
 
   /* ==========================================================
@@ -226,7 +228,11 @@
   .iframe-scene {
     position: absolute;
     left: 50%; top: 50%;
-    width: 1280px; height: 720px;
+    /* 1440×900 — matches the legacy engine's mac-frame iframe size
+       (runtime/player.css --iframe-w/--iframe-h). The 12 production
+       videos render WP admin at this viewport; tighter sizes feel
+       over-zoomed even at neutral camera. */
+    width: 1440px; height: 900px;
     transform: translate(-50%, -50%);
     perspective: 1400px;
     z-index: 24;
@@ -245,7 +251,12 @@
       0 18px 38px rgba(44, 39, 32, 0.16),
       inset 0 1px 0 rgba(255,255,255,0.86);
     transform-style: preserve-3d;
-    will-change: transform, filter, opacity;
+    /* `will-change: filter` removed — filter applied to this card forced the
+       iframe inside to rasterise through Chromium's filter pipeline at the
+       layer's CSS pixel size, even with neutral `blur(0px)` values. Iframe
+       came out soft compared to the legacy engine's plain <iframe>.
+       Filter is no longer animated on this card (autoAlpha handles fades). */
+    will-change: transform, opacity;
   }
   .iframe-card::before {
     content: "";
@@ -271,7 +282,8 @@
   .docs-scene {
     position: absolute;
     left: 50%; top: 50%;
-    width: 1280px; height: 720px;
+    /* 1440×900 — match the iframe-scene size (engine standard). */
+    width: 1440px; height: 900px;
     transform: translate(-50%, -50%);
     z-index: 16;
     perspective: 1400px;
@@ -289,7 +301,8 @@
       0 18px 42px rgba(31, 40, 54, 0.16),
       inset 0 1px 0 rgba(255,255,255,0.9);
     transform-style: preserve-3d;
-    will-change: transform, filter, opacity;
+    /* `will-change: filter` removed — see .iframe-card comment. */
+    will-change: transform, opacity;
   }
   .docs-card::before {
     content: "";
@@ -308,7 +321,8 @@
   }
   .docs-card iframe {
     position: absolute; inset: 0;
-    width: 1280px; height: 720px;
+    /* 1440×900 — match the docs-scene container (engine standard). */
+    width: 1440px; height: 900px;
     border: 0;
     background: #fff;
     transform: none;
@@ -405,21 +419,22 @@
       0 0 0 1px rgba(20, 15, 8, 0.08);
     transform-origin: center center;
   }
-  /* Oversample: render each panel's iframe at 1920×1080 native, CSS-scale to
-     fit the 1280×720 panel slot. At max camera zoom (1.25×) panel displays
-     1600px wide from a 1920 raster — downsample, stays sharp. At wide camera
-     scale (0.32×) panel displays ~410px wide from 1920 raster — heavy
-     downsample, stays sharp. No jagged upscale at any zoom. */
+  /* Engine pattern: iframe NATIVE = panel-slot size. No transform-scale-down.
+     When the .scattered-camera transforms, Chromium recognises the iframe's
+     effective display size has changed and re-rasterises the iframe doc at
+     the new density — same mechanism engine/engine.js relies on with its
+     1440×900 iframe + direct transform: scale(zoom) on .ui. The earlier
+     "oversample + transform-scale-down" approach broke this: WP admin laid
+     out at 2880-wide viewport (sparse, lots of whitespace) AND Chromium
+     picked raster density from the post-scale size, so deep zoom blurred. */
   .scattered-panel iframe {
     position: absolute;
     left: 0; top: 0;
-    width: 1920px; height: 1080px;
+    width: 1280px; height: 720px;
     border: 0;
     background: #fff;
     display: block;
     pointer-events: none;
-    transform-origin: 0 0;
-    transform: scale(0.6666666667); /* 1280 / 1920 */
   }
   /* Panel positions on the canvas (top-left). Centres derived from these. */
   .scattered-panel#sp1 {
@@ -705,17 +720,20 @@
 </head>
 <body>
 <div class="stage-wrap">
-  <div class="stage" id="stage">
 
-    <!-- Atmospheric beds (siblings; only autoAlpha varies per beat) -->
-    <div class="atmo-base"></div>
-    <div class="atmo atmo-warm-pull"   id="atmoWarmPull"></div>
-    <div class="atmo atmo-tension"     id="atmoTension"></div>
-    <div class="atmo atmo-cool-kiss"   id="atmoCoolKiss"></div>
-    <div class="atmo atmo-impact"      id="atmoImpact"></div>
-    <div class="atmo atmo-warmth"      id="atmoWarmth"></div>
-    <div class="atmo atmo-light"       id="atmoLight"></div>
-    <div class="atmo atmo-klaviyo"     id="atmoKlaviyo"></div>
+  <!-- Atmospheric beds — hoisted out of .stage so they fill the full
+       viewport (legacy mesh-bg pattern). DOM order before .stage means
+       they render behind it. Only autoAlpha varies per beat. -->
+  <div class="atmo-base"></div>
+  <div class="atmo atmo-warm-pull"   id="atmoWarmPull"></div>
+  <div class="atmo atmo-tension"     id="atmoTension"></div>
+  <div class="atmo atmo-cool-kiss"   id="atmoCoolKiss"></div>
+  <div class="atmo atmo-impact"      id="atmoImpact"></div>
+  <div class="atmo atmo-warmth"      id="atmoWarmth"></div>
+  <div class="atmo atmo-light"       id="atmoLight"></div>
+  <div class="atmo atmo-klaviyo"     id="atmoKlaviyo"></div>
+
+  <div class="stage" id="stage">
 
     <!-- Warmth halo behind the lockup -->
     <div class="lockup-halo" id="lockupHalo"></div>
@@ -873,16 +891,19 @@
   // Resolve into lockup — power2.inOut (per brief).
   CustomEase.create('resolve', 'M0,0 C0.42,0.00 0.58,1.00 1,1');
 
-  // Stage fit-to-window
-  function fit() {
-    const stage = document.getElementById('stage');
-    const w = window.innerWidth;
-    const h = window.innerHeight - 50;
-    const scale = Math.min(w / 1920, h / 1080) * 0.96;
-    stage.style.transform = `scale(${scale})`;
-  }
-  window.addEventListener('resize', fit);
-  fit();
+  // Stage stays at native 1920×1080 CSS pixels — no fit-to-window scaling.
+  // Mirrors the legacy engine pattern (engine.js mounts the iframe at fixed
+  // 1440×900; mesh-bg fills the viewport around it). When the bridge scaled
+  // the whole stage to fit the viewport, the iframe-card visually shrank
+  // below its 1440-wide design on any monitor narrower than 1920 — making
+  // the bridge feel "boxed-in" compared to legacy videos. Now the stage is
+  // native-size and centered via flex in .stage-wrap, and the atmo backdrop
+  // (also viewport-fixed) fills any margin around the stage seamlessly.
+  //
+  // Viewports > 1920×1080: stage centered, atmo extends in the margin.
+  // Viewports < 1920×1080: stage overflows, overflow:hidden on body clips
+  //   the edges. iframe-card stays at 1440×900 = same on-screen footprint
+  //   as the legacy videos at any monitor size.
 
   // ─────────────────────────────────────────────────────────────
   // Generate particles (14, seeded). Radial directions + sizes.
@@ -1609,7 +1630,9 @@
     rotationX: 11,
     rotationY: -7,
     rotationZ: -0.8,
-    filter: 'blur(14px) saturate(0.86) brightness(1.08)',
+    // No filter — Chromium routes iframe through filter pipeline (raster
+    // resample) even at neutral values. Entrance handled by autoAlpha + the
+    // existing 3D card-flip rotation. Same trade-off legacy engine makes.
     transformPerspective: 1400,
     transformOrigin: '50% 58%',
   });
@@ -1621,7 +1644,7 @@
     rotationY: -12,
     rotationZ: 0.6,
     autoAlpha: 0,
-    filter: 'blur(14px) saturate(0.90) brightness(1.06)',
+    // No filter — see iframeCard.
     transformPerspective: 1400,
     transformOrigin: '50% 58%',
   });
@@ -1720,7 +1743,6 @@
     rotationX: 0,
     rotationY: 0,
     rotationZ: 0,
-    filter: 'blur(0px) saturate(1) brightness(1)',
     duration: 1.22,
     ease: 'expo.inOut',
   }, 4.37);
@@ -1778,7 +1800,6 @@
     rotationX: 2.0,
     rotationY: 12,
     rotationZ: -0.5,
-    filter: 'blur(12px) saturate(0.88) brightness(1.06)',
     duration: 1.28,
     ease: 'power2.inOut',
   }, 10.41);
@@ -1790,7 +1811,6 @@
     rotationY: 0,
     rotationZ: 0,
     autoAlpha: 1,
-    filter: 'blur(0px) saturate(1) brightness(1)',
     duration: 1.28,
     ease: 'power2.inOut',
   }, 10.41);
@@ -1819,7 +1839,6 @@
     rotationX: 2.0,
     rotationY: -11,
     rotationZ: 0.5,
-    filter: 'blur(12px) saturate(0.88) brightness(1.06)',
     duration: 1.18,
     ease: 'power2.inOut',
   }, 14.47);
@@ -1830,7 +1849,6 @@
     rotationX: 0,
     rotationY: 0,
     rotationZ: 0,
-    filter: 'blur(0px) saturate(1) brightness(1)',
     duration: 1.18,
     ease: 'power2.inOut',
   }, 14.47);
@@ -1862,6 +1880,7 @@
   const SC_W = 5200, SC_H = 2400;
   const SC_OX = SC_W / 2, SC_OY = SC_H / 2;
   const SC_CX = 960, SC_CY = 540;
+
   function scFocus(cx, cy, scale = 1.0) {
     return {
       x: SC_CX - SC_OX - scale * (cx - SC_OX),
@@ -1917,20 +1936,19 @@
   const spKlaviyoSettingsEl = document.getElementById('spKlaviyoSettings');
   // Scale applied to each scattered-panel iframe via CSS transform — must match
   // the value in .scattered-panel iframe { transform: scale(...) }.
-  const SP_IFRAME_SCALE = 1280 / 1920; // 0.6666...
+  const SP_IFRAME_SCALE = 1.0; // iframe native = panel slot size; no inner transform-scale
 
   function prepScatteredPanel1() {
     try {
       const doc = spKlaviyoSettingsEl.contentDocument;
       if (!doc) return;
 
-      // Scroll iframe so the Klaviyo row sits ~38% from the top of the 1080-tall
-      // iframe viewport (lands roughly centred in the visible 720-tall panel slot
-      // after the iframe is CSS-scaled to 0.6667).
+      // Scroll iframe so the Klaviyo row sits ~38% from the top of the 720-tall
+      // iframe viewport (lands roughly centred in the visible 720-tall panel slot).
       const target = doc.querySelector('#wpforms-integration-klaviyo');
       const scroller = doc.scrollingElement || doc.documentElement || doc.body;
       if (target && scroller) {
-        const viewportH = doc.documentElement?.clientHeight || 1080;
+        const viewportH = doc.documentElement?.clientHeight || 720;
         scroller.scrollTop = Math.max(0, target.offsetTop - viewportH * 0.38);
       }
 
